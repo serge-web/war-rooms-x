@@ -38,7 +38,9 @@ Use a Vite.js-based monolith structure to simplify the project hierarchy, with `
 ├── index.html             # Entry HTML file for Vite
 ├── vite.config.ts         # Vite configuration
 ├── tsconfig.json          # TypeScript configuration
-└── postcss.config.js      # PostCSS configuration
+├── postcss.config.js      # PostCSS configuration
+├── .prettierrc            # Prettier configuration
+└── .prettierignore        # Prettier ignore file
 ```
 
 ---
@@ -48,6 +50,7 @@ Use a Vite.js-based monolith structure to simplify the project hierarchy, with `
 ### Frontend
 - **Build Tool**: Vite.js
 - **Framework**: React 18+
+- **Code Formatting**: Prettier
 - **UI Layer**:
   - shadcn/ui for standard UI
   - FlexLayout (via caplin/flexlayout-react)

@@ -7,8 +7,9 @@
 Create a test file `src/rooms-test/project-structure.test.ts` that verifies:
 
 1. Project structure follows the Vite.js-based monolith architecture
-2. Vite.js + React + Tailwind + React Router are properly configured
-3. OpenFire server is properly set up with required plugins
+2. Vite.js + React + React Router are properly configured
+3. Prettier is properly configured for code formatting
+4. OpenFire server is properly set up with required plugins
 4. Service modules exist and are properly structured:
    - `services/xmpp` (StanzaJS wrapper)
    - `services/openfire` (admin API wrapper)
@@ -40,8 +41,9 @@ describe('Project Structure', () => {
       'index.html',
       'vite.config.ts',
       'tsconfig.json',
-      'tailwind.config.js',
       'postcss.config.js',
+      '.prettierrc',
+      '.prettierignore',
       'src/main.tsx',
       'src/App.tsx',
       'src/vite-env.d.ts'
@@ -52,7 +54,7 @@ describe('Project Structure', () => {
     })
   })
 
-  // Test Vite.js + React + Tailwind + React Router configuration
+  // Test Vite.js + React + React Router + Prettier configuration
   test('has required frontend dependencies', () => {
     const packageJson = JSON.parse(
       fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')
@@ -62,8 +64,8 @@ describe('Project Structure', () => {
       'react',
       'react-dom',
       'react-router-dom',
-      'tailwindcss',
-      'vite'
+      'vite',
+      'prettier'
     ]
     
     requiredDeps.forEach(dep => {
@@ -72,6 +74,16 @@ describe('Project Structure', () => {
         Object.keys(packageJson.devDependencies).includes(dep)
       ).toBe(true)
     })
+  })
+  
+  // Test Prettier configuration
+  test('has valid Prettier configuration', () => {
+    const prettierConfigPath = path.resolve(process.cwd(), '.prettierrc')
+    expect(fs.existsSync(prettierConfigPath)).toBe(true)
+    
+    const prettierConfig = JSON.parse(fs.readFileSync(prettierConfigPath, 'utf8'))
+    expect(prettierConfig).toHaveProperty('singleQuote', true)
+    expect(prettierConfig).toHaveProperty('semi', false)
   })
 
   // Test service modules exist

@@ -12,6 +12,7 @@ This roadmap outlines the phased development plan for the War-Rooms-X distribute
 
 **Tasks:**
 - [ ] Set up project structure with Vite.js-based monolith architecture using `yarn`
+- [ ] Configure Prettier for consistent code formatting
 - [ ] Scaffold Player and Admin pages (React + React Router)
 - [ ] Deploy local OpenFire server:
   - REST API plugin
