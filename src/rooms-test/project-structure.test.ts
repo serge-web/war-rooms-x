@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import fetch from 'node-fetch'
 
 describe('Project Structure', () => {
   // Test project structure follows Vite.js-based monolith architecture
@@ -84,8 +85,10 @@ describe('Project Structure', () => {
     })
   })
 
-  // Test OpenFire configuration
-  test('has OpenFire configuration', () => {
+  // Test OpenFire configuration and connectivity
+  // This test verifies that an OpenFire server is installed and running (likely in a Docker container)
+  // and that we can successfully connect to it using the REST API
+  test('has OpenFire configuration and server is running', async () => {
     const openfireConfigPath = path.resolve(process.cwd(), 'config/openfire.json')
     expect(fs.existsSync(openfireConfigPath)).toBe(true)
     
@@ -93,5 +96,30 @@ describe('Project Structure', () => {
     expect(openfireConfig).toHaveProperty('restApiEnabled', true)
     expect(openfireConfig).toHaveProperty('pubsubEnabled', true)
     expect(openfireConfig).toHaveProperty('mucEnabled', true)
+    
+    try {
+      // Attempt to connect to OpenFire REST API to verify it's running
+      const { host, port, apiPath, credentials } = openfireConfig
+      
+      const baseUrl = `http://${host}:${port}${apiPath}`
+      const authHeader = 'Basic ' + Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64')
+      
+      // Test connection by fetching server info
+      const response = await fetch(`${baseUrl}/system/properties`, {
+        method: 'GET',
+        headers: {
+          'Authorization': authHeader,
+          'Accept': 'application/json'
+        }
+      })
+      
+      expect(response.status).toBe(200)
+      const data = await response.json()
+      expect(data).toBeDefined()
+      
+    } catch (error) {
+      console.error('OpenFire connectivity test failed:', error)
+      throw error
+    }
   })
 })
