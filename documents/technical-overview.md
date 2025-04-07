@@ -5,7 +5,7 @@ This document outlines the recommended technical architecture, project structure
 ---
 
 ## 🧱 Project Structure (Monolith)
-Use a standard monolith structure to simplify the project hierarchy, with `yarn` for package management.
+Use a Vite.js-based monolith structure to simplify the project hierarchy, with `yarn` for package management.
 
 ```
 /war-rooms-x
@@ -24,14 +24,22 @@ Use a standard monolith structure to simplify the project hierarchy, with `yarn`
 │   │   └── openfire/       # REST wrapper for OpenFire admin tasks
 │   ├── utils/              # Utility functions
 │   ├── schema/             # Shared JSON schemas and validation logic
-│   └── types/              # TypeScript type definitions
+│   ├── types/              # TypeScript type definitions
+│   ├── App.tsx            # Main application component
+│   ├── main.tsx           # Application entry point
+│   └── vite-env.d.ts      # Vite environment types
 ├── public/                 # Static assets
 ├── scripts/                # Deployment, backup, restore
 ├── infra/                  # Infra-as-code (Terraform/Ansible)
-└── tests/
-    ├── unit/              # Unit tests
-    ├── integration/       # Integration tests
-    └── e2e/               # End-to-end tests with Playwright
+├── tests/
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── e2e/               # End-to-end tests with Playwright
+├── index.html             # Entry HTML file for Vite
+├── vite.config.ts         # Vite configuration
+├── tsconfig.json          # TypeScript configuration
+├── tailwind.config.js     # TailwindCSS configuration
+└── postcss.config.js      # PostCSS configuration for TailwindCSS
 ```
 
 ---
@@ -39,6 +47,7 @@ Use a standard monolith structure to simplify the project hierarchy, with `yarn`
 ## 🏗️ Core Technologies
 
 ### Frontend
+- **Build Tool**: Vite.js
 - **Framework**: React 18+
 - **UI Layer**:
   - TailwindCSS
@@ -165,12 +174,13 @@ Each hook abstracts XMPP and REST logic behind declarative APIs:
 ---
 
 ## ✅ Development Priorities
-1. Implement authentication & `useWargame()`
-2. Room list + chat history via `useRooms()` and `useRoom()`
-3. Admin UI for forces, players, and rooms
-4. Game state PubSub sync
-5. Structured messaging support
-6. Audit log and `__system_log` modal for White force
+1. Set up Vite.js scaffolding with React, TypeScript, and TailwindCSS
+2. Implement authentication & `useWargame()`
+3. Room list + chat history via `useRooms()` and `useRoom()`
+4. Admin UI for forces, players, and rooms
+5. Game state PubSub sync
+6. Structured messaging support
+7. Audit log and `__system_log` modal for White force
 
 ---
 

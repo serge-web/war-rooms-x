@@ -6,8 +6,8 @@
 
 Create a test file `src/rooms-test/project-structure.test.ts` that verifies:
 
-1. Project structure follows the standard monolith architecture
-2. React + Tailwind + React Router are properly configured
+1. Project structure follows the Vite.js-based monolith architecture
+2. Vite.js + React + Tailwind + React Router are properly configured
 3. OpenFire server is properly set up with required plugins
 4. Service modules exist and are properly structured:
    - `services/xmpp` (StanzaJS wrapper)
@@ -21,7 +21,7 @@ import fs from 'fs'
 import path from 'path'
 
 describe('Project Structure', () => {
-  // Test project structure follows standard monolith architecture
+  // Test project structure follows Vite.js-based monolith architecture
   test('has correct base folder structure', () => {
     const requiredDirs = [
       'src',
@@ -34,9 +34,25 @@ describe('Project Structure', () => {
     requiredDirs.forEach(dir => {
       expect(fs.existsSync(path.resolve(process.cwd(), dir))).toBe(true)
     })
+    
+    // Verify Vite.js specific files
+    const requiredFiles = [
+      'index.html',
+      'vite.config.ts',
+      'tsconfig.json',
+      'tailwind.config.js',
+      'postcss.config.js',
+      'src/main.tsx',
+      'src/App.tsx',
+      'src/vite-env.d.ts'
+    ]
+    
+    requiredFiles.forEach(file => {
+      expect(fs.existsSync(path.resolve(process.cwd(), file))).toBe(true)
+    })
   })
 
-  // Test React + Tailwind + React Router configuration
+  // Test Vite.js + React + Tailwind + React Router configuration
   test('has required frontend dependencies', () => {
     const packageJson = JSON.parse(
       fs.readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')
@@ -46,7 +62,8 @@ describe('Project Structure', () => {
       'react',
       'react-dom',
       'react-router-dom',
-      'tailwindcss'
+      'tailwindcss',
+      'vite'
     ]
     
     requiredDeps.forEach(dep => {
@@ -62,7 +79,12 @@ describe('Project Structure', () => {
     const requiredServices = [
       'src/services/xmpp',
       'src/services/openfire',
-      'src/schema'
+      'src/schema',
+      'src/components',
+      'src/hooks',
+      'src/pages',
+      'src/utils',
+      'src/types'
     ]
     
     requiredServices.forEach(service => {
