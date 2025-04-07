@@ -3,9 +3,9 @@
 This document outlines the recommended technical architecture, project structure, and infrastructure stack for implementing the War-Rooms-X distributed wargaming platform, based on the previously defined requirements and user flows.
 
 ---
-``` mermaid
+```mermaid
 graph TD
-  subgraph Frontend (ReactJS)
+  subgraph "Frontend (ReactJS)"
     A1[Player UI]
     A2[Admin UI (react-admin)]
     A3[Test UI / Sim]
@@ -18,7 +18,7 @@ graph TD
     A2 --> H4
   end
 
-  subgraph Shared Packages
+  subgraph "Shared Packages"
     H1[useWargame Hook]
     H2[useRoom Hooks]
     H3[usePlayer Hooks]
@@ -29,14 +29,14 @@ graph TD
     P4[schema (JSON Schema)]
   end
 
-  subgraph Backend
+  subgraph "Backend"
     B1[OpenFire (XMPP Server)]
     B2[REST API Plugin]
     B3[PubSub Service]
     B4[MUC Rooms]
   end
 
-  subgraph Client Storage
+  subgraph "Client Storage"
     C1[Local Read State]
     C2[Downloaded Backups]
   end
