@@ -2,7 +2,7 @@
   "restApiEnabled": true,
   "pubsubEnabled": true,
   "mucEnabled": true,
-  "host": "localhost",
+  "host": "10.211.55.16",
   "port": 9090,
   "apiPath": "/plugins/restapi/v1",
   "secure": false,

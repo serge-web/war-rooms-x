@@ -119,10 +119,9 @@ Each hook abstracts XMPP and REST logic behind declarative APIs:
 ## 🛠️ Infrastructure
 
 ### Hosting
-- **Frontend**: Vercel, Netlify, or Dockerized Nginx
+- **Frontend**: Vercel or Netlify
 - **OpenFire Server**:
-  - Dockerized instance
-  - Persistent volume for user/group data
+  - Linux VM instance
   - Plugin support (REST API plugin, monitoring, PubSub enhancer)
 
 ### Storage & Backups
