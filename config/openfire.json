@@ -1,0 +1,13 @@
+{
+  "restApiEnabled": true,
+  "pubsubEnabled": true,
+  "mucEnabled": true,
+  "host": "localhost",
+  "port": 9090,
+  "apiPath": "/plugins/restapi/v1",
+  "secure": false,
+  "credentials": {
+    "username": "admin",
+    "password": "password"
+  }
+}

@@ -21,7 +21,7 @@ describe('Project Structure', () => {
       'index.html',
       'vite.config.ts',
       'tsconfig.json',
-      'postcss.config.js',
+      'tsconfig.test.json',
       '.prettierrc',
       '.prettierignore',
       'src/main.tsx',
