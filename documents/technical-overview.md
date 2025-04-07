@@ -3,7 +3,7 @@
 This document outlines the recommended technical architecture, project structure, and infrastructure stack for implementing the War-Rooms-X distributed wargaming platform, based on the previously defined requirements and user flows.
 
 ---
-
+``` mermaid
 graph TD
   subgraph Frontend (ReactJS)
     A1[Player UI]
@@ -57,6 +57,7 @@ graph TD
   A2 --> C2
   B1 --> B4
   B1 --> B3
+```  
 
 ## 🧱 Project Structure (Monorepo Recommended)
 Use a monorepo structure (e.g., via [Turborepo](https://turbo.build) or [Nx](https://nx.dev)) to organize frontend, backend integrations, admin tools, and shared libraries.
