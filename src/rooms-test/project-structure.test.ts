@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import fetch from 'node-fetch'
+import { client } from '@xmpp/client'
 
 describe('Project Structure', () => {
   // Test project structure follows Vite.js-based monolith architecture
@@ -87,7 +87,7 @@ describe('Project Structure', () => {
 
   // Test OpenFire configuration and connectivity
   // This test verifies that an OpenFire server is installed and running (likely in a Docker container)
-  // and that we can successfully connect to it using the REST API
+  // and that we can successfully connect to it using XMPP via websockets
   test('has OpenFire configuration and server is running', async () => {
     const openfireConfigPath = path.resolve(process.cwd(), 'config/openfire.json')
     expect(fs.existsSync(openfireConfigPath)).toBe(true)
@@ -98,27 +98,49 @@ describe('Project Structure', () => {
     expect(openfireConfig).toHaveProperty('mucEnabled', true)
     
     try {
-      // Attempt to connect to OpenFire REST API to verify it's running
-      const { host, port, apiPath, credentials } = openfireConfig
+      // Attempt to connect to OpenFire server via XMPP websockets to verify it's running
+      const { host, credentials } = openfireConfig
       
-      const baseUrl = `http://${host}:${port}${apiPath}`
-      const authHeader = 'Basic ' + Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64')
-      
-      // Test connection by fetching server info
-      const response = await fetch(`${baseUrl}/system/properties`, {
-        method: 'GET',
-        headers: {
-          'Authorization': authHeader,
-          'Accept': 'application/json'
-        }
+      // Create XMPP client
+      const xmpp = client({
+        service: `ws://${host}:7070/ws`,
+        domain: host,
+        username: credentials.username,
+        password: credentials.password,
+        resource: 'test-connection'
       })
       
-      expect(response.status).toBe(200)
-      const data = await response.json()
-      expect(data).toBeDefined()
+      // Set up event handlers
+      const connectionPromise = new Promise((resolve, reject) => {
+        // Set a timeout for connection attempt
+        const timeout = setTimeout(() => {
+          xmpp.stop()
+          reject(new Error('Connection timeout'))
+        }, 5000)
+        
+        xmpp.on('online', async () => {
+          clearTimeout(timeout)
+          resolve(true)
+          await xmpp.stop()
+        })
+        
+        xmpp.on('error', (err: Error) => {
+          clearTimeout(timeout)
+          reject(err)
+        })
+      })
+      
+      // Start connection
+      await xmpp.start()
+      
+      // Wait for connection to complete or fail
+      await connectionPromise
+      
+      // If we get here, the connection was successful
+      expect(true).toBe(true)
       
     } catch (error) {
-      console.error('OpenFire connectivity test failed:', error)
+      console.error('OpenFire XMPP connectivity test failed:', error)
       throw error
     }
   })
