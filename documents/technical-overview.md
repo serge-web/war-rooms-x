@@ -38,8 +38,7 @@ Use a Vite.js-based monolith structure to simplify the project hierarchy, with `
 ├── index.html             # Entry HTML file for Vite
 ├── vite.config.ts         # Vite configuration
 ├── tsconfig.json          # TypeScript configuration
-├── tailwind.config.js     # TailwindCSS configuration
-└── postcss.config.js      # PostCSS configuration for TailwindCSS
+└── postcss.config.js      # PostCSS configuration
 ```
 
 ---
@@ -50,7 +49,6 @@ Use a Vite.js-based monolith structure to simplify the project hierarchy, with `
 - **Build Tool**: Vite.js
 - **Framework**: React 18+
 - **UI Layer**:
-  - TailwindCSS
   - shadcn/ui for standard UI
   - FlexLayout (via caplin/flexlayout-react)
 - **Forms**: RJSF (React JSON Schema Form)
@@ -174,7 +172,7 @@ Each hook abstracts XMPP and REST logic behind declarative APIs:
 ---
 
 ## ✅ Development Priorities
-1. Set up Vite.js scaffolding with React, TypeScript, and TailwindCSS
+1. Set up Vite.js scaffolding with React and TypeScript
 2. Implement authentication & `useWargame()`
 3. Room list + chat history via `useRooms()` and `useRoom()`
 4. Admin UI for forces, players, and rooms
