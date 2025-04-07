@@ -11,18 +11,18 @@ This roadmap outlines the phased development plan for the War-Rooms-X distribute
 - Prepare infrastructure for development and testing
 
 **Tasks:**
-- [ ] Set up monorepo with `apps/` and `packages/` structure (Nx or Turborepo)
-- [ ] Scaffold Player UI and Admin UI (React + Tailwind + React Router)
+- [ ] Set up project structure with standard monolith architecture using `yarn`
+- [ ] Scaffold Player and Admin pages (React + Tailwind + React Router)
 - [ ] Deploy local OpenFire server:
   - REST API plugin
   - PubSub and MUC support
-- [ ] Create shared packages:
-  - `xmpp-client` (StanzaJS wrapper)
-  - `openfire-rest` (admin API wrapper)
+- [ ] Create service and utility modules:
+  - `services/xmpp` (StanzaJS wrapper)
+  - `services/openfire` (admin API wrapper)
   - `schema` (template metadata + game models)
 
 **Deliverables:**
-- Monorepo in version control
+- Project structure in version control
 - Local dev instance with mock users and rooms
 
 ---

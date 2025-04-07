@@ -4,23 +4,34 @@ This document outlines the recommended technical architecture, project structure
 
 ---
 
-## 🧱 Project Structure (Monorepo Recommended)
-Use a monorepo structure (e.g., via [Turborepo](https://turbo.build) or [Nx](https://nx.dev)) to organize frontend, backend integrations, admin tools, and shared libraries.
+## 🧱 Project Structure (Monolith)
+Use a standard monolith structure to simplify the project hierarchy, with `yarn` for package management.
 
 ```
 /war-rooms-x
-├── apps/
-│   ├── player-ui/          # Main app for players (ReactJS)
-│   ├── admin-ui/           # React-admin based control panel
-│   └── test-utils/         # Simulation and unit tests
-├── packages/
-│   ├── hooks/              # Custom React hooks (e.g., useRoom, useWargame)
-│   ├── xmpp-client/        # XMPP integration wrapper (StanzaJS or similar)
-│   ├── openfire-rest/      # REST wrapper for OpenFire admin tasks
-│   ├── ui-components/      # Shared UI components (chat, templates, etc)
-│   └── schema/             # Shared JSON schemas and validation logic
+├── src/
+│   ├── components/         # UI components (chat, templates, etc)
+│   │   └── [ComponentName]/  # Each component with its own folder
+│   │       ├── index.tsx     # Component implementation
+│   │       ├── hooks.ts      # Component-specific hooks
+│   │       └── tests/        # Component tests
+│   ├── hooks/              # Shared React hooks (e.g., useRoom, useWargame)
+│   ├── pages/              # Application pages/routes
+│   │   ├── player/         # Player UI pages
+│   │   └── admin/          # Admin UI pages
+│   ├── services/           # Service layer
+│   │   ├── xmpp/           # XMPP integration (StanzaJS wrapper)
+│   │   └── openfire/       # REST wrapper for OpenFire admin tasks
+│   ├── utils/              # Utility functions
+│   ├── schema/             # Shared JSON schemas and validation logic
+│   └── types/              # TypeScript type definitions
+├── public/                 # Static assets
 ├── scripts/                # Deployment, backup, restore
-└── infra/                  # Infra-as-code (Terraform/Ansible)
+├── infra/                  # Infra-as-code (Terraform/Ansible)
+└── tests/
+    ├── unit/              # Unit tests
+    ├── integration/       # Integration tests
+    └── e2e/               # End-to-end tests with Playwright
 ```
 
 ---
