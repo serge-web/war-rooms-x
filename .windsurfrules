@@ -24,17 +24,7 @@
   - Message schema and PubSub node index
 
 # Project structure
-- Monorepo structure (Turborepo or Nx)
-- /apps
-  - player-ui (main React app)
-  - admin-ui (React-admin based)
-  - test-utils (simulation and testing)
-- /packages
-  - hooks (React hooks)
-  - xmpp-client (StanzaJS wrapper)
-  - openfire-rest (admin API wrapper)
-  - ui-components (shared components)
-  - schema (JSON schemas)
+Use the project structure specified in ./documents/technical-overview.md
 
 # Frontend stack
 - React 18+
