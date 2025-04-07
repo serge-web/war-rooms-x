@@ -49,6 +49,8 @@ For each feature:
 
 ### 1. Authentication & Authorization
 
+**Technologies: Jest for unit tests, React Testing Library for component tests, Playwright for E2E tests**
+
 ```pseudocode
 FEATURE: User Authentication
   SCENARIO: Valid login
@@ -72,6 +74,8 @@ FEATURE: User Authentication
 ```
 
 ### 2. React Hooks Testing
+
+**Technologies: Jest, React Testing Library, @testing-library/react-hooks**
 
 ```pseudocode
 FEATURE: React Hooks
@@ -97,6 +101,8 @@ FEATURE: React Hooks
 
 ### 3. UI Components
 
+**Technologies: Jest, React Testing Library, jest-dom for assertions, Storybook for visual testing**
+
 ```pseudocode
 FEATURE: UI Components
   FOR EACH component (RoomTab, MessageBubble, MessageInputForm, etc.):
@@ -119,6 +125,8 @@ FEATURE: UI Components
 ```
 
 ### 4. Messaging
+
+**Technologies: Jest for unit tests, MSW (Mock Service Worker) for XMPP mocking, Playwright for E2E tests**
 
 ```pseudocode
 FEATURE: Messaging
@@ -144,6 +152,8 @@ FEATURE: Messaging
 
 ### 5. Game State Management
 
+**Technologies: Jest for state management, React Testing Library for UI updates, Playwright for multi-client tests**
+
 ```pseudocode
 FEATURE: Game State
   SCENARIO: Game state synchronization
@@ -161,6 +171,8 @@ FEATURE: Game State
 ```
 
 ### 6. Admin Functionality
+
+**Technologies: Jest for unit tests, React Testing Library for component tests, Playwright for admin workflow E2E tests**
 
 ```pseudocode
 FEATURE: Admin Interface
@@ -185,6 +197,8 @@ FEATURE: Admin Interface
 
 ## 🧠 Mocking Strategy
 
+**Technologies: Jest mock functions, MSW (Mock Service Worker), jest-mock-extended, test OpenFire instance**
+
 ```pseudocode
 STRATEGY: XMPP Mocking
   FOR unit and integration tests:
@@ -199,6 +213,8 @@ STRATEGY: XMPP Mocking
 ```
 
 ## 🔄 Test Data Management
+
+**Technologies: Factory patterns with faker-js, TypeScript fixtures, JSON test data files**
 
 ```pseudocode
 STRATEGY: Test Data
@@ -218,6 +234,8 @@ STRATEGY: Test Data
 
 ## 📱 Responsive Testing
 
+**Technologies: Playwright device emulation, Percy for visual regression testing**
+
 ```pseudocode
 STRATEGY: Responsive Testing
   TEST on multiple viewport sizes:
@@ -232,6 +250,8 @@ STRATEGY: Responsive Testing
 ```
 
 ## 🚀 Continuous Integration
+
+**Technologies: GitHub Actions, Jest coverage reports, Playwright Test runner**
 
 ```pseudocode
 STRATEGY: CI Pipeline
@@ -249,6 +269,8 @@ STRATEGY: CI Pipeline
 
 ### Real-time Communication
 
+**Technologies: Jest timers, Playwright network interception, custom XMPP test harness**
+
 ```pseudocode
 STRATEGY: Real-time Testing
   TEST message delivery latency
@@ -259,6 +281,8 @@ STRATEGY: Real-time Testing
 
 ### Security Testing
 
+**Technologies: OWASP ZAP integration, Playwright for auth testing, Jest for input validation**
+
 ```pseudocode
 STRATEGY: Security Testing
   VERIFY authentication mechanisms
@@ -268,6 +292,8 @@ STRATEGY: Security Testing
 ```
 
 ## 📈 Test Metrics and Reporting
+
+**Technologies: Jest coverage, Playwright HTML reporter, GitHub Actions summary**
 
 ```pseudocode
 STRATEGY: Metrics
