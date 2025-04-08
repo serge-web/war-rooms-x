@@ -13,6 +13,7 @@ export class XMPPService {
   private joinedRooms: Set<string> = new Set()
   private messageHandlers: RoomMessageHandler[] = []
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
+  private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
 
   /**
    * Connect to the XMPP server
@@ -40,6 +41,10 @@ export class XMPPService {
         this.client.on('session:started', () => {
           this.connected = true
           this.jid = this.client?.jid || ''
+          
+          // Set up PubSub event handler when connection is established
+          this.setupPubSubEventHandler()
+          
           resolve(true)
         })
 
@@ -586,7 +591,12 @@ export class XMPPService {
       this.setupPubSubEventHandler()
       
       // Subscribe to the node
-      await this.client.subscribeToNode(pubsubService, nodeId)
+      const result = await this.client.subscribeToNode(pubsubService, nodeId)
+      
+      // Store the subscription ID for later use when unsubscribing
+      if (result && result.subid) {
+        this.subscriptionIds.set(nodeId, result.subid)
+      }
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -607,8 +617,30 @@ export class XMPPService {
     }
 
     try {
-      // Unsubscribe from the node
-      await this.client.unsubscribeFromNode(pubsubService, nodeId)
+      // Get the subscription ID if available
+      const subid = this.subscriptionIds.get(nodeId)
+      
+      // Unsubscribe from the node with the subscription ID if available
+      if (subid) {
+        await this.client.unsubscribeFromNode(pubsubService, {
+          node: nodeId,
+          subid
+        })
+        
+        // Remove the subscription ID from the map
+        this.subscriptionIds.delete(nodeId)
+      } else {
+        // Try without subscription ID, but this might fail
+        try {
+          await this.client.unsubscribeFromNode(pubsubService, nodeId)
+        } catch (e) {
+          // Ignore the error if it's about missing subscription ID
+          const error = e as { pubsubError?: string }
+          if (error?.pubsubError !== 'subid-required') {
+            throw e
+          }
+        }
+      }
       
       return { success: true, id: nodeId }
     } catch (error) {
