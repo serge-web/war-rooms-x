@@ -2231,6 +2231,11 @@ flatted@^3.2.9:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.3.3.tgz#67c8fad95454a7c7abebf74bb78ee74a44023358"
   integrity sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==
 
+flexlayout-react@^0.8.9:
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/flexlayout-react/-/flexlayout-react-0.8.9.tgz#e1c047d752ef5080b39c01ee80eb09cbb3bf2979"
+  integrity sha512-qYZ7DcdRqHN8fUgBS+c95Q1hlBueSJh/OWWpPaXWGSn18ADyU6JOyeQC29d7AbOlSYD/EibRre8uMUOwBR/29w==
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
