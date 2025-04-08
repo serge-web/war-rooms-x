@@ -20,19 +20,45 @@ As a Frontend Test Engineer, specializing in React Testing Library, it is your g
 
 Focus on testing that each component (RoomTab, MessageBubble, MessageInputForm, etc.) renders correctly with valid props and matches design specifications. Note the requirement to use FluidLayout when displaying the rooms for this player.  Introduce a mock data object that can be used to populate the rooms. Use jest-dom for assertions.
 
-## 2.3 Component Rendering
+## 2.3 Game State Component.
+
+As a Frontend Test Engineer, specializing in React Testing Library, it is your goal to write unit tests for component rendering in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
+
+Focus on implementing the GameState component.  The files in the `Documents` folder will explain what it should display.  Create a MockGameState file that can be used to populate the game state. Use jest-dom for assertions. The component should show:
+- turn number
+- current time
+- current phase
+
+## 2.4 UserDetails Component.
+
+As a Frontend Test Engineer, specializing in React Testing Library, it is your goal to write unit tests for component rendering in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
+
+Focus on implementing the UserDetails component.  The files in the `Documents` folder will explain what it should display.  Create a MockUserDetails file that can be used to populate the game state. Use jest-dom for assertions. The component should show:
+- Force Name
+- Player Role
+
+## 2.5 AdminMessages Component.
+
+As a Frontend Test Engineer, specializing in React Testing Library, it is your goal to write unit tests for component rendering in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
+
+Focus on implementing the UserD component.  The files in the `Documents` folder will explain what it should display.  Create a MockGameState file that can be used to populate the game state. Use jest-dom for assertions. The component should show:
+- turn number
+- current time
+- current phase
+
+## 2.6  Component Rendering
 
 As a Frontend Test Engineer, specializing in React Testing Library, it is your goal to write unit tests for component rendering in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
 
 Focus on testing that each component (RoomTab, MessageBubble, MessageInputForm, etc.) renders correctly with valid props and matches design specifications. Use jest-dom for assertions.
 
-## 2.4 Component States
+## 2.7 Component States
 
 As a UI Testing Specialist, specializing in React component testing, it is your goal to write unit tests for component states in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
 
 Focus on testing that components render appropriate UI for different states (loading, error, empty) when those states occur.
 
-## 2.5 Component Interactions
+## 2.6 Component Interactions
 
 As a Frontend Developer, specializing in React event handling, it is your goal to write unit tests for component interactions in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
 
