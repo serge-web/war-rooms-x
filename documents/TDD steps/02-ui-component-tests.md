@@ -6,7 +6,7 @@ As a Frontend Test Engineer, specializing in React Testing Library, it is your g
 
 Focus on testing that the application has a skeleton UI.  It should open with a login screen. Mock the actual login process, but let clicking the Login button navigate directly to the player view. Verify that the UI matches the specifications in files in the `documents` folder. Use jest-dom for assertions.
 
-You will need to work hard to get the layout correct for the player view.  The general app layout is in the image at `documents/basic-layout.png`. The right-hand set of components should be called `ControlPanel`, and be of fixed width (200px), and be full-height in the browser window..  The top panel will be called `GameState` and will be of fixed height: 150px.  The middle panel will be called `UserDetails` and will be of fixed height: 80px.  The central panel will be called `AdminMessages` and will consume the remaining height.
+You will need to work hard to get the layout correct for the player view.  The general app layout is in the image at `documents/basic-layout.png`. The right-hand set of components should be called `ControlPanel`, and be of fixed width (300px), and be full-height in the browser window..  The top panel will be called `GameState` and will be of fixed height: 120px.  The middle panel will be called `UserDetails` and will be of fixed height: 100px.  The central panel will be called `AdminMessages` and will consume the remaining height.
 
 The left-hand set of components should be called `RoomsPanel`, and will consume the remaining width, and be full-height in the browser window. 
 
