@@ -175,78 +175,70 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     }
   })
 
-  // it('should send a message to a room', async () => {
-  //   // Arrange
-  //   expect(xmppService.isConnected()).toBe(true)
-  //   const openfireConfig = loadOpenfireConfig()
-  //   const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
-  //   await xmppService.joinRoom(roomJid)
-    
-  //   console.log('joined room')
+  it('should send a message to a room', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+    const openfireConfig = loadOpenfireConfig()
+    const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
+    await xmppService.joinRoom(roomJid)
 
-  //   // Act
-  //   const testMessage = `Test message ${new Date().toISOString()}`
-  //   const sendResult = await xmppService.sendRoomMessage(roomJid, testMessage)
+    // Act
+    const testMessage = `Test message ${new Date().toISOString()}`
+    const sendResult = await xmppService.sendRoomMessage(roomJid, testMessage)
     
-  //   console.log('send message result', sendResult)
+    // Assert
+    expect(sendResult.success).toBe(true)
+    expect(sendResult.id).toBeTruthy()
 
-  //   // Assert
-  //   expect(sendResult.success).toBe(true)
-  //   expect(sendResult.id).toBeTruthy()
+    // leave the room
+    const leaveResult = await xmppService.leaveRoom(roomJid)
+    expect(leaveResult.success).toBe(true)
+  })
 
-  //   console.log('about to leave room')
+  it('should receive a message from a room', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+    const openfireConfig = loadOpenfireConfig()
+    const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
+    await xmppService.joinRoom(roomJid)
+    
+    // Act
+    const testMessage = `Test message ${new Date().toISOString()}`
+    await xmppService.sendRoomMessage(roomJid, testMessage)
+    
+    // Wait for the message to be received (may be our own message echoed back)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Assert
+    expect(receivedMessages.length).toBeGreaterThan(0)
+    
+    // Find our test message
+    const foundMessage = receivedMessages.find(msg => msg.body === testMessage)
+    expect(foundMessage).toBeTruthy()
+    if (foundMessage) {
+      expect(foundMessage.roomJid).toBe(roomJid)
+    }
+  })
 
-  //   // leave the room
-  //   const leaveResult = await xmppService.leaveRoom(roomJid)
-  //   expect(leaveResult.success).toBe(true)
-
-  //   console.log('have left room')
-  // })
-
-  // it('should receive a message from a room', async () => {
-  //   // Arrange
-  //   expect(xmppService.isConnected()).toBe(true)
-  //   const openfireConfig = loadOpenfireConfig()
-  //   const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
-  //   await xmppService.joinRoom(roomJid)
+  it('should leave a room', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+    const openfireConfig = loadOpenfireConfig()
+    const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
+    await xmppService.joinRoom(roomJid)
     
-  //   // Act
-  //   const testMessage = `Test message ${new Date().toISOString()}`
-  //   await xmppService.sendRoomMessage(roomJid, testMessage)
+    // Verify we're in the room first
+    let joinedRooms = await xmppService.getJoinedRooms()
+    expect(joinedRooms).toContain(roomJid)
     
-  //   // Wait for the message to be received (may be our own message echoed back)
-  //   await new Promise(resolve => setTimeout(resolve, 1000))
+    // Act
+    const leaveResult = await xmppService.leaveRoom(roomJid)
     
-  //   // Assert
-  //   expect(receivedMessages.length).toBeGreaterThan(0)
+    // Assert
+    expect(leaveResult.success).toBe(true)
     
-  //   // Find our test message
-  //   const foundMessage = receivedMessages.find(msg => msg.body === testMessage)
-  //   expect(foundMessage).toBeTruthy()
-  //   if (foundMessage) {
-  //     expect(foundMessage.roomJid).toBe(roomJid)
-  //   }
-  // })
-
-  // it('should leave a room', async () => {
-  //   // Arrange
-  //   expect(xmppService.isConnected()).toBe(true)
-  //   const openfireConfig = loadOpenfireConfig()
-  //   const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
-  //   await xmppService.joinRoom(roomJid)
-    
-  //   // Verify we're in the room first
-  //   let joinedRooms = await xmppService.getJoinedRooms()
-  //   expect(joinedRooms).toContain(roomJid)
-    
-  //   // Act
-  //   const leaveResult = await xmppService.leaveRoom(roomJid)
-    
-  //   // Assert
-  //   expect(leaveResult.success).toBe(true)
-    
-  //   // Verify we're no longer in the room
-  //   joinedRooms = await xmppService.getJoinedRooms()
-  //   expect(joinedRooms).not.toContain(roomJid)
-  // })
+    // Verify we're no longer in the room
+    joinedRooms = await xmppService.getJoinedRooms()
+    expect(joinedRooms).not.toContain(roomJid)
+  })
 })
