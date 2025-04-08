@@ -10,6 +10,8 @@ You will need to work hard to get the layout correct for the player view.  The g
 
 The left-hand set of components should be called `RoomsPanel`, and will consume the remaining width, and be full-height in the browser window. 
 
+These components can just be placeholders for this test - since you are concentrating on getting the layout correct.
+
 ## 2.2 Player view
 
 As a Frontend Test Engineer, specializing in React Testing Library, it is your goal to write unit tests for component rendering in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
