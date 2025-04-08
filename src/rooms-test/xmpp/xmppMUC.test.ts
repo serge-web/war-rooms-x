@@ -1,12 +1,12 @@
-import { RoomMessage } from '../../rooms-api/xmpp/types'
 import { XMPPService } from '../../rooms-api/xmpp/XMPPService'
 import { loadOpenfireConfig } from '../../utils/config'
+import { RoomMessage } from '../../rooms-api/xmpp/types'
 
 describe('XMPP MUC (Multi-User Chat)', () => {
   let xmppService: XMPPService
   let host: string
-  let testRoomJid: string
   let receivedMessages: RoomMessage[] = []
+  let messageHandler: (message: RoomMessage) => void
 
   beforeEach(async () => {
     // Arrange
@@ -21,30 +21,33 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     // Clear received messages before each test
     receivedMessages = []
     
-    // Set up a test room JID
-    // Using a timestamp to make the room name unique for each test run
-    const timestamp = new Date().getTime()
-    testRoomJid = `test-room-${timestamp}@conference.${host}`
-    
-    // Set up message listener
-    xmppService.onRoomMessage((message) => {
+    // Initialize message handler for future tests
+    messageHandler = (message: RoomMessage) => {
       receivedMessages.push(message)
-    })
+    }
+    
+    // Register the message handler
+    xmppService.onRoomMessage(messageHandler)
   })
 
   afterEach(async () => {
-    // Leave the room if we joined it
+    // Make sure we clean up properly
     try {
-      await xmppService.leaveRoom(testRoomJid)
-    } catch(err) {
-      // Ignore errors when leaving a room we might not have joined
-      console.log('Failed to leave room:', testRoomJid, err)
+      // Disconnect from the XMPP server
+      await xmppService.disconnect()
+      
+      // Clear the message handler
+      if (messageHandler) {
+        xmppService.offRoomMessage(messageHandler)
+      }
+      
+      // Clear received messages
+      receivedMessages = []
+      
+      console.log('Cleanup complete')
+    } catch (err) {
+      console.error('Error during cleanup:', err)
     }
-    
-    // Disconnect after each test
-    await xmppService.disconnect()
-
-    console.log('Have run afterEach')
   })
 
   it('should list available rooms for the user', async () => {
@@ -59,7 +62,7 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     expect(Array.isArray(rooms)).toBe(true)
     
     // Log rooms for debugging
-    // console.log(`Found ${rooms.length} rooms:`, rooms.map(r => r.jid))
+    console.log(`Found ${rooms.length} rooms:`, rooms)
     
     // Rooms should have the expected properties
     if (rooms.length > 0) {
