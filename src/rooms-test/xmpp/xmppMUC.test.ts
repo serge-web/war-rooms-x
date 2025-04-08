@@ -44,7 +44,6 @@ describe('XMPP MUC (Multi-User Chat)', () => {
       // Clear received messages
       receivedMessages = []
       
-      console.log('Cleanup complete')
     } catch (err) {
       console.error('Error during cleanup:', err)
     }
@@ -69,6 +68,40 @@ describe('XMPP MUC (Multi-User Chat)', () => {
       const room = rooms[0]
       expect(room).toHaveProperty('jid')
       expect(room).toHaveProperty('name')
+    }
+  })
+  
+  it('should verify that no-perms user cannot access any rooms', async () => {
+    // Arrange - Create a new service instance for the no-perms user
+    const noPermsService = new XMPPService()
+    const openfireConfig = loadOpenfireConfig()
+    
+    // Get the no-perms credentials
+    const noPermsCredentials = openfireConfig.credentials.find((cred: { username: string, password: string }) => cred.username === 'no-perms')
+    expect(noPermsCredentials).toBeDefined()
+    
+    if (noPermsCredentials) {
+      // Connect with no-perms user
+      const connected = await noPermsService.connect(
+        host, 
+        noPermsCredentials.username, 
+        noPermsCredentials.password
+      )
+      
+      // Assert connection was successful
+      expect(connected).toBe(true)
+      expect(noPermsService.isConnected()).toBe(true)
+      
+      // Act - Try to list rooms
+      const rooms = await noPermsService.listRooms()
+
+      console.log('rooms', rooms)
+      
+      // Assert - User should not have access to any rooms
+      expect(rooms).toHaveLength(0)
+      
+      // Clean up
+      await noPermsService.disconnect()
     }
   })
 
