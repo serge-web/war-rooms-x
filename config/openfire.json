@@ -6,8 +6,15 @@
   "port": 9090,
   "apiPath": "/plugins/restapi/v1",
   "secure": false,
-  "credentials": {
+  "credentials": [{
     "username": "admin",
     "password": "pwd"
+  }, {
+    "username": "no-perms",
+    "password": "pwd"
+  }],
+  "rooms": {
+    "red-chat": "red-chat",
+    "no-members": "no-members"
   }
 }
