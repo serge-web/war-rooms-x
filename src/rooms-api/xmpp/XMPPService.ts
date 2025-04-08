@@ -224,14 +224,14 @@ export class XMPPService {
    * @param nickname Optional nickname to use in the room (defaults to local part of user JID)
    * @returns Promise resolving to JoinRoomResult
    */
-  async joinRoom(roomJid: string, nickname?: string): Promise<JoinRoomResult> {
+  async joinRoom(roomJid: string, suppressErrors: boolean = false): Promise<JoinRoomResult> {
     if (!this.client || !this.connected) {
       return { success: false, roomJid, error: 'Not connected' }
     }
 
     try {
       // If nickname not provided, use the local part of the JID
-      const nick = nickname || this.jid.split('@')[0]
+      const nick = this.jid.split('@')[0]
       
       // Set up message handler for this room if not already done
       this.setupRoomMessageHandler()
@@ -244,7 +244,9 @@ export class XMPPService {
       
       return { success: true, roomJid }
     } catch (error) {
-      console.error(`Error joining room ${roomJid}:`, error)
+      if (!suppressErrors) {
+        console.error(`Error joining room ${roomJid}:`, error)
+      }
       return { success: false, roomJid, error: error instanceof Error ? error.message : String(error) }
     }
   }
