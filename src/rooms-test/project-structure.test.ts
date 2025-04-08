@@ -93,6 +93,7 @@ describe('Project Structure', () => {
     
     const openfireConfig = JSON.parse(fs.readFileSync(openfireConfigPath, 'utf8'))
     const { host, credentials } = openfireConfig
+    const { username, password } = credentials[0] // Use the first credential (admin)
     
     try {
       // Create XMPP client
@@ -101,8 +102,8 @@ describe('Project Structure', () => {
         transports: {
           websocket: `ws://${host}:7070/ws`
         },
-        jid: `${credentials.username}@${host}/test-connection`,
-        password: credentials.password
+        jid: `${username}@${host}/test-connection`,
+        password: password
       })
       
       // Set up event handlers with proper error handling

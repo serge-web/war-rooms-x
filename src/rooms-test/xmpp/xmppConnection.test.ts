@@ -16,7 +16,7 @@ describe('XMPP Connection', () => {
     // Arrange
     const openfireConfig = loadOpenfireConfig()
     const { host, credentials } = openfireConfig
-    const { username, password } = credentials
+    const { username, password } = credentials[0] // Use the first credential (admin)
 
     // Act
     const connected = await xmppService.connect(host, username, password)

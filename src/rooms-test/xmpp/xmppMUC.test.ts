@@ -13,7 +13,7 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     xmppService = new XMPPService()
     const openfireConfig = loadOpenfireConfig()
     host = openfireConfig.host
-    const { username, password } = openfireConfig.credentials
+    const { username, password } = openfireConfig.credentials[0]
     
     // Connect to XMPP server before each test
     await xmppService.connect(host, username, password)
