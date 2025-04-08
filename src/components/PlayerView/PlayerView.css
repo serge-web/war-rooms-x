@@ -1,0 +1,49 @@
+.player-view {
+  height: 100vh;
+  width: 100vw;
+}
+
+.rooms-panel {
+  height: 100%;
+  background-color: #e6f7ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.control-panel {
+  height: 100%;
+  width: 200px !important;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-state {
+  height: 150px;
+  background-color: #d9f7be;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-details {
+  height: 80px;
+  background-color: #fff1b8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-messages {
+  flex: 1;
+  background-color: #ffd6e7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.placeholder-content {
+  font-weight: bold;
+  font-size: 18px;
+}
