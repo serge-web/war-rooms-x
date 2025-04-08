@@ -463,6 +463,7 @@ export class XMPPService {
    * Create a new PubSub document (node)
    * @param pubsubService The PubSub service JID
    * @param nodeId The ID for the new node
+   * @param config Configuration options for the node
    * @param content Optional initial content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
@@ -473,6 +474,7 @@ export class XMPPService {
 
     try {
       // Create the node
+      console.log('creating node', config)
       await this.client.createNode(pubsubService, nodeId, config)
       
       // If content is provided, publish it to the node
@@ -676,5 +678,94 @@ export class XMPPService {
     if (index !== -1) {
       this.pubsubChangeHandlers.splice(index, 1)
     }
+  }
+
+  /**
+   * Create a child node within a collection node
+   * @param pubsubService The PubSub service JID
+   * @param parentNodeId The ID of the parent collection node
+   * @param childNodeId The ID for the new child node
+   * @param config Configuration options for the child node
+   * @param content Optional initial content for the child node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async createPubSubChildNode(pubsubService: string, parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: childNodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Create the child node with collection association
+      const childConfig = {
+        ...config,
+        collection: parentNodeId
+      }
+      
+      // Create the node with parent association
+      await this.client.createNode(pubsubService, childNodeId, childConfig)
+      
+      // If content is provided, publish it to the node
+      if (content) {
+        await this.client.publish(pubsubService, childNodeId, content)
+      }
+      
+      return { success: true, id: childNodeId }
+    } catch (error) {
+      console.error(`Error creating PubSub child node ${childNodeId} in collection ${parentNodeId}:`, error)
+      return { success: false, id: childNodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Get the configuration of a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to get configuration for
+   * @returns Promise resolving to PubSubOptions containing the node configuration
+   */
+  async getPubSubNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the node configuration using StanzaJS
+      const result = await this.client.getNodeConfig(pubsubService, nodeId)
+
+      console.log('node config', result)
+      
+      // Extract the node type from the configuration form
+      let nodeType: 'leaf' | 'collection' = 'leaf' // Default to leaf
+      let access: 'open' | 'authorise' = 'open' // Default to open
+      
+      // Look for the node_type field in the form
+      if (result && result.fields) {
+        for (const field of result.fields) {
+          if (field.name === 'pubsub#node_type' && field.value) {
+            nodeType = field.value === 'collection' ? 'collection' : 'leaf'
+          }
+          if (field.name === 'pubsub#access_model' && field.value) {
+            access = field.value === 'authorize' ? 'authorise' : 'open'
+          }
+        }
+      }
+      
+      return {
+        'pubsub#node_type': nodeType,
+        'pubsub#access_model': access
+      }
+    } catch (error) {
+      console.error(`Error getting PubSub node config for ${nodeId}:`, error)
+      throw error
+    }
+  }
+  
+  /**
+   * Alias for getPubSubNodeConfig - Get the configuration of a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to get configuration for
+   * @returns Promise resolving to PubSubOptions containing the node configuration
+   */
+  async getNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
+    return this.getPubSubNodeConfig(pubsubService, nodeId)
   }
 }

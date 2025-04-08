@@ -75,7 +75,7 @@ describe('XMPP PubSub', () => {
 
     // Act - Create a pub-sub leaf node
     const jsonContent = { itemType: NS_JSON_0, json: { message: 'test content' } } as JSONItem
-    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { access: 'open', nodeType: 'leaf' }, jsonContent)
+    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, jsonContent)
 
     console.log('publish results', result.error)
     
@@ -86,6 +86,63 @@ describe('XMPP PubSub', () => {
     const nodes2 = await xmppService.listPubSubNodes(pubsubService)
     const nodeExists2 = nodes2.some(node => node.id === testNodeId)
     expect(nodeExists2).toBe(true)
+  })
+
+  it('should create a pub-sub collection node with open access', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+
+    const testNodeId = 'test-node-3'
+
+    // check the test node does not exist
+    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExists = nodes.some(node => node.id === testNodeId)
+
+    // if the node exists, delete it
+    if (nodeExists) {
+      await xmppService.deletePubSubNode(pubsubService, testNodeId)
+    }
+
+    // Act - Create a pub-sub collection node
+    const jsonContent = { itemType: NS_JSON_0, json: { message: 'test content 3' } } as JSONItem
+    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'collection' }, jsonContent)
+
+    console.log('publish results', result.error)
+    
+    // Assert
+    expect(result.success).toBe(true)
+    
+    // Verify node exists
+    const nodes2 = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExists2 = nodes2.some(node => node.id === testNodeId)
+    expect(nodeExists2).toBe(true)
+
+    const nodeConfig = await xmppService.getPubSubNodeConfig(pubsubService, testNodeId)
+    console.log('config', nodeConfig)
+    expect(nodeConfig['pubsub#node_type']).toBe('collection')
+
+    // add several leaf children to the collection node
+    for (let i = 0; i < 3; i++) {
+      const childNodeId = `${testNodeId}-child-${i}`
+      const jsonContent = { itemType: NS_JSON_0, json: { message: `test content 3 child ${i}` } } as JSONItem
+      const result = await xmppService.createPubSubChildNode(
+        pubsubService, 
+        testNodeId, 
+        childNodeId, 
+        { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, 
+        jsonContent
+      )
+      console.log('publish child results', result.error)
+      expect(result.success).toBe(true)
+    }
+
+    // verify the children exist
+    const nodes3 = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExists3 = nodes3.some(node => node.id === testNodeId)
+    expect(nodeExists3).toBe(true)
+    
+    // Ideally, we would also verify that the children are associated with the parent
+    // This would require additional API support to list children of a collection
   })
 
 

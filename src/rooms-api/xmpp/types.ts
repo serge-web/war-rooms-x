@@ -66,8 +66,8 @@ export interface PubSubDocument extends PubsubItem {
 }
 
 export interface PubSubOptions extends DataForm {
-  access: 'open' | 'authorise'
-  nodeType: 'leaf' | 'collection'
+  'pubsub#access_model': 'open' | 'authorise'
+  'pubsub#node_type': 'leaf' | 'collection'
 }
 
 /**
