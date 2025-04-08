@@ -233,12 +233,12 @@ describe('XMPP PubSub', () => {
       }
     }
     
-    // Subscribe to document changes
-    xmppService.onPubSubDocumentChange(documentChangeHandler)
-    
     // Act - Subscribe to the node
     const subscribeResult = await xmppService.subscribeToPubSubDocument(pubsubService, testSubscriptionNodeId)
     expect(subscribeResult.success).toBe(true)
+
+    // Subscribe to document changes
+    xmppService.onPubSubDocumentChange(documentChangeHandler)
     
     // Update the document content
     const updatedContent: JSONItem = { 
@@ -251,9 +251,7 @@ describe('XMPP PubSub', () => {
     }
     
     // Publish the updated content
-    console.log('Publishing updated content to node:', testSubscriptionNodeId)
     const updateResult = await xmppService.publishJsonToPubSubNode(pubsubService, testSubscriptionNodeId, updatedContent)
-    console.log('Publish result:', updateResult)
     expect(updateResult.success).toBe(true)
 
     await new Promise(resolve => setTimeout(resolve, 1000))

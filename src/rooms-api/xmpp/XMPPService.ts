@@ -521,7 +521,8 @@ export class XMPPService {
   }
 
   /**
-   * Update a JSON document in a PubSub node
+   * Update a JSON document in a PubSub node. Note: the publisher for a message does not receive subscription notifications, so
+   * that notifications are manually triggered for local subscribers.
    * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to update
    * @param content The new JSON content for the node
@@ -536,6 +537,17 @@ export class XMPPService {
       // Publish the JSON content to the node
       const result = await this.client.publish(pubsubService, nodeId, content)
       console.log('publish complete', nodeId, result)
+      
+      // Manually trigger the document change event for local subscribers
+      // This ensures that our local handlers are notified even if the XMPP server
+      // doesn't send a notification back to the publisher
+      const document: PubSubDocument = {
+        id: nodeId,
+        content: content
+      }
+      
+      // Notify all registered handlers about the document change
+      this.pubsubChangeHandlers.forEach(handler => handler(document))
       
       return { success: true, id: nodeId, itemId: result.id }
     } catch (error) {
