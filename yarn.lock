@@ -2308,6 +2308,7 @@ flatted@^3.2.9:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.3.3.tgz#67c8fad95454a7c7abebf74bb78ee74a44023358"
   integrity sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==
 
+<<<<<<< HEAD
 follow-redirects@^1.15.6:
   version "1.15.9"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.9.tgz#a604fa10e443bf98ca94228d9eebcc2e8a2c8ee1"
@@ -2322,6 +2323,12 @@ form-data@^4.0.0:
     combined-stream "^1.0.8"
     es-set-tostringtag "^2.1.0"
     mime-types "^2.1.12"
+=======
+flexlayout-react@^0.8.9:
+  version "0.8.9"
+  resolved "https://registry.yarnpkg.com/flexlayout-react/-/flexlayout-react-0.8.9.tgz#e1c047d752ef5080b39c01ee80eb09cbb3bf2979"
+  integrity sha512-qYZ7DcdRqHN8fUgBS+c95Q1hlBueSJh/OWWpPaXWGSn18ADyU6JOyeQC29d7AbOlSYD/EibRre8uMUOwBR/29w==
+>>>>>>> 5c92762 (fluid rooms layout)
 
 fs.realpath@^1.0.0:
   version "1.0.0"
