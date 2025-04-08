@@ -516,6 +516,29 @@ export class XMPPService {
   }
 
   /**
+   * Update a JSON document in a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to update
+   * @param content The new JSON content for the node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async publishJsonToPubSubNode(pubsubService: string, nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Publish the JSON content to the node
+      const result = await this.client.publish(pubsubService, nodeId, content)
+      
+      return { success: true, id: nodeId, itemId: result.id }
+    } catch (error) {
+      console.error(`Error publishing JSON to PubSub node ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
    * Delete a PubSub document (node)
    * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to delete

@@ -74,6 +74,7 @@ export interface PubSubDocumentResult {
   success: boolean
   id: string
   error?: string
+  itemId?: string
 }
 
 /**

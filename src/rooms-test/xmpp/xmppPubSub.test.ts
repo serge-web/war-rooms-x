@@ -109,6 +109,51 @@ describe('XMPP PubSub', () => {
     }
   })
 
+  it('should update a document in a pub-sub node', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+    
+    // First verify the node exists and has our initial content
+    const initialDoc = await xmppService.getPubSubDocument(pubsubService, testNodeId)
+    expect(initialDoc).not.toBeNull()
+    
+    // Create updated content with the same structure but different values
+    const updatedJsonContent: JSONItem = { 
+      itemType: NS_JSON_0, 
+      json: { 
+        message: 'updated content at ' + new Date().toISOString(),
+        testId: 'updated-' + Math.random().toString(36).substring(2, 9),
+        timestamp: new Date().toISOString()
+      } 
+    }
+    
+    // Act - Update the document in the node by publishing new content
+    // This uses the Stanza publish() method via our wrapper
+    const result = await xmppService.publishJsonToPubSubNode(pubsubService, testNodeId, updatedJsonContent)
+    
+    // Assert
+    expect(result.success).toBe(true)
+    expect(result.itemId).toBeDefined()
+    
+    // Verify the document was updated by retrieving it
+    const updatedDoc = await xmppService.getPubSubDocument(pubsubService, testNodeId)
+    expect(updatedDoc).not.toBeNull()
+    
+    // Verify the content was updated
+    if (updatedDoc?.content) {
+      const content = updatedDoc.content as JSONItem
+      expect(content.itemType).toBe(NS_JSON_0)
+      expect(content.json).toEqual(updatedJsonContent.json)
+      expect(content.json.message).toBe(updatedJsonContent.json.message)
+      expect(content.json.testId).toBe(updatedJsonContent.json.testId)
+      expect(content.json.timestamp).toBe(updatedJsonContent.json.timestamp)
+      
+      // Verify it's different from the original content
+      expect(content.json.message).not.toBe(testJsonContent.json.message)
+      expect(content.json.testId).not.toBe(testJsonContent.json.testId)
+    }
+  })
+
   // TODO: handle collection nodes
   // it('should create a pub-sub collection node with open access', async () => {
   //   // Arrange
