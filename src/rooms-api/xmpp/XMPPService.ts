@@ -536,7 +536,6 @@ export class XMPPService {
     try {
       // Publish the JSON content to the node
       const result = await this.client.publish(pubsubService, nodeId, content)
-      console.log('publish complete', nodeId, result)
       
       // Manually trigger the document change event for local subscribers
       // This ensures that our local handlers are notified even if the XMPP server
@@ -605,14 +604,11 @@ export class XMPPService {
 
       // check we aren't already subscribed to this node
       if (this.subscriptionIds.has(nodeId)) {
-        console.log('already subscribed')
         return { success: false, id: nodeId, error: 'Already subscribed' }
       }
       
       // Subscribe to the node
       const result = await this.client.subscribeToNode(pubsubService, nodeId)
-
-      console.log('subscribed!', result)
       
       // Store the subscription ID for later use when unsubscribing
       if (result && result.subid) {
@@ -730,7 +726,6 @@ export class XMPPService {
     
     // Only add the listener if it's not already present
     if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
-      console.log('registering handler')
       this.client.on('pubsub:published', this.pubsubEventHandler)
     }
   }
