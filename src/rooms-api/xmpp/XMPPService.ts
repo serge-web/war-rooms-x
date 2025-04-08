@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem } from 'stanza/protocol'
+import { DiscoInfoResult, DiscoItem, PubsubItemContent } from 'stanza/protocol'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
 
 /**
@@ -595,19 +595,24 @@ export class XMPPService {
     try {
       // Get the items from the node
       const result = await this.client.getItems(pubsubService, nodeId)
+
+      console.log('pub documents', result)
       
       if (result.items && result.items.length > 0) {
-        const item = result.items[0]
-        return {
-          id: nodeId,
-          content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
-          updatedAt: new Date()
-        }
+        const item = result.items[0] as PubsubItemContent
+        console.log('item', item)
+        // return {
+        //   id: nodeId,
+        //   name: item.name || nodeId,
+        //   content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
+        //   updatedAt: new Date()
+        // }
       }
       
       return {
         id: nodeId,
-        content: ''
+        name: nodeId
+        // content: ''
       }
     } catch (error) {
       console.error(`Error getting PubSub document ${nodeId}:`, error)
@@ -629,10 +634,12 @@ export class XMPPService {
       
       const nodeId = message.pubsub.node || ''
       const item = message.pubsub.published[0]
+      console.log('item published', item)
       
       const document: PubSubDocument = {
         id: nodeId,
-        content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
+        name: nodeId,
+        // content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
         updatedAt: new Date()
       }
       

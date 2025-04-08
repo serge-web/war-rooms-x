@@ -1,3 +1,5 @@
+import { PubsubItem } from "stanza/protocol"
+
 /**
  * Represents a chat room in the XMPP MUC system
  */
@@ -57,14 +59,11 @@ export type RoomMessageHandler = (message: RoomMessage) => void
 /**
  * Represents a PubSub document
  */
-export interface PubSubDocument {
-  id: string
-  name?: string
-  content?: string
+export interface PubSubDocument extends PubsubItem {
   createdAt?: Date
   updatedAt?: Date
+  name: string
 }
-
 /**
  * Result of a PubSub document operation
  */
