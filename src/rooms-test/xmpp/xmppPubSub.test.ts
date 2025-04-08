@@ -154,6 +154,27 @@ describe('XMPP PubSub', () => {
     }
   })
 
+  it('should delete a pub-sub document', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+    
+    // First verify the node exists
+    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExists = nodes.some(node => node.id === testNodeId)
+    expect(nodeExists).toBe(true)
+    
+    // Act - Delete the node
+    const result = await xmppService.deletePubSubNode(pubsubService, testNodeId)
+    
+    // Assert
+    expect(result.success).toBe(true)
+    
+    // Verify node no longer exists
+    const nodesAfterDelete = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExistsAfterDelete = nodesAfterDelete.some(node => node.id === testNodeId)
+    expect(nodeExistsAfterDelete).toBe(false)
+  })
+
   // TODO: handle collection nodes
   // it('should create a pub-sub collection node with open access', async () => {
   //   // Arrange
