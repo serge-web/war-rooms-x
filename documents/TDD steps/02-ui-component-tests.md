@@ -41,10 +41,7 @@ Focus on implementing the UserDetails component.  The files in the `Documents` f
 
 As a Frontend Test Engineer, specializing in React Testing Library, it is your goal to write unit tests for component rendering in the War-Rooms-X application. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
 
-Focus on implementing the UserD component.  The files in the `Documents` folder will explain what it should display.  Create a MockGameState file that can be used to populate the game state. Use jest-dom for assertions. The component should show:
-- turn number
-- current time
-- current phase
+Focus on implementing the AdminMessages component.  The files in the `Documents` folder will explain what it should display.  Introduce an '__admin' room to the mock rooms file.  This will contain a series of admin related messages.  The `RoomsList component will not display rooms with an id with two leading underscores. The component should show a list of messages, with a new message control at the bottom.
 
 ## 2.6  Component Rendering
 
