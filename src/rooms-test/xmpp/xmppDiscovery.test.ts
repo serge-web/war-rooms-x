@@ -47,7 +47,7 @@ describe('XMPP Discovery', () => {
     expect(features?.identities).toBeInstanceOf(Array)
     
     // Log all discovered features for debugging
-    console.log('Discovered server features:', features?.features)
+    // console.log('Discovered server features:', features?.features)
     
     // Check if any PubSub-related features are available
     const hasPubSubFeatures = features?.features.some(f => f.includes('pubsub')) || false

@@ -1,18 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-
-/**
- * Interface for XMPP Service Discovery Info Data
- */
-interface DiscoInfo {
-  features: string[]
-  identities: Array<{
-    category: string
-    type: string
-    name?: string
-  }>
-  extensions?: any[]
-}
+import { DiscoInfoResult } from 'stanza/protocol'
 
 /**
  * Service for handling XMPP connections and communications
@@ -99,7 +87,7 @@ export class XMPPService {
    * @param server The server JID to query
    * @returns Promise resolving to discovery info data
    */
-  async discoverServerFeatures(server: string): Promise<DiscoInfo | null> {
+  async discoverServerFeatures(server: string): Promise<DiscoInfoResult | null> {
     if (!this.client || !this.connected) {
       return null
     }
