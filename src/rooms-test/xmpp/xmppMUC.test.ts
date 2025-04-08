@@ -127,6 +127,8 @@ describe('XMPP MUC (Multi-User Chat)', () => {
 
     // leave the room
     const leaveResult = await xmppService.leaveRoom(roomJid)
+
+    console.log('have left room', leaveResult)
     
     // Assert
     expect(leaveResult.success).toBe(true)
@@ -134,6 +136,7 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     // Verify we're no longer in the room
     const joinedRoomsAfterLeave = await xmppService.getJoinedRooms()
     expect(joinedRoomsAfterLeave).not.toContain(roomJid)
+    console.log('joined rooms after leave', joinedRoomsAfterLeave)
   })
 
   // it('should prevent no-perms user from joining a room', async () => {
@@ -180,13 +183,25 @@ describe('XMPP MUC (Multi-User Chat)', () => {
   //   const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
   //   await xmppService.joinRoom(roomJid)
     
+  //   console.log('joined room')
+
   //   // Act
   //   const testMessage = `Test message ${new Date().toISOString()}`
   //   const sendResult = await xmppService.sendRoomMessage(roomJid, testMessage)
     
+  //   console.log('send message result', sendResult)
+
   //   // Assert
   //   expect(sendResult.success).toBe(true)
   //   expect(sendResult.id).toBeTruthy()
+
+  //   console.log('about to leave room')
+
+  //   // leave the room
+  //   const leaveResult = await xmppService.leaveRoom(roomJid)
+  //   expect(leaveResult.success).toBe(true)
+
+  //   console.log('have left room')
   // })
 
   // it('should receive a message from a room', async () => {
