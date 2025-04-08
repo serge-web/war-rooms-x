@@ -56,3 +56,5 @@ describe('XMPP PubSub', () => {
     })
   })
 })
+
+it('if no pubsub nodes are present create one', async () => {

@@ -16,5 +16,9 @@
   "rooms": {
     "red-chat": "red-chat",
     "no-members": "no-members"
+  },
+  "documents": {
+    "public": "public", 
+    "private": "private"
   }
 }
