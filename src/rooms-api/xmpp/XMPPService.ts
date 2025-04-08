@@ -1,7 +1,7 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
 import { DiscoInfoResult, DiscoItem, JSONItem } from 'stanza/protocol'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
 
 /**
  * Service for handling XMPP connections and communications
@@ -579,9 +579,9 @@ export class XMPPService {
    * Subscribe to a PubSub document (node)
    * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to subscribe to
-   * @returns Promise resolving to PubSubDocumentResult
+   * @returns Promise resolving to PubSubSubscribeResult
    */
-  async subscribeToPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+  async subscribeToPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubSubscribeResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -592,13 +592,15 @@ export class XMPPService {
       
       // Subscribe to the node
       const result = await this.client.subscribeToNode(pubsubService, nodeId)
+
+      console.log('subscribed!', result)
       
       // Store the subscription ID for later use when unsubscribing
       if (result && result.subid) {
         this.subscriptionIds.set(nodeId, result.subid)
       }
       
-      return { success: true, id: nodeId }
+      return { success: true, id: nodeId, subscriptionId: result?.subid }
     } catch (error) {
       console.error(`Error subscribing to PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }

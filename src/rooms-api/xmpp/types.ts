@@ -78,6 +78,16 @@ export interface PubSubDocumentResult {
 }
 
 /**
+ * Result of a PubSub subscription operation
+ */
+export interface PubSubSubscribeResult {
+  success: boolean
+  id: string
+  error?: string
+  subscriptionId?: string
+}
+
+/**
  * PubSub document change handler function type
  */
 export type PubSubDocumentChangeHandler = (document: PubSubDocument) => void
