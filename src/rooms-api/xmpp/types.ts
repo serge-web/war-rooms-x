@@ -53,3 +53,28 @@ export interface LeaveRoomResult {
  * Message handler function type
  */
 export type RoomMessageHandler = (message: RoomMessage) => void
+
+/**
+ * Represents a PubSub document
+ */
+export interface PubSubDocument {
+  id: string
+  name?: string
+  content?: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+/**
+ * Result of a PubSub document operation
+ */
+export interface PubSubDocumentResult {
+  success: boolean
+  id: string
+  error?: string
+}
+
+/**
+ * PubSub document change handler function type
+ */
+export type PubSubDocumentChangeHandler = (document: PubSubDocument) => void
