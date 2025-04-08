@@ -1,8 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { client } from '@xmpp/client'
-import { exec } from 'child_process'
-import { promisify } from 'util'
+import * as XMPP from 'stanza'
 
 describe('Project Structure', () => {
   // Test project structure follows Vite.js-based monolith architecture
@@ -87,43 +85,9 @@ describe('Project Structure', () => {
     })
   })
 
-  // Test OpenFire configuration and Docker setup
-  test('has OpenFire configuration and Docker setup', () => {
-    // Check for OpenFire configuration
-    const openfireConfigPath = path.resolve(process.cwd(), 'config/openfire.json')
-    expect(fs.existsSync(openfireConfigPath)).toBe(true)
-    
-    const openfireConfig = JSON.parse(fs.readFileSync(openfireConfigPath, 'utf8'))
-    expect(openfireConfig).toHaveProperty('restApiEnabled', true)
-    expect(openfireConfig).toHaveProperty('pubsubEnabled', true)
-    expect(openfireConfig).toHaveProperty('mucEnabled', true)
-    
-    // Check for Docker configuration files
-    const dockerComposePath = path.resolve(process.cwd(), 'docker-compose.yml')
-    expect(fs.existsSync(dockerComposePath)).toBe(true)
-    
-    const dockerfilePath = path.resolve(process.cwd(), 'docker/openfire/Dockerfile')
-    expect(fs.existsSync(dockerfilePath)).toBe(true)
-    
-    // Check for setup script
-    const setupScriptPath = path.resolve(process.cwd(), 'scripts/setup-openfire.sh')
-    expect(fs.existsSync(setupScriptPath)).toBe(true)
-    
-    // Verify Docker Compose file contains OpenFire service
-    const dockerComposeContent = fs.readFileSync(dockerComposePath, 'utf8')
-    expect(dockerComposeContent).toContain('openfire:')
-    expect(dockerComposeContent).toContain('9090:9090')
-    expect(dockerComposeContent).toContain('7070:7070')
-    
-    // Verify Dockerfile contains OpenFire installation
-    const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf8')
-    expect(dockerfileContent).toContain('OPENFIRE_VERSION=')
-    expect(dockerfileContent).toContain('EXPOSE 9090 5222 7070')
-  })
-  
-  // Test OpenFire connectivity via Docker
-  // This test verifies that an OpenFire server is running in Docker and accessible via XMPP
-  test('OpenFire server is running in Docker and accessible', async () => {
+  // Test OpenFire connectivity via VM
+  // This test verifies that an OpenFire server is running in a VM and accessible via XMPP
+  test('OpenFire server is running in VM and accessible', async () => {
     const openfireConfigPath = path.resolve(process.cwd(), 'config/openfire.json')
     expect(fs.existsSync(openfireConfigPath)).toBe(true)
     
@@ -132,12 +96,13 @@ describe('Project Structure', () => {
     
     try {
       // Create XMPP client
-      const xmpp = client({
-        service: `ws://${host}:7070/ws`,
-        domain: host,
-        username: credentials.username,
-        password: credentials.password,
-        resource: 'test-connection'
+      const xmpp = XMPP.createClient({
+        server: host,
+        transports: {
+          websocket: `ws://${host}:7070/ws`
+        },
+        jid: `${credentials.username}@${host}/test-connection`,
+        password: credentials.password
       })
       
       // Set up event handlers with proper error handling
@@ -145,7 +110,7 @@ describe('Project Structure', () => {
         // Set a timeout for connection attempt
         const timeout = setTimeout(() => {
           try {
-            xmpp.stop()
+            xmpp.disconnect()
           } catch {
             // Ignore errors during stop
           }
@@ -153,22 +118,22 @@ describe('Project Structure', () => {
           resolve(false)
         }, 5000)
         
-        xmpp.on('online', async () => {
+        xmpp.on('session:started', async () => {
           clearTimeout(timeout)
           console.log('Successfully connected to OpenFire server')
           try {
-            await xmpp.stop()
+            xmpp.disconnect()
           } catch {
             // Ignore errors during stop
           }
           resolve(true)
         })
         
-        xmpp.on('error', (err: Error) => {
+        xmpp.on('stream:error', (err: { condition?: string }) => {
           clearTimeout(timeout)
-          console.log(`OpenFire connection error: ${err.message}`)
+          console.log(`OpenFire connection error: ${err.condition || JSON.stringify(err)}`)
           try {
-            xmpp.stop()
+            xmpp.disconnect()
           } catch {
             // Ignore errors during stop
           }
@@ -178,7 +143,7 @@ describe('Project Structure', () => {
       
       // Start connection with error handling
       try {
-        await xmpp.start()
+        xmpp.connect()
       } catch (err) {
         console.log(`Failed to start XMPP connection: ${(err as Error).message}`)
         return
@@ -187,29 +152,12 @@ describe('Project Structure', () => {
       // Wait for connection to complete or fail
       const connected = await connectionPromise
       
-      // Verify OpenFire is running in Docker
-      if (connected) {
-        // Check if it's running in Docker by executing a Docker command
-        try {
-          const execPromise = promisify(exec)
-          
-          const result = await execPromise('docker ps --format "{{.Names}}"')
-          const containerNames = result.stdout.toLowerCase()
-          
-          // Check if there's an OpenFire container running
-          const hasOpenFireContainer = containerNames.includes('openfire') || 
-                                      containerNames.includes('war-rooms-openfire')
-          
-          console.log('Docker containers running:', containerNames)
-          expect(hasOpenFireContainer).toBe(true)
-          expect(connected).toBe(true)
-        } catch (error) {
-          console.error('Error checking Docker containers:', error)
-          throw new Error('OpenFire is running but not in a Docker container')
-        }
-      } else {
+      // Verify OpenFire is accessible
+      if (!connected) {
         throw new Error('Could not connect to OpenFire server')
       }
+      
+      expect(connected).toBe(true)
       
     } catch (error) {
       console.error('OpenFire XMPP connectivity test error:', error)

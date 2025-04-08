@@ -8,6 +8,6 @@
   "secure": false,
   "credentials": {
     "username": "admin",
-    "password": "password"
+    "password": "pwd"
   }
 }
