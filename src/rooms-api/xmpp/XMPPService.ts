@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, JSONItem } from 'stanza/protocol'
+import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent } from 'stanza/protocol'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
 
 /**
@@ -535,6 +535,7 @@ export class XMPPService {
     try {
       // Publish the JSON content to the node
       const result = await this.client.publish(pubsubService, nodeId, content)
+      console.log('publish complete', nodeId, result)
       
       return { success: true, id: nodeId, itemId: result.id }
     } catch (error) {
@@ -589,6 +590,12 @@ export class XMPPService {
     try {
       // Set up the PubSub event handler if not already done
       this.setupPubSubEventHandler()
+
+      // check we aren't already subscribed to this node
+      if (this.subscriptionIds.has(nodeId)) {
+        console.log('already subscribed')
+        return { success: false, id: nodeId, error: 'Already subscribed' }
+      }
       
       // Subscribe to the node
       const result = await this.client.subscribeToNode(pubsubService, nodeId)
@@ -680,30 +687,40 @@ export class XMPPService {
     }
   }
 
+  // Define the pubsub event handler function
+  private pubsubEventHandler = (message: Message) => {
+    console.log('item updated!', message)
+    if (!message.pubsub) return
+    const pubsub = message.pubsub as PubsubEvent
+    
+    if (!pubsub.items || !pubsub.items.published || pubsub.items.published.length === 0) return
+    
+    const nodeId = pubsub.items?.node || ''
+    const item = pubsub.items.published[0] as PubSubDocument
+    
+    const document: PubSubDocument = {
+      id: nodeId,
+      content: item.content
+    }
+    
+    // Notify all registered handlers
+    this.pubsubChangeHandlers.forEach(handler => handler(document))
+  }
+
   /**
    * Set up the event handler for PubSub events
    */
   private setupPubSubEventHandler(): void {
     if (!this.client) return
+
+    // Check if this handler is already registered
+    const existingListeners = this.client.listeners('pubsub:published')
     
-    // Only set up the handler once
-    if (this.client.listeners('pubsub:published').length > 0) return
-    
-    this.client.on('pubsub:published', (message) => {
-      if (!message.pubsub || !message.pubsub.items || !message.pubsub.published || message.pubsub.published.length === 0) return
-      
-      const nodeId = message.pubsub.node || ''
-      const item = message.pubsub.published[0] as PubSubDocument
-      console.log('item published', item)
-      
-      const document: PubSubDocument = {
-        id: nodeId,
-        content: item.content
-      }
-      
-      // Notify all registered handlers
-      this.pubsubChangeHandlers.forEach(handler => handler(document))
-    })
+    // Only add the listener if it's not already present
+    if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
+      console.log('registering handler')
+      this.client.on('pubsub:published', this.pubsubEventHandler)
+    }
   }
 
   /**
@@ -711,6 +728,7 @@ export class XMPPService {
    * @param handler The handler function to call when a document changes
    */
   onPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
+    this.setupPubSubEventHandler()
     this.pubsubChangeHandlers.push(handler)
   }
 
