@@ -19,25 +19,6 @@ interface Message {
   timestamp: string
 }
 
-// Note: RoomTab component is defined in the test file but not used directly here
-// since FlexLayout handles the tab rendering. We keep the implementation for reference.
-/* 
-const RoomTab: React.FC<{
-  room: Room
-  isActive: boolean
-  onSelect: () => void
-}> = ({ room, isActive, onSelect }) => (
-  <div 
-    data-testid={`room-tab-${room.id}`} 
-    className={`room-tab ${isActive ? 'active' : ''}`}
-    onClick={onSelect}
-  >
-    {room.name}
-    {room.unreadCount > 0 && <span className="unread-badge">{room.unreadCount}</span>}
-  </div>
-)
-*/
-
 // Component for displaying a message bubble
 const MessageBubble: React.FC<{
   message: Message
@@ -112,7 +93,7 @@ const RoomsList: React.FC = () => {
           {
             type: 'tabset',
             weight: 50,
-            children: mockRooms.map(room => ({
+            children: mockRooms.filter((room: Room) => !room.id.startsWith('__')).map(room => ({
               type: 'tab',
               name: room.name,
               component: 'room',
