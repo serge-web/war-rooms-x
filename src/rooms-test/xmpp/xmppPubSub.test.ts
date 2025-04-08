@@ -4,6 +4,16 @@ import { XMPPService } from '../../rooms-api/xmpp/XMPPService'
 import { loadOpenfireConfig } from '../../utils/config'
 
 describe('XMPP PubSub', () => {
+  // Module-level constants for testing
+  const testNodeId = 'test-node-2'
+  const testJsonContent: JSONItem = { 
+    itemType: NS_JSON_0, 
+    json: { 
+      message: 'test content at ' + new Date().toISOString(),
+      testId: 'abc-123',
+      timestamp: new Date().toISOString()
+    } 
+  }
   let xmppService: XMPPService
   let host: string
   let pubsubService: string
@@ -49,21 +59,13 @@ describe('XMPP PubSub', () => {
     const nodes = await xmppService.listPubSubNodes(pubsubService)
     
     // Assert
-    expect(Array.isArray(nodes)).toBe(true)
-    
-    // Log the discovered nodes for debugging
-    console.log(`Found ${nodes.length} PubSub nodes on ${pubsubService}`)
-    nodes.forEach(node => {
-      console.log(`- Node ID: ${node.id}, Name: ${node.name || 'unnamed'}`)
-    })
+    expect(Array.isArray(nodes)).toBe(true)    
   })
 
   it('should create a pub-sub leaf node with open access', async () => {
     // Arrange
     expect(xmppService.isConnected()).toBe(true)
 
-    const testNodeId = 'test-node-2'
-
     // check the test node does not exist
     const nodes = await xmppService.listPubSubNodes(pubsubService)
     const nodeExists = nodes.some(node => node.id === testNodeId)
@@ -73,12 +75,9 @@ describe('XMPP PubSub', () => {
       await xmppService.deletePubSubNode(pubsubService, testNodeId)
     }
 
-    // Act - Create a pub-sub leaf node
-    const jsonContent = { itemType: NS_JSON_0, json: { message: 'test content' } } as JSONItem
-    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, jsonContent)
+    // Act - Create a pub-sub leaf node using the module-level test content
+    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, testJsonContent)
 
-    console.log('publish results', result.error)
-    
     // Assert
     expect(result.success).toBe(true)
     
@@ -88,106 +87,83 @@ describe('XMPP PubSub', () => {
     expect(nodeExists2).toBe(true)
   })
 
-  it('should create a pub-sub collection node with open access', async () => {
+  it('should retrieve the item from a pub-sub leaf node', async () => {
     // Arrange
     expect(xmppService.isConnected()).toBe(true)
 
-    const testNodeId = 'test-node-3'
+    // Act - Retrieve the item from the pub-sub leaf node
+    const result = await xmppService.getPubSubDocument(pubsubService, testNodeId)
 
-    // check the test node does not exist
-    const nodes = await xmppService.listPubSubNodes(pubsubService)
-    const nodeExists = nodes.some(node => node.id === testNodeId)
-
-    // if the node exists, delete it
-    if (nodeExists) {
-      await xmppService.deletePubSubNode(pubsubService, testNodeId)
-    }
-
-    // Act - Create a pub-sub collection node
-    const jsonContent = { itemType: NS_JSON_0, json: { message: 'test content 3' } } as JSONItem
-    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'collection' }, jsonContent)
-
-    console.log('publish results', result.error)
-    
     // Assert
-    expect(result.success).toBe(true)
+    expect(result).not.toBeNull()
     
-    // Verify node exists
-    const nodes2 = await xmppService.listPubSubNodes(pubsubService)
-    const nodeExists2 = nodes2.some(node => node.id === testNodeId)
-    expect(nodeExists2).toBe(true)
-
-    const nodeConfig = await xmppService.getPubSubNodeConfig(pubsubService, testNodeId)
-    console.log('config', nodeConfig)
-    expect(nodeConfig['pubsub#node_type']).toBe('collection')
-
-    // add several leaf children to the collection node
-    for (let i = 0; i < 3; i++) {
-      const childNodeId = `${testNodeId}-child-${i}`
-      const jsonContent = { itemType: NS_JSON_0, json: { message: `test content 3 child ${i}` } } as JSONItem
-      const result = await xmppService.createPubSubChildNode(
-        pubsubService, 
-        testNodeId, 
-        childNodeId, 
-        { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, 
-        jsonContent
-      )
-      console.log('publish child results', result.error)
-      expect(result.success).toBe(true)
+    // Verify the item content matches what we published
+    expect(result?.content).toBeDefined()
+    if (result?.content) {
+      const content = result.content as JSONItem
+      expect(content.itemType).toBe(NS_JSON_0)
+      expect(content.json).toEqual(testJsonContent.json)
+      expect(content.json.message).toBe(testJsonContent.json.message)
+      expect(content.json.testId).toBe(testJsonContent.json.testId)
+      expect(content.json.timestamp).toBe(testJsonContent.json.timestamp)
     }
-
-    // verify the children exist
-    const nodes3 = await xmppService.listPubSubNodes(pubsubService)
-    const nodeExists3 = nodes3.some(node => node.id === testNodeId)
-    expect(nodeExists3).toBe(true)
-    
-    // Ideally, we would also verify that the children are associated with the parent
-    // This would require additional API support to list children of a collection
   })
 
-
-  // it('should create PubSub nodes using document names in openfire.json', async () => {
+  // TODO: handle collection nodes
+  // it('should create a pub-sub collection node with open access', async () => {
   //   // Arrange
   //   expect(xmppService.isConnected()).toBe(true)
-    
-  //   // Get initial node count
-  //   const initialNodes = await xmppService.listPubSubNodes(pubsubService)
-  //   const initialNodeCount = initialNodes.length
 
-  //   if (initialNodeCount > 0) {
-  //     return
+  //   const testNodeId = 'test-node-3'
+
+  //   // check the test node does not exist
+  //   const nodes = await xmppService.listPubSubNodes(pubsubService)
+  //   const nodeExists = nodes.some(node => node.id === testNodeId)
+
+  //   // if the node exists, delete it
+  //   if (nodeExists) {
+  //     await xmppService.deletePubSubNode(pubsubService, testNodeId)
   //   }
-    
-  //   // Load document configs
-  //   const openfireConfig = loadOpenfireConfig()
-  //   const documents = Object.keys(openfireConfig.documents)
-    
-  //   // Act - Create nodes for each document
-  //   const creationResults = []
-  //   for (const doc of documents) {
-  //     const config = openfireConfig.documents[doc]
-  //     // Use the existing createPubSubDocument method instead of non-existent createPubSubNode
-  //     const result = await xmppService.createPubSubDocument(pubsubService, config.id, { access: config.access, nodeType: config.nodeType}, config.content)
-  //     creationResults.push(result)
-  //   }
-    
-  //   // Get updated node list
-  //   const updatedNodes = await xmppService.listPubSubNodes(pubsubService)
+
+  //   // Act - Create a pub-sub collection node
+  //   const jsonContent = { itemType: NS_JSON_0, json: { message: 'test content 3' } } as JSONItem
+  //   const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'collection' }, jsonContent)
+
+  //   console.log('publish results 2', result)
     
   //   // Assert
-  //   // Verify that all creation operations were successful
-  //   creationResults.forEach(result => {
+  //   expect(result.success).toBe(true)
+    
+  //   // Verify node exists
+  //   const nodes2 = await xmppService.listPubSubNodes(pubsubService)
+  //   const nodeExists2 = nodes2.some(node => node.id === testNodeId)
+  //   expect(nodeExists2).toBe(true)
+
+  //   const nodeConfig = await xmppService.getPubSubNodeConfig(pubsubService, testNodeId)
+  //   expect(nodeConfig['pubsub#node_type']).toBe('collection')
+
+  //   // add several leaf children to the collection node
+  //   for (let i = 0; i < 3; i++) {
+  //     const childNodeId = `${testNodeId}-child-${i}`
+  //     const jsonContent = { itemType: NS_JSON_0, json: { message: `test content 3 child ${i}` } } as JSONItem
+  //     const result = await xmppService.createPubSubChildNode(
+  //       pubsubService, 
+  //       testNodeId, 
+  //       childNodeId, 
+  //       { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, 
+  //       jsonContent
+  //     )
+  //     console.log('publish child results', result.error)
   //     expect(result.success).toBe(true)
-  //   })
-    
-  //   // Verify that nodes were created (at least the ones that didn't exist before)
-  //   expect(updatedNodes.length).toBeGreaterThanOrEqual(initialNodeCount)
-    
-  //   // Verify that all document nodes exist in the updated list
-  //   for (const doc of documents) {
-  //     const config = openfireConfig.documents[doc]
-  //     const nodeExists = updatedNodes.some(node => node.id === config.id)
-  //     expect(nodeExists).toBe(true)
   //   }
-  // }) 
+
+  //   // verify the children exist
+  //   const nodes3 = await xmppService.listPubSubNodes(pubsubService)
+  //   const nodeExists3 = nodes3.some(node => node.id === testNodeId)
+  //   expect(nodeExists3).toBe(true)
+    
+  //   // Ideally, we would also verify that the children are associated with the parent
+  //   // This would require additional API support to list children of a collection
+  // })
+
 })

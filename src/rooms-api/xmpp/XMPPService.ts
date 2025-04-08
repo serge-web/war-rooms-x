@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, JSONItem, PubsubItemContent } from 'stanza/protocol'
+import { DiscoInfoResult, DiscoItem, JSONItem } from 'stanza/protocol'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
 
 /**
@@ -474,7 +474,7 @@ export class XMPPService {
 
     try {
       // Create the node
-      console.log('creating node', config)
+
       await this.client.createNode(pubsubService, nodeId, config)
       
       // If content is provided, publish it to the node
@@ -606,27 +606,17 @@ export class XMPPService {
     }
 
     try {
+      // TODO: using paging to only retrieve the last item from the node
+      
       // Get the items from the node
       const result = await this.client.getItems(pubsubService, nodeId)
 
-      console.log('pub documents', result)
-      
       if (result.items && result.items.length > 0) {
-        const item = result.items[0] as PubsubItemContent
-        console.log('item', item)
-        // return {
-        //   id: nodeId,
-        //   name: item.name || nodeId,
-        //   content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
-        //   updatedAt: new Date()
-        // }
+        const item = result.items[0] as PubSubDocument
+        return item
       }
       
-      return {
-        id: nodeId,
-        name: nodeId
-        // content: ''
-      }
+      return null
     } catch (error) {
       console.error(`Error getting PubSub document ${nodeId}:`, error)
       return null
@@ -646,14 +636,12 @@ export class XMPPService {
       if (!message.pubsub || !message.pubsub.items || !message.pubsub.published || message.pubsub.published.length === 0) return
       
       const nodeId = message.pubsub.node || ''
-      const item = message.pubsub.published[0]
+      const item = message.pubsub.published[0] as PubSubDocument
       console.log('item published', item)
       
       const document: PubSubDocument = {
         id: nodeId,
-        name: nodeId,
-        // content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
-        updatedAt: new Date()
+        content: item.content
       }
       
       // Notify all registered handlers
@@ -730,8 +718,6 @@ export class XMPPService {
     try {
       // Get the node configuration using StanzaJS
       const result = await this.client.getNodeConfig(pubsubService, nodeId)
-
-      console.log('node config', result)
       
       // Extract the node type from the configuration form
       let nodeType: 'leaf' | 'collection' = 'leaf' // Default to leaf
