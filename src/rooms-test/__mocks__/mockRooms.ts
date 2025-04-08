@@ -42,5 +42,32 @@ export const mockRooms = [
     messages: [
       { id: 'msg5', sender: 'Ops Manager', content: 'Mission briefing at 1100', timestamp: '09:30' }
     ]
+  },
+  {
+    id: '__admin',
+    name: 'Admin',
+    unreadCount: 2,
+    messages: [
+      { id: 'admin1', sender: 'System', content: 'Wargame initialization complete', timestamp: '08:00' },
+      { id: 'admin2', sender: 'Admin', content: 'Setting up exercise parameters for Operation Swift Response', timestamp: '08:05' },
+      { id: 'admin3', sender: 'System', content: 'Force templates loaded successfully', timestamp: '08:10' },
+      { id: 'admin4', sender: 'Admin', content: 'Assigning roles to participants', timestamp: '08:15' },
+      { id: 'admin5', sender: 'currentUser', content: 'Requesting additional user accounts for observers', timestamp: '08:20' },
+      { id: 'admin6', sender: 'Admin', content: 'Observer accounts created. Credentials distributed via secure channel.', timestamp: '08:25' },
+      { id: 'admin7', sender: 'System', content: 'Map data loaded: Eastern Europe Theater', timestamp: '08:30' },
+      { id: 'admin8', sender: 'Admin', content: 'Scenario timeline adjusted to 72-hour exercise', timestamp: '08:35' },
+      { id: 'admin9', sender: 'currentUser', content: 'Confirming weather conditions set to variable with 30% precipitation chance', timestamp: '08:40' },
+      { id: 'admin10', sender: 'System', content: 'Weather parameters updated successfully', timestamp: '08:45' },
+      { id: 'admin11', sender: 'Admin', content: 'Scheduling system maintenance for 02:00 tomorrow - 30 minute downtime expected', timestamp: '08:50' },
+      { id: 'admin12', sender: 'System', content: 'Communication channels tested and operational', timestamp: '08:55' },
+      { id: 'admin13', sender: 'Admin', content: 'Enabling advanced cyber warfare module for this exercise', timestamp: '09:00' },
+      { id: 'admin14', sender: 'currentUser', content: 'Requesting permission to modify force composition for Blue Team', timestamp: '09:05' },
+      { id: 'admin15', sender: 'Admin', content: 'Permission granted. Please document changes in the exercise log.', timestamp: '09:10' },
+      { id: 'admin16', sender: 'System', content: 'Database backup completed successfully', timestamp: '09:15' },
+      { id: 'admin17', sender: 'Admin', content: 'Setting up after-action review parameters and metrics', timestamp: '09:20' },
+      { id: 'admin18', sender: 'currentUser', content: 'Metrics configuration confirmed. Adding custom evaluation criteria for logistics performance.', timestamp: '09:25' },
+      { id: 'admin19', sender: 'System', content: 'Warning: Participant connection from unauthorized IP address detected', timestamp: '09:30' },
+      { id: 'admin20', sender: 'Admin', content: 'Security alert acknowledged. Implementing additional verification for external connections.', timestamp: '09:35' }
+    ]
   }
 ]
