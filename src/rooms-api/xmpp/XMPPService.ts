@@ -1,7 +1,7 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, PubsubItemContent } from 'stanza/protocol'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
+import { DiscoInfoResult, DiscoItem, JSONItem, PubsubItemContent } from 'stanza/protocol'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
 
 /**
  * Service for handling XMPP connections and communications
@@ -466,19 +466,20 @@ export class XMPPService {
    * @param content Optional initial content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async createPubSubDocument(pubsubService: string, nodeId: string, content?: string): Promise<PubSubDocumentResult> {
+  async createPubSubDocument(pubsubService: string, nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
       // Create the node
-      await this.client.createNode(pubsubService, nodeId)
+      await this.client.createNode(pubsubService, nodeId, config)
       
       // If content is provided, publish it to the node
       if (content) {
-        // For StanzaJS, we need to use the correct PubsubItemContent structure
-        await this.client.publish(pubsubService, nodeId, {}, content)
+        // For StanzaJS, we need to provide a proper XML payload
+        // The third parameter is for item attributes, and fourth is the payload
+        await this.client.publish(pubsubService, nodeId, content)
       }
       
       return { success: true, id: nodeId }
@@ -502,8 +503,8 @@ export class XMPPService {
 
     try {
       // Publish to the node
-      // For StanzaJS, we need to use the correct PubsubItemContent structure
-      await this.client.publish(pubsubService, nodeId, {}, content)
+      // For StanzaJS, we need to provide a proper XML payload
+      await this.client.publish(pubsubService, nodeId, {}, `<content>${content}</content>`)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -532,6 +533,16 @@ export class XMPPService {
       console.error(`Error deleting PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
     }
+  }
+
+  /**
+   * Alias for deletePubSubDocument - Delete a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to delete
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async deletePubSubNode(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+    return this.deletePubSubDocument(pubsubService, nodeId)
   }
 
   /**

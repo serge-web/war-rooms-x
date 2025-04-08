@@ -18,7 +18,24 @@
     "no-members": "no-members"
   },
   "documents": {
-    "public": "public", 
-    "private": "private"
+    "public": {
+      "id": "public",
+      "node-type": "leaf",
+      "access": "open",
+      "content": "public doc"
+    }, 
+    "private": {
+      "id": "private",
+      "node-type": "leaf",
+      "access": "authorise",
+      "content": "private doc"
+    },
+    "collection": {
+      "id": "collection",
+      "node-type": "collection",
+      "access": "open",
+      "content": "collection doc"
+    }
+
   }
 }

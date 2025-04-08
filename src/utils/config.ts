@@ -26,4 +26,14 @@ export interface OpenfireConfig {
     username: string
     password: string
   }
+  rooms: {
+    [key: string]: string
+  }
+  documents: {
+    [key: string]: {
+      id: string
+      nodeType: string
+      access: string
+    }
+  }
 }

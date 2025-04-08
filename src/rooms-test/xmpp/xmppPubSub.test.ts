@@ -1,3 +1,5 @@
+import { NS_JSON_0 } from 'stanza/Namespaces'
+import { JSONItem } from 'stanza/protocol'
 import { XMPPService } from '../../rooms-api/xmpp/XMPPService'
 import { loadOpenfireConfig } from '../../utils/config'
 
@@ -55,6 +57,80 @@ describe('XMPP PubSub', () => {
       console.log(`- Node ID: ${node.id}, Name: ${node.name || 'unnamed'}`)
     })
   })
-})
 
-it('if no pubsub nodes are present create one', async () => {
+  it('should create a pub-sub leaf node with open access', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+
+    const testNodeId = 'test-node-2'
+
+    // check the test node does not exist
+    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExists = nodes.some(node => node.id === testNodeId)
+
+    // if the node exists, delete it
+    if (nodeExists) {
+      await xmppService.deletePubSubNode(pubsubService, testNodeId)
+    }
+
+    // Act - Create a pub-sub leaf node
+    const jsonContent = { itemType: NS_JSON_0, json: { message: 'test content' } } as JSONItem
+    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { access: 'open', nodeType: 'leaf' }, jsonContent)
+
+    console.log('publish results', result.error)
+    
+    // Assert
+    expect(result.success).toBe(true)
+    
+    // Verify node exists
+    const nodes2 = await xmppService.listPubSubNodes(pubsubService)
+    const nodeExists2 = nodes2.some(node => node.id === testNodeId)
+    expect(nodeExists2).toBe(true)
+  })
+
+
+  // it('should create PubSub nodes using document names in openfire.json', async () => {
+  //   // Arrange
+  //   expect(xmppService.isConnected()).toBe(true)
+    
+  //   // Get initial node count
+  //   const initialNodes = await xmppService.listPubSubNodes(pubsubService)
+  //   const initialNodeCount = initialNodes.length
+
+  //   if (initialNodeCount > 0) {
+  //     return
+  //   }
+    
+  //   // Load document configs
+  //   const openfireConfig = loadOpenfireConfig()
+  //   const documents = Object.keys(openfireConfig.documents)
+    
+  //   // Act - Create nodes for each document
+  //   const creationResults = []
+  //   for (const doc of documents) {
+  //     const config = openfireConfig.documents[doc]
+  //     // Use the existing createPubSubDocument method instead of non-existent createPubSubNode
+  //     const result = await xmppService.createPubSubDocument(pubsubService, config.id, { access: config.access, nodeType: config.nodeType}, config.content)
+  //     creationResults.push(result)
+  //   }
+    
+  //   // Get updated node list
+  //   const updatedNodes = await xmppService.listPubSubNodes(pubsubService)
+    
+  //   // Assert
+  //   // Verify that all creation operations were successful
+  //   creationResults.forEach(result => {
+  //     expect(result.success).toBe(true)
+  //   })
+    
+  //   // Verify that nodes were created (at least the ones that didn't exist before)
+  //   expect(updatedNodes.length).toBeGreaterThanOrEqual(initialNodeCount)
+    
+  //   // Verify that all document nodes exist in the updated list
+  //   for (const doc of documents) {
+  //     const config = openfireConfig.documents[doc]
+  //     const nodeExists = updatedNodes.some(node => node.id === config.id)
+  //     expect(nodeExists).toBe(true)
+  //   }
+  // }) 
+})

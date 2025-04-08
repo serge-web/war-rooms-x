@@ -1,4 +1,4 @@
-import { PubsubItem } from "stanza/protocol"
+import { DataForm, PubsubItem } from "stanza/protocol"
 
 /**
  * Represents a chat room in the XMPP MUC system
@@ -64,6 +64,12 @@ export interface PubSubDocument extends PubsubItem {
   updatedAt?: Date
   name: string
 }
+
+export interface PubSubOptions extends DataForm {
+  access: 'open' | 'authorise'
+  nodeType: 'leaf' | 'collection'
+}
+
 /**
  * Result of a PubSub document operation
  */
