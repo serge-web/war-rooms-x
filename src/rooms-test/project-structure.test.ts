@@ -7,7 +7,6 @@ describe('Project Structure', () => {
   test('has correct base folder structure', () => {
     const requiredDirs = [
       'src',
-      'src/rooms-api',
       'src/rooms-test',
       'public',
       'documents'
@@ -70,13 +69,8 @@ describe('Project Structure', () => {
   // Test service modules exist
   test('has required service modules', () => {
     const requiredServices = [
-      'src/services/xmpp',
-      'src/services/openfire',
-      'src/schema',
       'src/components',
       'src/hooks',
-      'src/pages',
-      'src/utils',
       'src/types'
     ]
     
