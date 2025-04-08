@@ -124,6 +124,16 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     // Verify we're in the room
     const joinedRooms = await xmppService.getJoinedRooms()
     expect(joinedRooms).toContain(roomJid)
+
+    // leave the room
+    const leaveResult = await xmppService.leaveRoom(roomJid)
+    
+    // Assert
+    expect(leaveResult.success).toBe(true)
+    
+    // Verify we're no longer in the room
+    const joinedRoomsAfterLeave = await xmppService.getJoinedRooms()
+    expect(joinedRoomsAfterLeave).not.toContain(roomJid)
   })
 
   // it('should prevent no-perms user from joining a room', async () => {
