@@ -119,16 +119,13 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     // Check if we can get room history
     const history = await xmppService.getRoomHistory(roomJid)
     expect(Array.isArray(history)).toBe(true)
-    // console.log('history 1', history)
     
     // Verify we're in the room
     const joinedRooms = await xmppService.getJoinedRooms()
     expect(joinedRooms).toContain(roomJid)
 
-    // leave the room
+    // Leave the room
     const leaveResult = await xmppService.leaveRoom(roomJid)
-
-    console.log('have left room', leaveResult)
     
     // Assert
     expect(leaveResult.success).toBe(true)
@@ -136,45 +133,47 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     // Verify we're no longer in the room
     const joinedRoomsAfterLeave = await xmppService.getJoinedRooms()
     expect(joinedRoomsAfterLeave).not.toContain(roomJid)
-    console.log('joined rooms after leave', joinedRoomsAfterLeave)
+    
+    // Add a delay to ensure all XMPP operations complete before test ends
+    await new Promise(resolve => setTimeout(resolve, 500))
   })
 
-  // it('should prevent no-perms user from joining a room', async () => {
-  //   // Arrange - Create a new service instance for the no-perms user
-  //   const noPermsService = new XMPPService()
-  //   const openfireConfig = loadOpenfireConfig()
-  //   const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
+  it('should prevent no-perms user from joining a room', async () => {
+    // Arrange - Create a new service instance for the no-perms user
+    const noPermsService = new XMPPService()
+    const openfireConfig = loadOpenfireConfig()
+    const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
     
-  //   // Get the no-perms credentials
-  //   const noPermsCredentials = openfireConfig.credentials.find((cred: { username: string, password: string }) => cred.username === 'no-perms')
-  //   expect(noPermsCredentials).toBeDefined()
+    // Get the no-perms credentials
+    const noPermsCredentials = openfireConfig.credentials.find((cred: { username: string, password: string }) => cred.username === 'no-perms')
+    expect(noPermsCredentials).toBeDefined()
     
-  //   if (noPermsCredentials) {
-  //     // Connect with no-perms user
-  //     const connected = await noPermsService.connect(
-  //       host, 
-  //       noPermsCredentials.username, 
-  //       noPermsCredentials.password
-  //     )
+    if (noPermsCredentials) {
+      // Connect with no-perms user
+      const connected = await noPermsService.connect(
+        host, 
+        noPermsCredentials.username, 
+        noPermsCredentials.password
+      )
       
-  //     // Assert connection was successful
-  //     expect(connected).toBe(true)
-  //     expect(noPermsService.isConnected()).toBe(true)
+      // Assert connection was successful
+      expect(connected).toBe(true)
+      expect(noPermsService.isConnected()).toBe(true)
       
-  //     // Act - Try to join the room
-  //     const joinResult = await noPermsService.joinRoom(roomJid, true)
+      // Act - Try to join the room
+      const joinResult = await noPermsService.joinRoom(roomJid, true)
 
-  //     // Assert - User should not be able to join the room
-  //     expect(joinResult.success).toBe(false)
+      // Assert - User should not be able to join the room
+      expect(joinResult.success).toBe(false)
       
-  //     // Verify we're not in the room
-  //     const joinedRooms = await noPermsService.getJoinedRooms()
-  //     expect(joinedRooms).not.toContain(roomJid)
+      // Verify we're not in the room
+      const joinedRooms = await noPermsService.getJoinedRooms()
+      expect(joinedRooms).not.toContain(roomJid)
       
-  //     // Clean up
-  //     await noPermsService.disconnect()
-  //   }
-  // })
+      // Clean up
+      await noPermsService.disconnect()
+    }
+  })
 
   // it('should send a message to a room', async () => {
   //   // Arrange

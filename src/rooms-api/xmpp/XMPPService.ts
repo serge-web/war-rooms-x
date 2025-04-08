@@ -265,8 +265,13 @@ export class XMPPService {
       // Extract the nickname from our JID
       const nickname = this.jid.split('@')[0]
       
-      // Leave the room - note that StanzaJS leaveRoom returns void, not a Promise
-      this.client.leaveRoom(roomJid, nickname, {})
+      // Leave the room - StanzaJS leaveRoom returns void, not a Promise
+      // We need to wrap it in a Promise to ensure all operations complete
+      await new Promise<void>((resolve) => {
+        this.client!.leaveRoom(roomJid, nickname, {})
+        // Add a small delay to ensure the XMPP operation completes
+        setTimeout(resolve, 100)
+      })
       
       // Remove from our joined rooms set
       this.joinedRooms.delete(roomJid)
