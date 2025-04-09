@@ -1,10 +1,10 @@
 import React from 'react'
 import { Layout } from 'antd'
 import { Header, Footer } from 'antd/es/layout/layout'
-import RoomsList from '../RoomsList'
 import GameState from '../GameState'
-import AdminMessages from '../AdminMessages'
+import AdminRoom from '../Rooms/AdminRoom'
 import UserDetails from '../UserDetails'
+import RoomsList from '../Rooms/RoomsList'
 
 const { Sider, Content } = Layout
 
@@ -61,7 +61,7 @@ const PlayerView: React.FC = () => {
             <GameState />
           </Header>
           <Content style={adminMessagesStyle}>
-            <AdminMessages />
+            <AdminRoom />
           </Content>
           <Footer style={userDetailsStyle}>
             <UserDetails />
