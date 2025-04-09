@@ -1,7 +1,7 @@
 import React from 'react'
 import { mockRooms } from '../../../rooms-test/__mocks__/mockRooms'
 import RoomContent from '../RoomContent'
-import './AdminMessages.css'
+import './index.css'
 
 const AdminMessages: React.FC = () => {
   // Find the admin room from mockRooms
