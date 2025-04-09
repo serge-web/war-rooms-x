@@ -1,5 +1,5 @@
-import { XMPPService } from '../../rooms-api/xmpp/XMPPService'
-import { loadOpenfireConfig } from '../../utils/config'
+import { XMPPService } from '../../rooms-api/xmpp/XMPPService.js'
+import { loadOpenfireConfig } from '../../utils/config.js'
 
 describe('XMPP Connection', () => {
   let xmppService: XMPPService
