@@ -8,11 +8,7 @@ import UserDetails from '../UserDetails'
 
 const { Sider, Content } = Layout
 
-interface PlayerViewProps {
-  onLogout?: () => void
-}
-
-const PlayerView: React.FC<PlayerViewProps> = ({ onLogout }) => {
+const PlayerView: React.FC = () => {
   const gameStateStyle: React.CSSProperties = {
     height: 120,
     backgroundColor: '#ccc',
@@ -68,7 +64,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout }) => {
             <AdminMessages />
           </Content>
           <Footer style={userDetailsStyle}>
-            <UserDetails onLogout={onLogout} />
+            <UserDetails />
           </Footer>
         </Layout>
       </Sider>

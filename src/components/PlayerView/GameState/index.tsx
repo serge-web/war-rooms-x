@@ -1,12 +1,12 @@
 import React from 'react'
-import { useWargame } from '../../../hooks/useWargame'
-import { Card, Typography, Space, Tag, Spin, Divider } from 'antd'
+import { Card, Typography, Space, Tag, Divider } from 'antd'
 import { ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
+import { useWargame } from '../../../contexts/WargameContext'
 
 const { Text } = Typography
 
 const GameState: React.FC = () => {
-  const { gameState, loading } = useWargame()
+  const { gameState } = useWargame()
 
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
@@ -30,11 +30,7 @@ const GameState: React.FC = () => {
       size='small'
       style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
     >
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-          <Spin tip='Loading game state...' />
-        </div>
-      ) : gameState ? (
+      {gameState ? (
         <Space direction='vertical' size={8} style={{ width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
