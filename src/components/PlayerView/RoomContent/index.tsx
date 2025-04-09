@@ -1,7 +1,7 @@
 import React from 'react'
-import { Message } from './MessageBubble'
-import MessageInputForm from './MessageInputForm'
-import MessageList from './MessageList'
+import { Message } from '../MessageBubble'
+import MessageInputForm from '../MessageInputForm'
+import MessageList from '../MessageList'
 
 export interface Room {
   id: string
