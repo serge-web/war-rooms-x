@@ -1,23 +1,24 @@
 // Mock data for UserDetails component
 
+import { ForceDetails, GameStateType, UserDetailsType } from "../../../types/wargame"
+
 export interface MockForceDetails {
   name: string
   color: string
 }
 
-export interface MockUserDetails {
-  username: string
-  role: string
-  status: 'online' | 'away' | 'offline'
-}
-
-export const mockForceDetails: MockForceDetails = {
-  name: 'Blue Force',
+export const mockForceData: ForceDetails = {
+  fullName: 'Blue Force',
   color: '#1677ff'
 }
 
-export const mockUserDetails: MockUserDetails = {
+export const mockUserDetails: UserDetailsType = {
   username: 'Commander_Alpha',
-  role: 'Commander',
-  status: 'online'
+  name: 'Commander'
+}
+
+export const mockGameState: GameStateType = {
+  turn: 3,
+  currentTime: '2025-04-08T15:30:00Z',
+  currentPhase: 'Planning'
 }

@@ -12,8 +12,8 @@ export interface WargameContextType {
   setGameState: (value: GameStateType | null) => void
   rooms: RoomType[]
   setRooms: (value: RoomType[]) => void
-  playerForce: ForceType | null
-  setPlayerForce: (value: ForceType | null) => void
+  playerForce: ForceDetails | null
+  setPlayerForce: (value: ForceDetails | null) => void
   playerDetails: UserDetailsType | null
   setPlayerDetails: (value: UserDetailsType | null) => void
 }
@@ -26,6 +26,11 @@ export interface UserDetailsType {
   name?: string
   email?: string
   properties?: Record<string, string>
+}
+
+export interface ForceDetails {
+  fullName: string
+  color?: string
 }
 
 export interface ForceType {
