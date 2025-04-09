@@ -18,6 +18,6 @@ export const mockForceDetails: MockForceDetails = {
 
 export const mockUserDetails: MockUserDetails = {
   username: 'Commander_Alpha',
-  role: 'Force Commander',
+  role: 'Commander',
   status: 'online'
 }

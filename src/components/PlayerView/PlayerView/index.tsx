@@ -41,7 +41,7 @@ const PlayerView: React.FC = () => {
     border: '1px solid blue',
     lineHeight: '20px',
     padding: '15px',
-    backgroundColor: '#aaa'
+    backgroundColor: '#ccc'
   }
   
   const layoutStyle = {
