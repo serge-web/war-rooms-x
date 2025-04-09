@@ -50,15 +50,22 @@ export class XMPPRestService {
    * @param password The password for authentication
    * @returns Promise resolving to true if authentication was successful
    */
-  async authenticate(username: string, password: string): Promise<boolean> {
+  async authenticate(username?: string, password?: string): Promise<boolean> {
     if (!this.client) {
       this.setError('REST client not initialized', 'CLIENT_NOT_INITIALIZED', 0)
       throw new Error('REST client not initialized')
     }
 
+    // Load environment variables if not already loaded
+    dotenv.config()
+
+    // Use provided secret key or load from environment
+    const usernameVal = username || process.env.USER_NAME
+    const passwordVal = password || process.env.PASSWORD
+    
     try {
       // Basic authentication for OpenFire REST API
-      const authString = Buffer.from(`${username}:${password}`).toString('base64')
+      const authString = Buffer.from(`${usernameVal}:${passwordVal}`).toString('base64')
       this.client.defaults.headers.common['Authorization'] = `Basic ${authString}`
       
       // Test authentication by making a simple request

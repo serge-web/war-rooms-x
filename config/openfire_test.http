@@ -1,4 +1,4 @@
-@key = --pending--
+@key = ZQiTmqEIm4t46Zqe
 
 GET http://10.211.55.16:9090/plugins/restapi/v1/groups
 Authorization: {{key}}

@@ -12,13 +12,13 @@ describe('XMPP REST Connection', () => {
     xmppRestService.initialize(openfireConfig)
   })
 
-  it('should authenticate with the REST API using secret key from .env file', async () => {
+  it('should authenticate with the REST API using credentials from .env file', async () => {
     
     // Act
-    const authenticated = await xmppRestService.authenticateWithSecretKey()
-    const error = xmppRestService.getLastError()
+    // const authenticated = await xmppRestService.authenticateWithSecretKey()
+    const authenticated = await xmppRestService.authenticate()
 
-    console.log('Authentication result:', { authenticated, error })
+    const error = xmppRestService.getLastError()
 
     // If test fails, provide diagnostic information
     if (!authenticated) {
@@ -48,27 +48,27 @@ describe('XMPP REST Connection', () => {
     expect(xmppRestService.getBaseUrl()).toContain(openfireConfig.apiPath)
   })
 
-  // it('should fail authentication with invalid credentials', async () => {
-  //   // Arrange - using invalid credentials
+  it('should fail authentication with invalid credentials', async () => {
+    // Arrange - using invalid credentials
     
-  //   // Act
-  //   const authenticated = await xmppRestService.authenticate('invalid-user', 'wrong-password')
-  //   const error = xmppRestService.getLastError()
+    // Act
+    const authenticated = await xmppRestService.authenticate('invalid-user', 'wrong-password')
+    const error = xmppRestService.getLastError()
     
-  //   // If connection is refused, conditionally skip the assertions
-  //   if (error.code === 'CONNECTION_REFUSED') {
-  //     serverAvailable = false
-  //     console.warn('SKIPPING TEST: OpenFire server connection refused - server may not be running')
-  //     return
-  //   }
+    // If connection is refused, conditionally skip the assertions
+    if (error.code === 'CONNECTION_REFUSED') {
+      serverAvailable = false
+      console.warn('SKIPPING TEST: OpenFire server connection refused - server may not be running')
+      return
+    }
 
-  //   // Only run assertions if the server is available
-  //   if (serverAvailable) {
-  //     expect(authenticated).toBe(false)
-  //     expect(xmppRestService.isAuthenticated()).toBe(false)
-  //   } else {
-  //     // If server is not available, make the test pass with a conditional assertion
-  //     expect(true).toBe(true)
-  //   }
-  // })
+    // Only run assertions if the server is available
+    if (serverAvailable) {
+      expect(authenticated).toBe(false)
+      expect(xmppRestService.isAuthenticated()).toBe(false)
+    } else {
+      // If server is not available, make the test pass with a conditional assertion
+      expect(true).toBe(true)
+    }
+  })
 })
