@@ -2,6 +2,7 @@ import React from 'react'
 import { Message } from '../MessageBubble'
 import MessageInputForm from '../MessageInputForm'
 import MessageList from '../MessageList'
+import './index.css'
 
 export interface Room {
   id: string

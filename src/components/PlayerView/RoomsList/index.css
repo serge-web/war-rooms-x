@@ -1,0 +1,41 @@
+.rooms-list-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.rooms-list-container h2 {
+  margin: 0;
+  padding: 10px;
+  background-color: #2c3e50;
+  color: white;
+}
+
+.flex-layout-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Tab styling */
+.tab-with-badge {
+  display: flex;
+  align-items: center;
+}
+
+.unread-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 9px;
+  font-size: 0.8em;
+  margin-left: 6px;
+  padding: 0 4px;
+}

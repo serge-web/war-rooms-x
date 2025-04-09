@@ -3,7 +3,7 @@ import * as FlexLayout from 'flexlayout-react'
 import 'flexlayout-react/style/light.css'
 import { mockRooms } from '../../../rooms-test/__mocks__/mockRooms'
 import RoomContent, { Room } from '../RoomContent'
-import './RoomsList.css'
+import './index.css'
 
 const RoomsList: React.FC = () => {
   // Create a FlexLayout model for the rooms
