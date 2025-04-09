@@ -1,7 +1,7 @@
 import React from 'react'
 import './index.css'
-import MessageInputForm from '../../Messages/MessageInputForm'
-import MessageList from '../../Messages/MessageList'
+import MessageInputForm from '../Messages/MessageInputForm'
+import MessageList from '../Messages/MessageList'
 import { Room } from '../../../../types/wargame'
 
 const RoomContent: React.FC<{
