@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, Avatar, Typography, Space, Tag, Tooltip, Button, Divider, Badge } from 'antd'
 import { UserOutlined, TeamOutlined, LogoutOutlined } from '@ant-design/icons'
 import { mockUserDetails, mockForceDetails } from './mockData'
+import { useWargame } from '../../../contexts/WargameContext'
 
 const { Text, Title } = Typography
 
@@ -10,15 +11,18 @@ interface UserDetailsProps {
   force?: string
   role?: string
   status?: 'online' | 'away' | 'offline'
-  onLogout?: () => void
 }
 
 const UserDetails: React.FC<UserDetailsProps> = ({
   force = mockForceDetails.name,
   role = mockUserDetails.role,
-  status = mockUserDetails.status,
-  onLogout = () => {}
+  status = mockUserDetails.status
 }) => {
+  const { setLoggedIn } = useWargame()
+  
+  const handleLogout = () => {
+    setLoggedIn(false)
+  }
   // In the future, this would use the usePlayer and useForce hooks
   const isLoggedIn = !!role
 
@@ -73,7 +77,7 @@ const UserDetails: React.FC<UserDetailsProps> = ({
               <Button 
                 type='primary' 
                 icon={<LogoutOutlined />} 
-                onClick={onLogout} 
+                onClick={handleLogout} 
                 size='small'
                 danger
               >

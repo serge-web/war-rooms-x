@@ -1,12 +1,15 @@
 import React from 'react'
 import { Button, Form, Input, Card } from 'antd'
 import './Login.css'
+import { useWargame } from '../../contexts/WargameContext'
 
-interface LoginProps {
-  onLogin: () => void
-}
+const Login: React.FC = () => {
+  const { setLoggedIn } = useWargame()
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const handleLogin = () => {
+    setLoggedIn(true)
+  }
+
   return (
     <div className="login-container">
       <Card title="War Rooms X - Login" className="login-card">
@@ -18,7 +21,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <Input.Password placeholder="Enter your password" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" onClick={onLogin} block>
+            <Button type="primary" onClick={handleLogin} block>
               Login
             </Button>
           </Form.Item>
