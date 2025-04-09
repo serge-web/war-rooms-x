@@ -3,11 +3,12 @@ import { Button, Form, Input, Card, Flex } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
 import { mockUserDetails, mockForceData, mockGameState } from '../../components/PlayerView/UserDetails/mockData'
+import { mockRooms } from '../../rooms-test/__mocks__/mockRooms'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState } = useWargame()
+  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState,setRoomNames } = useWargame()
 
   const loginEnabled = useMemo(() => {
     return username && password
@@ -19,6 +20,7 @@ const Login: React.FC = () => {
     setPlayerDetails(mockUserDetails)
     setPlayerForce(mockForceData)
     setGameState(mockGameState)
+    setRoomNames(mockRooms.map(r => r.name))
   }
 
   const handleLogin = () => {

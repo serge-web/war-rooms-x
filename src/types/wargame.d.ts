@@ -10,8 +10,8 @@ export interface WargameContextType {
   setLoggedIn: (value: boolean) => void
   gameState: GameStateType | null
   setGameState: (value: GameStateType | null) => void
-  rooms: RoomType[]
-  setRooms: (value: RoomType[]) => void
+  roomNames: string[]
+  setRoomNames: (value: string[]) => void
   playerForce: ForceDetails | null
   setPlayerForce: (value: ForceDetails | null) => void
   playerDetails: UserDetailsType | null
@@ -38,13 +38,16 @@ export interface ForceType {
   description?: string
 }
 
+export interface RoomDetails {
+  roomType: 'chat' | 'map'
+}
 /**
  * OpenFire room
  */
 export interface RoomType {
   roomName: string
   naturalName?: string
-  description?: string
+  description?: string // this should be a JSON encoded RoomDetails
   subject?: string
 }
 

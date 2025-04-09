@@ -1,3 +1,11 @@
+import { Message } from "../../types/wargame"
+
+export interface MockRoomDetails {
+  id: string
+  name: string
+  unreadCount: number
+  messages: Message[]
+}
 export const mockRooms = [
   {
     id: 'room1',
