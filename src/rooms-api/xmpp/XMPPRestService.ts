@@ -3,6 +3,14 @@ import * as dotenv from 'dotenv'
 import { OpenfireConfig } from '../../utils/config'
 
 /**
+ * Group/Force representation from OpenFire
+ */
+export interface Group {
+  name: string
+  description?: string
+}
+
+/**
  * Result of a REST API operation
  */
 export interface RestApiResult {
@@ -59,9 +67,9 @@ export class XMPPRestService {
     // Load environment variables if not already loaded
     dotenv.config()
 
-    // Use provided secret key or load from environment
-    const usernameVal = username || process.env.USER_NAME
-    const passwordVal = password || process.env.PASSWORD
+    // Use provided credentials or load from environment
+    const usernameVal = username || process.env.USER_NAME || 'admin'
+    const passwordVal = password || process.env.PASSWORD || 'pwd'
     
     try {
       // Basic authentication for OpenFire REST API
@@ -226,5 +234,104 @@ export class XMPPRestService {
     this.lastError = null
     this.lastErrorCode = null
     this.lastStatusCode = null
+  }
+
+  /**
+   * Get a list of groups/forces from the OpenFire server
+   * @returns Promise resolving to a RestApiResult containing the groups
+   */
+  async getGroups(): Promise<RestApiResult> {
+    if (!this.client) {
+      this.setError('REST client not initialized', 'CLIENT_NOT_INITIALIZED', 0)
+      return {
+        success: false,
+        error: 'REST client not initialized',
+        errorCode: 'CLIENT_NOT_INITIALIZED'
+      }
+    }
+
+    if (!this.authenticated) {
+      // Try to authenticate first
+      const authenticated = await this.authenticate()
+      if (!authenticated) {
+        return {
+          success: false,
+          error: 'Not authenticated with the REST API',
+          errorCode: 'NOT_AUTHENTICATED',
+          statusCode: 401
+        }
+      }
+    }
+
+    try {
+      const response = await this.client.get('/groups')
+      
+      if (response.status === 200) {
+        this.clearError()
+        // Handle the response based on the OpenFire REST API structure
+        // The response might be an array directly or might be wrapped in an object
+        let groups: Group[] = []
+        
+        if (Array.isArray(response.data)) {
+          groups = response.data as Group[]
+        } else if (response.data && typeof response.data === 'object') {
+          // Check if there's a groups property or if the object itself contains group data
+          if (Array.isArray(response.data.groups)) {
+            groups = response.data.groups
+          } else if (Array.isArray(response.data.group)) {
+            groups = response.data.group
+          } else {
+            // Try to extract groups from the response object
+            const possibleGroups = Object.values(response.data)
+            if (possibleGroups.length > 0 && Array.isArray(possibleGroups[0])) {
+              groups = possibleGroups[0] as Group[]
+            }
+          }
+        }
+        
+        return {
+          success: true,
+          statusCode: response.status,
+          data: {
+            groups
+          }
+        }
+      }
+      
+      this.setError('Failed to retrieve groups', 'RETRIEVE_FAILED', response.status)
+      return {
+        success: false,
+        error: 'Failed to retrieve groups',
+        errorCode: 'RETRIEVE_FAILED',
+        statusCode: response.status
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError
+      let errorMessage = 'Error retrieving groups from REST API'
+      let errorCode = 'UNKNOWN_ERROR'
+      let statusCode = 0
+      
+      if (axiosError.code === 'ECONNREFUSED') {
+        errorMessage = `Connection refused to ${this.baseUrl}. Make sure the OpenFire server is running.`
+        errorCode = 'CONNECTION_REFUSED'
+      } else if (axiosError.code === 'ETIMEDOUT') {
+        errorMessage = `Connection timed out to ${this.baseUrl}. Check network connectivity and server status.`
+        errorCode = 'CONNECTION_TIMEOUT'
+      } else if (axiosError.response) {
+        errorMessage = `Server returned error: ${axiosError.response.status} ${axiosError.response.statusText}`
+        errorCode = 'SERVER_ERROR'
+        statusCode = axiosError.response.status
+      }
+      
+      console.error(errorMessage, error)
+      this.setError(errorMessage, errorCode, statusCode)
+      
+      return {
+        success: false,
+        error: errorMessage,
+        errorCode: errorCode,
+        statusCode: statusCode
+      }
+    }
   }
 }

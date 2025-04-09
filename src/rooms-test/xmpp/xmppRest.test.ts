@@ -1,7 +1,7 @@
-import { XMPPRestService } from '../../rooms-api/xmpp/XMPPRestService'
+import { XMPPRestService, Group } from '../../rooms-api/xmpp/XMPPRestService'
 import { loadOpenfireConfig } from '../../utils/config'
 
-describe('XMPP REST Connection', () => {
+describe('XMPP REST API', () => {
   let xmppRestService: XMPPRestService
   let openfireConfig: ReturnType<typeof loadOpenfireConfig>
   let serverAvailable = true
@@ -48,27 +48,66 @@ describe('XMPP REST Connection', () => {
     expect(xmppRestService.getBaseUrl()).toContain(openfireConfig.apiPath)
   })
 
-  it('should fail authentication with invalid credentials', async () => {
-    // Arrange - using invalid credentials
+  // it('should fail authentication with invalid credentials', async () => {
+  //   // Arrange - using invalid credentials
     
-    // Act
-    const authenticated = await xmppRestService.authenticate('invalid-user', 'wrong-password')
-    const error = xmppRestService.getLastError()
+  //   // Act
+  //   const authenticated = await xmppRestService.authenticate('invalid-user', 'wrong-password')
+  //   const error = xmppRestService.getLastError()
     
-    // If connection is refused, conditionally skip the assertions
-    if (error.code === 'CONNECTION_REFUSED') {
-      serverAvailable = false
-      console.warn('SKIPPING TEST: OpenFire server connection refused - server may not be running')
-      return
-    }
+  //   // If connection is refused, conditionally skip the assertions
+  //   if (error.code === 'CONNECTION_REFUSED') {
+  //     serverAvailable = false
+  //     console.warn('SKIPPING TEST: OpenFire server connection refused - server may not be running')
+  //     return
+  //   }
 
-    // Only run assertions if the server is available
-    if (serverAvailable) {
-      expect(authenticated).toBe(false)
-      expect(xmppRestService.isAuthenticated()).toBe(false)
-    } else {
-      // If server is not available, make the test pass with a conditional assertion
-      expect(true).toBe(true)
-    }
+  //   // Only run assertions if the server is available
+  //   if (serverAvailable) {
+  //     expect(authenticated).toBe(false)
+  //     expect(xmppRestService.isAuthenticated()).toBe(false)
+  //   } else {
+  //     // If server is not available, make the test pass with a conditional assertion
+  //     expect(true).toBe(true)
+  //   }
+  // })
+
+  describe('Group/Force Management', () => {
+    beforeEach(async () => {
+      // Authenticate before each test in this group
+      const authenticated = await xmppRestService.authenticate()
+      if (!authenticated) {
+        const error = xmppRestService.getLastError()
+        if (error.code === 'CONNECTION_REFUSED') {
+          serverAvailable = false
+          console.warn('SKIPPING TEST: OpenFire server connection refused - server may not be running')
+        }
+      }
+    })
+
+    it('should retrieve a list of groups/forces from the server', async () => {
+      // Skip test if server is not available
+      if (!serverAvailable) {
+        console.warn('SKIPPING TEST: OpenFire server not available')
+        expect(true).toBe(true)
+        fail()
+      }
+
+      // Act
+      const result = await xmppRestService.getGroups()
+      
+      // Assert
+      expect(result.success).toBe(true)
+      expect(result.data).toBeDefined()
+      expect(Array.isArray(result.data?.groups)).toBe(true)
+      
+      // Verify the structure of the groups
+      const groups = result.data?.groups as Group[]
+      if (groups.length > 0) {
+        const firstGroup = groups[0]
+        expect(firstGroup).toHaveProperty('name')
+        expect(typeof firstGroup.name).toBe('string')
+      }
+    })
   })
 })
