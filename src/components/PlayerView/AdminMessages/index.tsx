@@ -1,6 +1,6 @@
 import React from 'react'
-import { mockRooms } from '../../rooms-test/__mocks__/mockRooms'
-import RoomContent from './RoomContent'
+import { mockRooms } from '../../../rooms-test/__mocks__/mockRooms'
+import RoomContent from '../RoomContent'
 import './AdminMessages.css'
 
 const AdminMessages: React.FC = () => {
