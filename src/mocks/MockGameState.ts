@@ -1,8 +1,4 @@
-export interface GameStateType {
-  turn: number
-  currentTime: string
-  currentPhase: string
-}
+import { GameStateType } from "../types/wargame";
 
 export const mockGameState: GameStateType = {
   turn: 3,
