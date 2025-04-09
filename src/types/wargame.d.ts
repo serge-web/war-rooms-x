@@ -34,11 +34,25 @@ export interface ForceType {
 }
 
 /**
- * Room/Channel representation from OpenFire
+ * OpenFire room
  */
 export interface RoomType {
   roomName: string
   naturalName?: string
   description?: string
   subject?: string
+}
+
+export interface Message {
+  id: string
+  sender: string
+  content: string
+  timestamp: string
+}
+
+export interface Room {
+  id: string
+  name: string
+  unreadCount: number
+  messages: Message[]
 }

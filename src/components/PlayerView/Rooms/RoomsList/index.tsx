@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import * as FlexLayout from 'flexlayout-react'
 import 'flexlayout-react/style/light.css'
-import { mockRooms } from '../../../rooms-test/__mocks__/mockRooms'
-import RoomContent, { Room } from '../RoomContent'
+import { mockRooms } from '../../../../rooms-test/__mocks__/mockRooms'
+import RoomContent from '../RoomContent'
 import './index.css'
+import { Room } from '../../../../types/wargame'
 
 const RoomsList: React.FC = () => {
   // Create a FlexLayout model for the rooms
