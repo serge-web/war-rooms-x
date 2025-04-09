@@ -38,7 +38,7 @@ const PlayerView: React.FC = () => {
   }
   
   const userDetailsStyle: React.CSSProperties = {
-    height: '100px',
+    // height: '150px',
     border: '1px solid blue',
     lineHeight: '20px'
   }
