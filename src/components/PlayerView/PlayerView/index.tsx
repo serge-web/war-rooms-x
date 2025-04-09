@@ -11,9 +11,9 @@ const { Sider, Content } = Layout
 const PlayerView: React.FC = () => {
   const gameStateStyle: React.CSSProperties = {
     height: 120,
-    backgroundColor: '#fff',
-    border: '1px solid orange',
-    lineHeight: '20px'
+    backgroundColor: '#ccc',
+    lineHeight: '20px',
+    padding: '10px'
   }
   
   const roomsStyle: React.CSSProperties = {
