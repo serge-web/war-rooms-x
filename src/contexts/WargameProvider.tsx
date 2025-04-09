@@ -1,6 +1,7 @@
 import { useState, ReactNode } from 'react'
-import { ForceType, GameStateType, RoomType, UserDetailsType } from '../types/wargame'
+import { ForceDetails, GameStateType, RoomType, UserDetailsType } from '../types/wargame'
 import { WargameContext } from './WargameContext'
+import { mockGameState, mockUserDetails, mockForceData } from '../components/PlayerView/UserDetails/mockData'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -8,10 +9,10 @@ interface WargameProviderProps {
 
 export const WargameProvider = ({ children }: WargameProviderProps) => {
   const [loggedIn, setLoggedIn] = useState(false)
-  const [gameState, setGameState] = useState<GameStateType | null>(null)
+  const [gameState, setGameState] = useState<GameStateType | null>(mockGameState)
   const [rooms, setRooms] = useState<RoomType[]>([])
-  const [playerForce, setPlayerForce] = useState<ForceType | null>(null)
-  const [playerDetails, setPlayerDetails] = useState<UserDetailsType | null>(null)    
+  const [playerForce, setPlayerForce] = useState<ForceDetails | null>(mockForceData)
+  const [playerDetails, setPlayerDetails] = useState<UserDetailsType | null>(mockUserDetails)    
 
   const value = {
     loggedIn,
