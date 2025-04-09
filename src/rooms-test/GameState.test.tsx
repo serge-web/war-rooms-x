@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import GameState from './GameState'
-import { mockGameState } from '../../mocks/MockGameState'
+import GameState from '../components/PlayerView/GameState'
+import { mockGameState } from '../mocks/MockGameState'
 
 // Mock the useWargame hook
 jest.mock('../../hooks/useWargame', () => ({
