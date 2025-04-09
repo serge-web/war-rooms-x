@@ -10,12 +10,16 @@ function App() {
     setIsLoggedIn(true)
   }
 
+  const handleLogout = () => {
+    setIsLoggedIn(false)
+  }
+
   return (
     <div className="app-container">
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <PlayerView />
+        <PlayerView onLogout={handleLogout} />
       )}
     </div>
   )
