@@ -1,6 +1,6 @@
 import React from 'react'
 import './index.css'
-import { Message } from '../../../../types/wargame'
+import { Message } from '../../../../../types/wargame'
 
 const MessageBubble: React.FC<{
   message: Message
