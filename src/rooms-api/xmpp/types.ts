@@ -1,3 +1,5 @@
+import { DataForm, JSONItem, PubsubItem } from "stanza/protocol"
+
 /**
  * Represents a chat room in the XMPP MUC system
  */
@@ -53,3 +55,39 @@ export interface LeaveRoomResult {
  * Message handler function type
  */
 export type RoomMessageHandler = (message: RoomMessage) => void
+
+/**
+ * Represents a PubSub document
+ */
+export type PubSubDocument = PubsubItem<JSONItem>
+
+
+export interface PubSubOptions extends DataForm {
+  'pubsub#access_model': 'open' | 'authorise'
+  'pubsub#node_type': 'leaf' | 'collection'
+}
+
+/**
+ * Result of a PubSub document operation
+ */
+export interface PubSubDocumentResult {
+  success: boolean
+  id: string
+  error?: string
+  itemId?: string
+}
+
+/**
+ * Result of a PubSub subscription operation
+ */
+export interface PubSubSubscribeResult {
+  success: boolean
+  id: string
+  error?: string
+  subscriptionId?: string
+}
+
+/**
+ * PubSub document change handler function type
+ */
+export type PubSubDocumentChangeHandler = (document: PubSubDocument) => void

@@ -1,6 +1,6 @@
-import { XMPPService } from '../../rooms-api/xmpp/XMPPService'
-import { loadOpenfireConfig } from '../../utils/config'
-import { RoomMessage } from '../../rooms-api/xmpp/types'
+import { XMPPService } from '../../rooms-api/xmpp/XMPPService.js'
+import { loadOpenfireConfig } from '../../utils/config.js'
+import { RoomMessage } from '../../rooms-api/xmpp/types.js'
 
 describe('XMPP MUC (Multi-User Chat)', () => {
   let xmppService: XMPPService

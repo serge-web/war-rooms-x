@@ -1,7 +1,7 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem } from 'stanza/protocol'
-import { JoinRoomResult, LeaveRoomResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
+import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent } from 'stanza/protocol'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
 
 /**
  * Service for handling XMPP connections and communications
@@ -12,6 +12,8 @@ export class XMPPService {
   private jid = ''
   private joinedRooms: Set<string> = new Set()
   private messageHandlers: RoomMessageHandler[] = []
+  private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
+  private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
 
   /**
    * Connect to the XMPP server
@@ -39,6 +41,10 @@ export class XMPPService {
         this.client.on('session:started', () => {
           this.connected = true
           this.jid = this.client?.jid || ''
+          
+          // Set up PubSub event handler when connection is established
+          this.setupPubSubEventHandler()
+          
           resolve(true)
         })
 
@@ -401,5 +407,433 @@ export class XMPPService {
     if (index !== -1) {
       this.messageHandlers.splice(index, 1)
     }
+  }
+
+  /**
+   * Get the PubSub service JID for the server
+   * @param server The server domain
+   * @returns Promise resolving to the PubSub service JID or null if not found
+   */
+  async getPubSubService(server: string): Promise<string | null> {
+    if (!this.client || !this.connected) {
+      return null
+    }
+
+    try {
+      const items = await this.client.getDiscoItems(server)
+      
+      // Look for pubsub service in items
+      for (const item of items.items) {
+        if (item.jid && item.jid.includes('pubsub')) {
+          return item.jid
+        }
+      }
+      
+      // If not found in items, try the standard pubsub subdomain
+      return `pubsub.${server}`
+    } catch (error) {
+      console.error('Error discovering PubSub service:', error)
+      return null
+    }
+  }
+
+  /**
+   * List all PubSub documents (nodes) from a service
+   * @param pubsubService The PubSub service JID
+   * @returns Promise resolving to array of PubSubDocument objects
+   */
+  async listPubSubNodes(pubsubService: string): Promise<PubSubDocument[]> {
+    if (!this.client || !this.connected) {
+      return []
+    }
+
+    try {
+      // Get all nodes from the pubsub service
+      const items = await this.client.getDiscoItems(pubsubService)
+      
+      // Convert DiscoItems to PubSubDocument objects
+      return items.items
+        .filter((item): item is DiscoItem & { node: string } => !!item.node)
+        .map((item) => ({
+          id: item.node,
+          name: item.name || item.node
+        }))
+    } catch (error) {
+      console.error('Error listing PubSub nodes:', error)
+      return []
+    }
+  }
+
+  /**
+   * Create a new PubSub document (node)
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID for the new node
+   * @param config Configuration options for the node
+   * @param content Optional initial content for the node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async createPubSubDocument(pubsubService: string, nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Create the node
+
+      await this.client.createNode(pubsubService, nodeId, config)
+      
+      // If content is provided, publish it to the node
+      if (content) {
+        // For StanzaJS, we need to provide a proper XML payload
+        // The third parameter is for item attributes, and fourth is the payload
+        await this.client.publish(pubsubService, nodeId, content)
+      }
+      
+      return { success: true, id: nodeId }
+    } catch (error) {
+      console.error(`Error creating PubSub document ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Update a PubSub document (publish to a node)
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to update
+   * @param content The new content for the node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async updatePubSubDocument(pubsubService: string, nodeId: string, content: string): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Publish to the node
+      // For StanzaJS, we need to provide a proper XML payload
+      await this.client.publish(pubsubService, nodeId, {}, `<content>${content}</content>`)
+      
+      return { success: true, id: nodeId }
+    } catch (error) {
+      console.error(`Error updating PubSub document ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Update a JSON document in a PubSub node. Note: the publisher for a message does not receive subscription notifications, so
+   * that notifications are manually triggered for local subscribers.
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to update
+   * @param content The new JSON content for the node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async publishJsonToPubSubNode(pubsubService: string, nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Publish the JSON content to the node
+      const result = await this.client.publish(pubsubService, nodeId, content)
+      
+      // Manually trigger the document change event for local subscribers
+      // This ensures that our local handlers are notified even if the XMPP server
+      // doesn't send a notification back to the publisher
+      const document: PubSubDocument = {
+        id: nodeId,
+        content: content
+      }
+      
+      // Notify all registered handlers about the document change
+      this.pubsubChangeHandlers.forEach(handler => handler(document))
+      
+      return { success: true, id: nodeId, itemId: result.id }
+    } catch (error) {
+      console.error(`Error publishing JSON to PubSub node ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Delete a PubSub document (node)
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to delete
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async deletePubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Delete the node
+      await this.client.deleteNode(pubsubService, nodeId)
+      
+      return { success: true, id: nodeId }
+    } catch (error) {
+      console.error(`Error deleting PubSub document ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Alias for deletePubSubDocument - Delete a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to delete
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async deletePubSubNode(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+    return this.deletePubSubDocument(pubsubService, nodeId)
+  }
+
+  /**
+   * Subscribe to a PubSub document (node)
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to subscribe to
+   * @returns Promise resolving to PubSubSubscribeResult
+   */
+  async subscribeToPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubSubscribeResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Set up the PubSub event handler if not already done
+      this.setupPubSubEventHandler()
+
+      // check we aren't already subscribed to this node
+      if (this.subscriptionIds.has(nodeId)) {
+        return { success: false, id: nodeId, error: 'Already subscribed' }
+      }
+      
+      // Subscribe to the node
+      const result = await this.client.subscribeToNode(pubsubService, nodeId)
+      
+      // Store the subscription ID for later use when unsubscribing
+      if (result && result.subid) {
+        this.subscriptionIds.set(nodeId, result.subid)
+      }
+      
+      return { success: true, id: nodeId, subscriptionId: result?.subid }
+    } catch (error) {
+      console.error(`Error subscribing to PubSub document ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Unsubscribe from a PubSub document (node)
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to unsubscribe from
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async unsubscribeFromPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: nodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Get the subscription ID if available
+      const subid = this.subscriptionIds.get(nodeId)
+      
+      // Unsubscribe from the node with the subscription ID if available
+      if (subid) {
+        await this.client.unsubscribeFromNode(pubsubService, {
+          node: nodeId,
+          subid
+        })
+        
+        // Remove the subscription ID from the map
+        this.subscriptionIds.delete(nodeId)
+      } else {
+        // Try without subscription ID, but this might fail
+        try {
+          await this.client.unsubscribeFromNode(pubsubService, nodeId)
+        } catch (e) {
+          // Ignore the error if it's about missing subscription ID
+          const error = e as { pubsubError?: string }
+          if (error?.pubsubError !== 'subid-required') {
+            throw e
+          }
+        }
+      }
+      
+      return { success: true, id: nodeId }
+    } catch (error) {
+      console.error(`Error unsubscribing from PubSub document ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Get the content of a PubSub document (node)
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to get content from
+   * @returns Promise resolving to PubSubDocument or null if not found
+   */
+  async getPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocument | null> {
+    if (!this.client || !this.connected) {
+      return null
+    }
+
+    try {
+      // TODO: using paging to only retrieve the last item from the node
+      
+      // Get the items from the node
+      const result = await this.client.getItems(pubsubService, nodeId)
+
+      if (result.items && result.items.length > 0) {
+        const item = result.items[0] as PubSubDocument
+        return item
+      }
+      
+      return null
+    } catch (error) {
+      console.error(`Error getting PubSub document ${nodeId}:`, error)
+      return null
+    }
+  }
+
+  // Define the pubsub event handler function
+  private pubsubEventHandler = (message: Message) => {
+    console.log('item updated!', message)
+    if (!message.pubsub) return
+    const pubsub = message.pubsub as PubsubEvent
+    
+    if (!pubsub.items || !pubsub.items.published || pubsub.items.published.length === 0) return
+    
+    const nodeId = pubsub.items?.node || ''
+    const item = pubsub.items.published[0] as PubSubDocument
+    
+    const document: PubSubDocument = {
+      id: nodeId,
+      content: item.content
+    }
+    
+    // Notify all registered handlers
+    this.pubsubChangeHandlers.forEach(handler => handler(document))
+  }
+
+  /**
+   * Set up the event handler for PubSub events
+   */
+  private setupPubSubEventHandler(): void {
+    if (!this.client) return
+
+    // Check if this handler is already registered
+    const existingListeners = this.client.listeners('pubsub:published')
+    
+    // Only add the listener if it's not already present
+    if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
+      this.client.on('pubsub:published', this.pubsubEventHandler)
+    }
+  }
+
+  /**
+   * Register a handler for PubSub document changes
+   * @param handler The handler function to call when a document changes
+   */
+  onPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
+    this.setupPubSubEventHandler()
+    this.pubsubChangeHandlers.push(handler)
+  }
+
+  /**
+   * Remove a PubSub document change handler
+   * @param handler The handler function to remove
+   */
+  offPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
+    const index = this.pubsubChangeHandlers.indexOf(handler)
+    if (index !== -1) {
+      this.pubsubChangeHandlers.splice(index, 1)
+    }
+  }
+
+  /**
+   * Create a child node within a collection node
+   * @param pubsubService The PubSub service JID
+   * @param parentNodeId The ID of the parent collection node
+   * @param childNodeId The ID for the new child node
+   * @param config Configuration options for the child node
+   * @param content Optional initial content for the child node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+  async createPubSubChildNode(pubsubService: string, parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+    if (!this.client || !this.connected) {
+      return { success: false, id: childNodeId, error: 'Not connected' }
+    }
+
+    try {
+      // Create the child node with collection association
+      const childConfig = {
+        ...config,
+        collection: parentNodeId
+      }
+      
+      // Create the node with parent association
+      await this.client.createNode(pubsubService, childNodeId, childConfig)
+      
+      // If content is provided, publish it to the node
+      if (content) {
+        await this.client.publish(pubsubService, childNodeId, content)
+      }
+      
+      return { success: true, id: childNodeId }
+    } catch (error) {
+      console.error(`Error creating PubSub child node ${childNodeId} in collection ${parentNodeId}:`, error)
+      return { success: false, id: childNodeId, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * Get the configuration of a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to get configuration for
+   * @returns Promise resolving to PubSubOptions containing the node configuration
+   */
+  async getPubSubNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the node configuration using StanzaJS
+      const result = await this.client.getNodeConfig(pubsubService, nodeId)
+      
+      // Extract the node type from the configuration form
+      let nodeType: 'leaf' | 'collection' = 'leaf' // Default to leaf
+      let access: 'open' | 'authorise' = 'open' // Default to open
+      
+      // Look for the node_type field in the form
+      if (result && result.fields) {
+        for (const field of result.fields) {
+          if (field.name === 'pubsub#node_type' && field.value) {
+            nodeType = field.value === 'collection' ? 'collection' : 'leaf'
+          }
+          if (field.name === 'pubsub#access_model' && field.value) {
+            access = field.value === 'authorize' ? 'authorise' : 'open'
+          }
+        }
+      }
+      
+      return {
+        'pubsub#node_type': nodeType,
+        'pubsub#access_model': access
+      }
+    } catch (error) {
+      console.error(`Error getting PubSub node config for ${nodeId}:`, error)
+      throw error
+    }
+  }
+  
+  /**
+   * Alias for getPubSubNodeConfig - Get the configuration of a PubSub node
+   * @param pubsubService The PubSub service JID
+   * @param nodeId The ID of the node to get configuration for
+   * @returns Promise resolving to PubSubOptions containing the node configuration
+   */
+  async getNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
+    return this.getPubSubNodeConfig(pubsubService, nodeId)
   }
 }
