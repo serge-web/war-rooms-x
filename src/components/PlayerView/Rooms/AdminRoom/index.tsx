@@ -1,9 +1,9 @@
 import React from 'react'
-import { mockRooms } from '../../../rooms-test/__mocks__/mockRooms'
+import { mockRooms } from '../../../../rooms-test/__mocks__/mockRooms'
 import RoomContent from '../RoomContent'
 import './index.css'
 
-const AdminMessages: React.FC = () => {
+const AdminRoom: React.FC = () => {
   // Find the admin room from mockRooms
   const adminRoom = mockRooms.find(room => room.id === '__admin')
 
@@ -21,4 +21,4 @@ const AdminMessages: React.FC = () => {
   )
 }
 
-export default AdminMessages
+export default AdminRoom

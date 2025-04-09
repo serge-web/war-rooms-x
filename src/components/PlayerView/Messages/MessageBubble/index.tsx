@@ -1,12 +1,6 @@
 import React from 'react'
 import './index.css'
-
-export interface Message {
-  id: string
-  sender: string
-  content: string
-  timestamp: string
-}
+import { Message } from '../../../../types/wargame'
 
 const MessageBubble: React.FC<{
   message: Message
