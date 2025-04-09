@@ -1,14 +1,15 @@
-import React, { useState } from 'react'
+import React, { useMemo } from 'react'
 import * as FlexLayout from 'flexlayout-react'
 import 'flexlayout-react/style/light.css'
-import { mockRooms } from '../../../../rooms-test/__mocks__/mockRooms'
 import RoomContent from '../RoomContent'
 import './index.css'
-import { Room } from '../../../../types/wargame'
+import { RoomType } from '../../../../types/wargame'
+import { useWargame } from '../../../../contexts/WargameContext'
 
 const RoomsList: React.FC = () => {
+  const { rooms } = useWargame()
   // Create a FlexLayout model for the rooms
-  const createModel = (): FlexLayout.Model => {
+  const model = useMemo((): FlexLayout.Model => {
     const jsonModel: FlexLayout.IJsonModel = {
       global: {},
       borders: [],
@@ -19,33 +20,28 @@ const RoomsList: React.FC = () => {
           {
             type: 'tabset',
             weight: 50,
-            children: mockRooms.filter((room: Room) => !room.id.startsWith('__')).map(room => ({
+            children: rooms.filter((room: RoomType) => !room.roomName.startsWith('__')).map(room => ({
               type: 'tab',
-              name: room.name,
+              name: room.naturalName,
               component: 'room',
-              config: { roomId: room.id }
+              config: room
             }))
           }
         ]
       }
     }
     return FlexLayout.Model.fromJson(jsonModel)
-  }
+  }, [rooms])
 
-  const [model] = useState<FlexLayout.Model>(createModel())
+  console.log('rooms', rooms, model)
 
   // Factory function to render components based on type
   const factory = (node: FlexLayout.TabNode) => {
     const component = node.getComponent()
-    const config = node.getConfig()
+    const room = node.getConfig() as RoomType
     
     if (component === 'room') {
-      const roomId = config.roomId
-      const room = mockRooms.find(r => r.id === roomId)
-      
-      if (room) {
         return <RoomContent room={room} />
-      }
     }
     
     return <div>Component not found</div>

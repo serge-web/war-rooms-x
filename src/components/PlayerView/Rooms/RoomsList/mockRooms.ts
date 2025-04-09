@@ -1,4 +1,4 @@
-import { Message } from "../../types/wargame"
+import { Message } from "../../../../types/wargame"
 
 export interface MockRoomDetails {
   id: string

@@ -1,5 +1,5 @@
 import React from 'react'
-import { mockRooms } from '../../../../rooms-test/__mocks__/mockRooms'
+import { mockRooms } from '../RoomsList/mockRooms'
 import RoomContent from '../RoomContent'
 import './index.css'
 

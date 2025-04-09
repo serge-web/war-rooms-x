@@ -10,8 +10,8 @@ export interface WargameContextType {
   setLoggedIn: (value: boolean) => void
   gameState: GameStateType | null
   setGameState: (value: GameStateType | null) => void
-  roomNames: string[]
-  setRoomNames: (value: string[]) => void
+  rooms: RoomType[]
+  setRooms: (value: RoomType[]) => void
   playerForce: ForceDetails | null
   setPlayerForce: (value: ForceDetails | null) => void
   playerDetails: UserDetailsType | null
