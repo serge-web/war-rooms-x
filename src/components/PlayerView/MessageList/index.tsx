@@ -1,6 +1,6 @@
 import React from 'react'
-import MessageBubble from './MessageBubble'
-import { Message } from './MessageBubble'
+import MessageBubble from '../MessageBubble'
+import { Message } from '../MessageBubble'
 import { List } from 'antd'
 
 interface MessageListProps {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useWargame } from '../../hooks/useWargame'
+import { useWargame } from '../../../hooks/useWargame'
 
 const GameState: React.FC = () => {
   const { gameState, loading } = useWargame()

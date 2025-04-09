@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import * as FlexLayout from 'flexlayout-react'
 import 'flexlayout-react/style/light.css'
-import { mockRooms } from '../../rooms-test/__mocks__/mockRooms'
-import RoomContent, { Room } from './RoomContent'
+import { mockRooms } from '../../../rooms-test/__mocks__/mockRooms'
+import RoomContent, { Room } from '../RoomContent'
 import './RoomsList.css'
 
 const RoomsList: React.FC = () => {
