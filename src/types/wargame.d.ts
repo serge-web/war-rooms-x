@@ -1,3 +1,5 @@
+import { XMPPService } from "../rooms-api/xmpp/XMPPService"
+
 export interface GameStateType {
   turn: number
   currentTime: string
@@ -15,8 +17,8 @@ export interface WargameContextType {
   setPlayerForce: (value: ForceDetails | null) => void
   playerDetails: UserDetailsType | null
   setPlayerDetails: (value: UserDetailsType | null) => void
-  useMock: boolean
-  setUseMock: (value: boolean) => void
+  xmppClient: XMPPService | null | undefined
+  setXmppClient: (value: XMPPService | null | undefined) => void
 }
 
 /**

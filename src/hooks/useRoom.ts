@@ -5,19 +5,23 @@ import { useWargame } from '../contexts/WargameContext';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<Message[]>([])
-  const { useMock } = useWargame()
+  const { xmppClient } = useWargame()
 
   // TODO - also handle details, extract from the room description
 
   useEffect(() => {
-    if (!useMock) return
-    // check for this room name in the mock messages
-    // and set the messages and details
-    const roomMessages = mockRooms.find(r => r.id === room.roomName)
-    if (roomMessages && roomMessages.messages) {
-      setMessages(roomMessages.messages)
+    if (xmppClient === undefined) {
+      // waiting for login
+    } else if (xmppClient === null) {
+      // ok, use mock data
+      const roomMessages = mockRooms.find(r => r.id === room.roomName)
+      if (roomMessages && roomMessages.messages) {
+        setMessages(roomMessages.messages)
+      }
+    } else {
+      // TODO: use real data
     }
-  }, [room, useMock]);
+  }, [room, xmppClient]);
 
   return { messages };
 }

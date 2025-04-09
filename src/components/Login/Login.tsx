@@ -9,7 +9,7 @@ import { MockRoom, RoomType } from '../../types/rooms'
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState, setRooms, setUseMock } = useWargame()
+  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState, setRooms, setXmppClient } = useWargame()
 
   const loginEnabled = useMemo(() => {
     return username && password
@@ -18,7 +18,7 @@ const Login: React.FC = () => {
   const handleMock = () => {
     // populate the mock data
     setLoggedIn(true)
-    setUseMock(true)
+    setXmppClient(null)
     setPlayerDetails(mockUserDetails)
     setPlayerForce(mockForceData)
     setGameState(mockGameState)
@@ -34,6 +34,7 @@ const Login: React.FC = () => {
     // collect username and password, and use in mock auth
     console.log('Logging in with:', username, password)
     window.alert('Login not implemented')
+    // generate the XMPP client, try to log in
   }
 
   return (
