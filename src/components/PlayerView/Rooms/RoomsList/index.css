@@ -20,6 +20,10 @@
   position: relative;
 }
 
+.flexlayout__tab_button_content {
+  color: #000;
+}
+
 /* Tab styling */
 .tab-with-badge {
   display: flex;
