@@ -14,8 +14,6 @@ const UserDetails: React.FC = () => {
   // In the future, this would use the usePlayer and useForce hooks
   const isLoggedIn = !!playerDetails
 
-  console.log('player', playerDetails)
-
   return (
     <Card 
       size='small' 

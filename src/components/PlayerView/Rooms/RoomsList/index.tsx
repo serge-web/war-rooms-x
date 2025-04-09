@@ -3,8 +3,8 @@ import * as FlexLayout from 'flexlayout-react'
 import 'flexlayout-react/style/light.css'
 import RoomContent from '../RoomContent'
 import './index.css'
-import { RoomType } from '../../../../types/wargame'
 import { useWargame } from '../../../../contexts/WargameContext'
+import { RoomType } from '../../../../types/rooms'
 
 const RoomsList: React.FC = () => {
   const { rooms } = useWargame()
@@ -32,8 +32,6 @@ const RoomsList: React.FC = () => {
     }
     return FlexLayout.Model.fromJson(jsonModel)
   }, [rooms])
-
-  console.log('rooms', rooms, model)
 
   // Factory function to render components based on type
   const factory = (node: FlexLayout.TabNode) => {

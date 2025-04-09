@@ -4,7 +4,6 @@ export interface GameStateType {
   currentPhase: string
 }
 
-
 export interface WargameContextType {
   loggedIn: boolean
   setLoggedIn: (value: boolean) => void
@@ -16,6 +15,8 @@ export interface WargameContextType {
   setPlayerForce: (value: ForceDetails | null) => void
   playerDetails: UserDetailsType | null
   setPlayerDetails: (value: UserDetailsType | null) => void
+  useMock: boolean
+  setUseMock: (value: boolean) => void
 }
 
 /**
@@ -25,7 +26,7 @@ export interface UserDetailsType {
   username: string
   name?: string
   email?: string
-  properties?: Record<string, string>
+  properties?: Record<string, string> // privileges can be stored in here
 }
 
 export interface ForceDetails {
@@ -35,32 +36,5 @@ export interface ForceDetails {
 
 export interface ForceType {
   name: string
-  description?: string
-}
-
-export interface RoomDetails {
-  roomType: 'chat' | 'map'
-}
-/**
- * OpenFire room
- */
-export interface RoomType {
-  roomName: string
-  naturalName?: string
-  description?: string // this should be a JSON encoded RoomDetails
-  subject?: string
-}
-
-export interface Message {
-  id: string
-  sender: string
-  content: string
-  timestamp: string
-}
-
-export interface Room {
-  id: string
-  name: string
-  unreadCount: number
-  messages: Message[]
+  description?: string // can a stringified ForceDetails object
 }

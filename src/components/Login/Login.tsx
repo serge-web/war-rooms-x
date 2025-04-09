@@ -3,13 +3,13 @@ import { Button, Form, Input, Card, Flex } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
 import { mockUserDetails, mockForceData, mockGameState } from '../../components/PlayerView/UserDetails/mockData'
-import { MockRoomDetails, mockRooms } from '../PlayerView/Rooms/RoomsList/mockRooms'
-import { RoomType } from '../../types/wargame'
+import { mockRooms } from '../PlayerView/Rooms/RoomsList/mockRooms'
+import { MockRoom, RoomType } from '../../types/rooms'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState, setRooms } = useWargame()
+  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState, setRooms, setUseMock } = useWargame()
 
   const loginEnabled = useMemo(() => {
     return username && password
@@ -18,10 +18,11 @@ const Login: React.FC = () => {
   const handleMock = () => {
     // populate the mock data
     setLoggedIn(true)
+    setUseMock(true)
     setPlayerDetails(mockUserDetails)
     setPlayerForce(mockForceData)
     setGameState(mockGameState)
-    setRooms(mockRooms.map((room:MockRoomDetails): RoomType => {
+    setRooms(mockRooms.map((room:MockRoom): RoomType => {
       return {
         roomName: room.id,
         naturalName: room.name,

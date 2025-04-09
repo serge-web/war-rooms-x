@@ -2,30 +2,14 @@ import React from 'react'
 import './index.css'
 import MessageInputForm from '../Messages/MessageInputForm'
 import MessageList from '../Messages/MessageList'
-import { Message, RoomType } from '../../../../types/wargame'
-import { useState, useEffect } from 'react'
-import { mockRooms } from '../RoomsList/mockRooms'
+import { useRoom } from '../../../../hooks/useRoom'
+import { RoomType } from '../../../../types/rooms'
 
-const useRoom = (room: RoomType) => {
-  const [messages, setMessages] = useState<Message[]>([])
-
-  // TODO - also handle details, extract from the room description
-
-  useEffect(() => {
-    // check for this room name in the mock messages
-    // and set the messages and details
-    const roomMessages = mockRooms.find(r => r.id === room.roomName)
-    if (roomMessages && roomMessages.messages) {
-      setMessages(roomMessages.messages)
-    }
-  }, [room]);
-
-  return { messages };
+interface RoomProps {
+  room: RoomType
 }
 
-const RoomContent: React.FC<{
-  room: RoomType
-}> = ({ room }) => {
+const RoomContent: React.FC<RoomProps> = ({ room }) => {
   const { messages } = useRoom(room)
   
   return (
