@@ -12,13 +12,10 @@ describe('XMPP REST Connection', () => {
     xmppRestService.initialize(openfireConfig)
   })
 
-  it('should authenticate with the REST API using credentials from openfire.json', async () => {
-    // Arrange
-    const { credentials } = openfireConfig
-    const { username, password } = credentials[0] // Use the first credential (admin)
-
+  it('should authenticate with the REST API using secret key from .env file', async () => {
+    
     // Act
-    const authenticated = await xmppRestService.authenticate(username, password)
+    const authenticated = await xmppRestService.authenticateWithSecretKey()
     const error = xmppRestService.getLastError()
 
     console.log('Authentication result:', { authenticated, error })

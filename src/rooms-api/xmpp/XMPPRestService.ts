@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance } from 'axios'
+import * as dotenv from 'dotenv'
 import { OpenfireConfig } from '../../utils/config'
 
 /**
@@ -75,6 +76,72 @@ export class XMPPRestService {
     } catch (error) {
       const axiosError = error as AxiosError
       let errorMessage = 'Error authenticating with REST API'
+      let errorCode = 'UNKNOWN_ERROR'
+      let statusCode = 0
+      
+      if (axiosError.code === 'ECONNREFUSED') {
+        errorMessage = `Connection refused to ${this.baseUrl}. Make sure the OpenFire server is running and the REST API plugin is enabled.`
+        errorCode = 'CONNECTION_REFUSED'
+      } else if (axiosError.code === 'ETIMEDOUT') {
+        errorMessage = `Connection timed out to ${this.baseUrl}. Check network connectivity and server status.`
+        errorCode = 'CONNECTION_TIMEOUT'
+      } else if (axiosError.response) {
+        errorMessage = `Server returned error: ${axiosError.response.status} ${axiosError.response.statusText}`
+        errorCode = 'SERVER_ERROR'
+        statusCode = axiosError.response.status
+      }
+      
+      console.error(errorMessage, error)
+      this.setError(errorMessage, errorCode, statusCode)
+      this.authenticated = false
+      return false
+    }
+  }
+
+  /**
+   * Authenticate with the REST API using a secret key from .env file
+   * @param secretKey The secret key for authentication (if not provided, will be loaded from .env)
+   * @returns Promise resolving to true if authentication was successful
+   */
+  async authenticateWithSecretKey(secretKey?: string): Promise<boolean> {
+    if (!this.client) {
+      this.setError('REST client not initialized', 'CLIENT_NOT_INITIALIZED', 0)
+      throw new Error('REST client not initialized')
+    }
+
+    try {
+      // Load environment variables if not already loaded
+      dotenv.config()
+      
+      // Use provided secret key or load from environment
+      const apiKey = secretKey || process.env.REST_API_SECRET_KEY
+      
+      if (!apiKey) {
+        this.setError('REST API secret key not found in .env file', 'SECRET_KEY_MISSING', 0)
+        this.authenticated = false
+        return false
+      }
+      
+      // Set Authorization header with the secret key
+      this.client.defaults.headers.common['Authorization'] = apiKey
+      
+      console.log('AUTH', apiKey, this.client.defaults.headers.common)
+
+      // Test authentication by making a simple request
+      const response = await this.client.get('/system/properties')
+      
+      if (response.status === 200) {
+        this.authenticated = true
+        this.clearError()
+        return true
+      }
+      
+      this.setError('Authentication failed', 'AUTH_FAILED', response.status)
+      this.authenticated = false
+      return false
+    } catch (error) {
+      const axiosError = error as AxiosError
+      let errorMessage = 'Error authenticating with REST API using secret key'
       let errorCode = 'UNKNOWN_ERROR'
       let statusCode = 0
       
