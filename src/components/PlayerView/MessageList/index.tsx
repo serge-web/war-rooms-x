@@ -2,6 +2,7 @@ import React from 'react'
 import MessageBubble from '../MessageBubble'
 import { Message } from '../MessageBubble'
 import { List } from 'antd'
+import './index.css'
 
 interface MessageListProps {
   messages: Message[]

@@ -1,4 +1,5 @@
 import React from 'react'
+import './index.css'
 
 const MessageInputForm: React.FC<{
   onSendMessage: (content: string) => void

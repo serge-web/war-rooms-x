@@ -1,0 +1,35 @@
+/* Message bubble styling */
+.message-bubble {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 70%;
+}
+
+.message-bubble.self {
+  align-self: flex-end;
+  background-color: #3498db;
+  color: white;
+  margin-left: auto;
+}
+
+.message-bubble.other {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.sender-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.message-content {
+  margin-bottom: 4px;
+}
+
+.message-timestamp {
+  font-size: 0.8em;
+  opacity: 0.7;
+  text-align: right;
+}
