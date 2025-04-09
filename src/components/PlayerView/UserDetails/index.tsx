@@ -32,7 +32,6 @@ const UserDetails: React.FC<UserDetailsProps> = ({
     <Card 
       size='small' 
       style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-      bodyStyle={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}
     >
       {isLoggedIn ? (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
