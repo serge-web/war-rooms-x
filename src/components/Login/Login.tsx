@@ -1,13 +1,30 @@
-import React from 'react'
-import { Button, Form, Input, Card } from 'antd'
+import React, { useMemo, useState } from 'react'
+import { Button, Form, Input, Card, Flex } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
+import { mockUserDetails, mockForceData, mockGameState } from '../../components/PlayerView/UserDetails/mockData'
 
 const Login: React.FC = () => {
-  const { setLoggedIn } = useWargame()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState } = useWargame()
+
+  const loginEnabled = useMemo(() => {
+    return username && password
+  }, [username, password])
+
+  const handleMock = () => {
+    // populate the mock data
+    setLoggedIn(true)
+    setPlayerDetails(mockUserDetails)
+    setPlayerForce(mockForceData)
+    setGameState(mockGameState)
+  }
 
   const handleLogin = () => {
-    setLoggedIn(true)
+    // collect username and password, and use in mock auth
+    console.log('Logging in with:', username, password)
+    window.alert('Login not implemented')
   }
 
   return (
@@ -15,16 +32,27 @@ const Login: React.FC = () => {
       <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical">
           <Form.Item label="Username" name="username">
-            <Input placeholder="Enter your username" />
+            <Input 
+              placeholder="Enter your username" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)} 
+            />
           </Form.Item>
           <Form.Item label="Password" name="password">
-            <Input.Password placeholder="Enter your password" />
+            <Input.Password 
+              placeholder="Enter your password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+            />
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" onClick={handleLogin} block>
+          <Flex vertical={false}>
+            <Button onClick={handleMock} block>
+              Mock
+            </Button>
+            <Button type="primary" disabled={!loginEnabled} onClick={handleLogin} block>
               Login
             </Button>
-          </Form.Item>
+        </Flex>
         </Form>
       </Card>
     </div>
