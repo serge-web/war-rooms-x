@@ -13,7 +13,7 @@ export class XMPPService {
   public bareJid = ''
   private server = ''
   private joinedRooms: Set<string> = new Set()
-  private messageHandlers: RoomMessageHandler[] = []
+  private messageHandlers: Map<string, RoomMessageHandler[]> = new Map()
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
   private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
   public pubsubService: string | null = null
@@ -451,27 +451,40 @@ export class XMPPService {
         isHistory: false
       }
       
-      // Notify all registered handlers
-      this.messageHandlers.forEach(handler => handler(roomMessage))
+      // Notify only handlers registered for this room
+      const roomHandlers = this.messageHandlers.get(roomMessage.roomJid) || []
+      roomHandlers.forEach(handler => handler(roomMessage))
     })
   }
 
   /**
    * Register a handler for room messages
+   * @param roomJid The JID of the room to register the handler for
    * @param handler The handler function to call when a message is received
    */
-  onRoomMessage(handler: RoomMessageHandler): void {
-    this.messageHandlers.push(handler)
+  onRoomMessage(roomJid: string, handler: RoomMessageHandler): void {
+    const handlers = this.messageHandlers.get(roomJid) || []
+    handlers.push(handler)
+    this.messageHandlers.set(roomJid, handlers)
   }
 
   /**
    * Remove a message handler
+   * @param roomJid The JID of the room to remove the handler from
    * @param handler The handler function to remove
    */
-  offRoomMessage(handler: RoomMessageHandler): void {
-    const index = this.messageHandlers.indexOf(handler)
-    if (index !== -1) {
-      this.messageHandlers.splice(index, 1)
+  offRoomMessage(roomJid: string, handler: RoomMessageHandler): void {
+    const handlers = this.messageHandlers.get(roomJid)
+    if (handlers) {
+      const index = handlers.indexOf(handler)
+      if (index !== -1) {
+        handlers.splice(index, 1)
+        if (handlers.length === 0) {
+          this.messageHandlers.delete(roomJid)
+        } else {
+          this.messageHandlers.set(roomJid, handlers)
+        }
+      }
     }
   }
 

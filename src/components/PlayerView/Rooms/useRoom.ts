@@ -34,10 +34,7 @@ export const useRoom = (room: RoomType) => {
         messagesReceived.current = true
         // join the room
         const fetchMessages = async () => {
-          const joined = await xmppClient.joinRoom(room.roomName)
-          console.log('joined', room.roomName, joined)
-          // lastly, register for new messages
-          xmppClient.onRoomMessage((message: RoomMessage) => {
+          xmppClient.onRoomMessage(room.roomName, (message: RoomMessage) => {
             setMessages(prev => [...prev, {
               id: message.id,
               content: message.body,
@@ -45,17 +42,7 @@ export const useRoom = (room: RoomType) => {
               timestamp: message.timestamp.toISOString()
             }])
           })
-          // const messages = await xmppClient.getRoomHistory(room.roomName)
-          // if (messages) {
-          //   setMessages(messages.map((message): Message => {
-          //     return {
-          //       id: message.id,
-          //       content: message.body,
-          //       sender: message.from,
-          //       timestamp: message.timestamp.toISOString()
-          //     }
-          //   }))
-          // }
+          await xmppClient.joinRoom(room.roomName)
         }
         fetchMessages()
       }
