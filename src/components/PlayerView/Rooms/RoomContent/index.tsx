@@ -12,7 +12,6 @@ interface RoomProps {
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
   const { messages, theme, canSubmit } = useRoom(room)
-  console.log('theme', theme)
   return (
     <ConfigProvider
     theme={theme}>
