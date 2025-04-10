@@ -38,7 +38,6 @@ export const useRoom = (room: RoomType) => {
           console.log('joined', room.roomName, joined)
           const messages = await xmppClient.getRoomHistory(room.roomName)
           if (messages) {
-            console.log('room messages', room.roomName, messages)
             setMessages(messages.map((message): Message => {
               return {
                 id: message.id,

@@ -147,6 +147,7 @@ export class XMPPService {
    */
   async serverSupportsFeature(feature: string): Promise<boolean> {
     const info = await this.discoverServerFeatures()
+    console.log('server features', info)
     if (!info) return false
     
     return info.features.some(f => f.startsWith(feature))
@@ -381,44 +382,38 @@ export class XMPPService {
         messages.push(...newMessages)
       }
 
-      console.log('getting messages for', roomJid)
-
       // implement actual history retrieval
-      const getHistory = (jid: string, start: number, entries: XMPP.Stanzas.Forward[]) => {
+      const getHistory = async (jid: string, start: number, entries: XMPP.Stanzas.Forward[]): Promise<XMPP.Stanzas.Forward[]> => {
         // capture the page size and the start index
         // TODO: currently the `count` is being ignored
         const pOpts: Partial<XMPP.MAMQueryOptions> = {
-          paging: {count: 10, index: start}
+          // paging: {count: 10, index: start}
         }
-        // const time = new Date().getTime()
-        console.log('getting more results', jid, start)
-        this.client!.searchHistory(jid, pOpts).then((results) => {
-          const msgs:XMPP.Stanzas.Forward[] = results.results?.map((msg) => msg.item as XMPP.Stanzas.Forward) || []
-          console.log('received batch', msgs, results)
+        try {
+          const results = await this.client!.searchHistory(jid, pOpts)
+          const msgs: XMPP.Stanzas.Forward[] = results.results?.map((msg) => msg.item as XMPP.Stanzas.Forward) || []
           const numReceived = results.results?.length || 0
-          // const elapsedSecs = (new Date().getTime() - time) / 1000
-          // console.log('got history after secs', elapsedSecs, jid, start, msgs.length, results)
           entries.push(...msgs)
-          // msgs.forEach((msg) => {
-          //   // console.log('history entry', msg.delay?.timestamp, msg.message?.id)
-          // })
+          
           if (!results.complete) {
-            console.log('about to get another batch')
-            getHistory(jid, start + numReceived, entries)
+            // Recursively get more history and await the result
+            await getHistory(jid, start + numReceived, entries)
           } else {
             const elapsedSecs = (new Date().getTime() - startTime) / 1000
             console.log('History received for', jid.split('@')[0] + ' (' + entries.length, 'msgs in', elapsedSecs, 'secs)')
             setMessages(entries)
           }
           return entries
-        }).catch((err) => {
+        } catch (err) {
           console.error('getHistory error', jid, err)
-        })
+          return entries // Return what we have so far even if there was an error
+        }
       }
-      getHistory(roomJid, 0, [])
-
-      console.log('messages retrieved', messages.length)
-
+      
+      // Call the async function and wait for it to complete
+      await getHistory(roomJid, 0, [])
+      
+      // Now that we have all messages, map them to the expected format
       return messages.map((msg) => ({
         id: msg.message?.id || '',
         roomJid: roomJid,
