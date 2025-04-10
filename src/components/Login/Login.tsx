@@ -10,6 +10,13 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const { setXmppClient } = useWargame()
 
+  const loginRoles = [
+    ['admin', 'pwd'],
+    ['blue-co', 'pwd'],
+    ['red-co', 'pwd'],
+    ['no-perms', 'pwd'],
+  ]
+
   const loginEnabled = useMemo(() => {
     return username && password
   }, [username, password])
@@ -17,6 +24,21 @@ const Login: React.FC = () => {
   const handleMock = () => {
     setXmppClient(null)
   }
+
+  const fakeLogin = async (name: string, pwd: string) => {
+    const xmpp = new XMPPService()
+    try {
+      const connected = await xmpp.connect('10.211.55.16', name, pwd)
+      if (connected) {
+        setXmppClient(xmpp)
+      } else {
+        setError('Auth failed, please check username and password')
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : String(error))
+    }
+  }
+
 
   const handleLogin = async () => {
     const xmpp = new XMPPService()
@@ -53,6 +75,15 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)} 
             />
           </Form.Item>
+          <Flex justify='center' vertical={false}>
+
+          { loginRoles.map(([name, pwd]) => (
+            <Button key={name} onClick={() => fakeLogin(name, pwd)}>
+              {name}
+            </Button>
+          ))}
+          </Flex>
+
           <Flex vertical={false}>
             <Button onClick={handleMock} block>
               Mock
