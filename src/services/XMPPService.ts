@@ -899,4 +899,157 @@ export class XMPPService {
       throw error
     }
   }
+  
+  /**
+   * Get the vCard for a specific user
+   * @param jid The JID of the user to get the vCard for
+   * @returns Promise resolving to VCardData containing the user's vCard information
+   */
+  async getUserVCard(jid: string): Promise<VCardData> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the vCard for the specified user using StanzaJS
+      const vCardResult = await this.client.getVCard(jid) as VCardTemp
+      
+      // Extract email from records if available
+      let email = ''
+      let nickname = ''
+      let organization = ''
+      let title = ''
+      let role = ''
+      let photo = ''
+      
+      // Process vCard records to extract relevant information
+      if (vCardResult.records) {
+        for (const record of vCardResult.records) {
+          if (record.type === 'email' && record.value) {
+            email = record.value
+          } else if (record.type === 'nickname' && record.value) {
+            nickname = record.value
+          } else if (record.type === 'organization' && record.value) {
+            organization = record.value
+          } else if (record.type === 'title' && record.value) {
+            title = record.value
+          } else if (record.type === 'role' && record.value) {
+            role = record.value
+          } else if (record.type === 'photo' && record.data) {
+            // Convert Buffer to base64 string if available
+            photo = `data:${record.mediaType || 'image/jpeg'};base64,${record.data.toString('base64')}`
+          }
+        }
+      }
+      
+      // Convert the StanzaJS vCard format to our VCardData interface
+      const vCard: VCardData = {
+        jid,
+        fullName: vCardResult.fullName || '',
+        name: vCardResult.name,
+        nickname,
+        email,
+        organization,
+        title,
+        photo,
+        role
+      }
+      
+      return vCard
+    } catch (error) {
+      console.error(`Error getting vCard for user ${jid}:`, error)
+      throw error
+    }
+  }
+  
+  /**
+   * Set the vCard for the current user
+   * @param vCardData The vCard data to set
+   * @returns Promise resolving to true if successful
+   */
+  async setVCard(vCardData: VCardData): Promise<boolean> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Convert our VCardData to StanzaJS VCardTemp format
+      const vCardTemp: VCardTemp = {
+        fullName: vCardData.fullName || '',
+        name: vCardData.name || {},
+        records: []
+      }
+      
+      // Ensure records array is initialized
+      if (!vCardTemp.records) {
+        vCardTemp.records = []
+      }
+      
+      // Add records based on provided data
+      if (vCardData.email) {
+        vCardTemp.records.push({
+          type: 'email',
+          value: vCardData.email
+        })
+      }
+      
+      if (vCardData.nickname) {
+        vCardTemp.records.push({
+          type: 'nickname',
+          value: vCardData.nickname
+        })
+      }
+      
+      if (vCardData.organization) {
+        vCardTemp.records.push({
+          type: 'organization',
+          value: vCardData.organization
+        })
+      }
+      
+      if (vCardData.title) {
+        vCardTemp.records.push({
+          type: 'title',
+          value: vCardData.title
+        })
+      }
+      
+      if (vCardData.role) {
+        vCardTemp.records.push({
+          type: 'role',
+          value: vCardData.role
+        })
+      }
+      
+      // Handle photo if provided as base64 data URL
+      if (vCardData.photo && vCardData.photo.startsWith('data:')) {
+        // Extract media type and base64 data
+        const matches = vCardData.photo.match(/^data:(.+);base64,(.+)$/)
+        if (matches && matches.length === 3) {
+          const mediaType = matches[1]
+          const base64Data = matches[2]
+          const binaryData = Buffer.from(base64Data, 'base64')
+          
+          vCardTemp.records.push({
+            type: 'photo',
+            mediaType,
+            data: binaryData
+          })
+        }
+      }
+      
+      // Set the vCard using StanzaJS
+      // Note: StanzaJS doesn't have a setVCard method directly on the client
+      // We need to use the pubsub:publish event with the vcard-temp namespace
+      await this.client.sendIQ({
+        type: 'set',
+        vcard: vCardTemp
+      })
+      
+      return true
+    } catch (error) {
+      console.error('Error setting vCard for current user:', error)
+      throw error
+    }
+  }
 }

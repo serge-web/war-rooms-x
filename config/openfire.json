@@ -12,6 +12,9 @@
   }, {
     "username": "no-perms",
     "password": "pwd"
+  }, {
+    "username": "red-co",
+    "password": "pwd"
   }],
   "rooms": {
     "red-chat": "red-chat",
