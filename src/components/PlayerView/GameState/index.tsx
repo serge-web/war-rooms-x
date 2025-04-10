@@ -1,12 +1,12 @@
 import React from 'react'
 import { Card, Typography, Space, Tag, Divider } from 'antd'
 import { ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
-import { useWargame } from '../../../contexts/WargameContext'
+import { useGameState } from './useGameState'
 
 const { Text } = Typography
 
 const GameState: React.FC = () => {
-  const { gameState } = useWargame()
+  const { gameState } = useGameState()
 
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''

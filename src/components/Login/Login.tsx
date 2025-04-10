@@ -2,29 +2,25 @@ import React, { useMemo, useState } from 'react'
 import { Button, Form, Input, Card, Flex } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
-import { mockUserDetails, mockForceData, mockGameState } from '../../components/PlayerView/UserDetails/mockData'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setLoggedIn, setPlayerDetails, setPlayerForce, setGameState } = useWargame()
+  const { setXmppClient } = useWargame()
 
   const loginEnabled = useMemo(() => {
     return username && password
   }, [username, password])
 
   const handleMock = () => {
-    // populate the mock data
-    setLoggedIn(true)
-    setPlayerDetails(mockUserDetails)
-    setPlayerForce(mockForceData)
-    setGameState(mockGameState)
+    setXmppClient(null)
   }
 
   const handleLogin = () => {
     // collect username and password, and use in mock auth
     console.log('Logging in with:', username, password)
     window.alert('Login not implemented')
+    // generate the XMPP client, try to log in
   }
 
   return (

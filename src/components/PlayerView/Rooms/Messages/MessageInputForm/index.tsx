@@ -1,5 +1,6 @@
 import React from 'react'
 import './index.css'
+import { Button } from 'antd'
 
 const MessageInputForm: React.FC<{
   onSendMessage: (content: string) => void
@@ -23,7 +24,7 @@ const MessageInputForm: React.FC<{
       placeholder="Type a message..." 
       disabled={disabled} 
     />
-    <button type="submit" disabled={disabled}>Send</button>
+    <Button type="primary" htmlType="submit" disabled={disabled}>Send</Button>
   </form>
 )
 

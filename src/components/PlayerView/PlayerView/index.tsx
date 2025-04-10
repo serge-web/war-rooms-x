@@ -18,7 +18,6 @@ const PlayerView: React.FC = () => {
   
   const roomsStyle: React.CSSProperties = {
     width: '100%',
-    border: '1px solid green',
     lineHeight: '20px'
   }
 
@@ -27,18 +26,15 @@ const PlayerView: React.FC = () => {
     flexDirection: 'column',
     flexGrow: 1,
     overflow: 'auto',
-    border: '1px solid yellow',
     lineHeight: '20px'
   }
 
   const controlPanelStyle: React.CSSProperties = {
     width: '300px',
-    border: '1px solid green',
     lineHeight: '20px'
   }
   
   const userDetailsStyle: React.CSSProperties = {
-    border: '1px solid blue',
     lineHeight: '20px',
     padding: '15px',
     backgroundColor: '#ccc'
@@ -46,7 +42,6 @@ const PlayerView: React.FC = () => {
   
   const layoutStyle = {
     overflow: 'hidden',
-    border: '1px solid brown',
     lineHeight: '20px'  
   }
 

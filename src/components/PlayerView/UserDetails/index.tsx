@@ -2,19 +2,22 @@ import React from 'react'
 import { Card, Avatar, Typography, Space, Tooltip, Button, Divider, Badge } from 'antd'
 import { UserOutlined, TeamOutlined, LogoutOutlined } from '@ant-design/icons'
 import { useWargame } from '../../../contexts/WargameContext'
+import { usePlayerDetails } from './usePlayerDetails'
 
 const { Text, Title } = Typography
 
 const UserDetails: React.FC = () => {
-  const { setLoggedIn, playerDetails, playerForce } = useWargame()
+  const { xmppClient, setXmppClient } = useWargame()
+  const { playerDetails } = usePlayerDetails()
   
+  if (!playerDetails)
+    return
+
   const handleLogout = () => {
-    setLoggedIn(false)
+    setXmppClient(undefined)
   }
   // In the future, this would use the usePlayer and useForce hooks
-  const isLoggedIn = !!playerDetails
-
-  console.log('player', playerDetails)
+  const isLoggedIn = !(xmppClient)
 
   return (
     <Card 
@@ -34,7 +37,7 @@ const UserDetails: React.FC = () => {
             <div style={{ marginLeft: 12, flex: 1 }}>
               <Space direction='vertical' size={0} style={{ width: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Title level={5} style={{ margin: 0 }}>{playerDetails?.name}</Title>
+                  <Title level={5} style={{ margin: 0 }}>{playerDetails.role}</Title>
                 </div>
               </Space>
             </div>
@@ -44,10 +47,10 @@ const UserDetails: React.FC = () => {
           
           <div style={{ flex: 1 }}>
             <Space direction='vertical' size={4} style={{ width: '100%' }}>
-              {playerForce && (
+              {playerDetails && (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <TeamOutlined style={{ color: playerForce.color, marginRight: 8 }} />
-                  <Text strong>{playerForce.fullName}</Text>
+                  <TeamOutlined style={{ color: playerDetails.color, marginRight: 8 }} />
+                  <Text strong>{playerDetails.forceName}</Text>
                 </div>
               )}
             </Space>

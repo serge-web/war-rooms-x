@@ -1,4 +1,6 @@
-export const mockRooms = [
+import { MockRoom } from "../../../../types/rooms"
+
+export const mockRooms: MockRoom[] = [
   {
     id: 'room1',
     name: 'Command Room',

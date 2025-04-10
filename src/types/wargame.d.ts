@@ -1,21 +1,15 @@
+import { XMPPService } from "../services/XMPPService"
+
 export interface GameStateType {
   turn: number
   currentTime: string
   currentPhase: string
 }
 
-
 export interface WargameContextType {
   loggedIn: boolean
-  setLoggedIn: (value: boolean) => void
-  gameState: GameStateType | null
-  setGameState: (value: GameStateType | null) => void
-  rooms: RoomType[]
-  setRooms: (value: RoomType[]) => void
-  playerForce: ForceDetails | null
-  setPlayerForce: (value: ForceDetails | null) => void
-  playerDetails: UserDetailsType | null
-  setPlayerDetails: (value: UserDetailsType | null) => void
+  xmppClient: XMPPService | null | undefined
+  setXmppClient: (value: XMPPService | null | undefined) => void
 }
 
 /**
@@ -25,7 +19,7 @@ export interface UserDetailsType {
   username: string
   name?: string
   email?: string
-  properties?: Record<string, string>
+  properties?: Record<string, string> // privileges can be stored in here
 }
 
 export interface ForceDetails {
@@ -35,29 +29,5 @@ export interface ForceDetails {
 
 export interface ForceType {
   name: string
-  description?: string
-}
-
-/**
- * OpenFire room
- */
-export interface RoomType {
-  roomName: string
-  naturalName?: string
-  description?: string
-  subject?: string
-}
-
-export interface Message {
-  id: string
-  sender: string
-  content: string
-  timestamp: string
-}
-
-export interface Room {
-  id: string
-  name: string
-  unreadCount: number
-  messages: Message[]
+  description?: string // can a stringified ForceDetails object
 }

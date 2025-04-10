@@ -1,7 +1,7 @@
 import { NS_JSON_0 } from 'stanza/Namespaces'
 import { JSONItem } from 'stanza/protocol'
-import { XMPPService } from '../../rooms-api/xmpp/XMPPService.js'
-import { PubSubDocument } from '../../rooms-api/xmpp/types.js'
+import { XMPPService } from '../../services/XMPPService.js'
+import { PubSubDocument } from '../../services/types.js'
 import { loadOpenfireConfig } from '../../utils/config.js'
 
 // Import fail from Jest

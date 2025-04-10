@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from 'axios'
 import * as dotenv from 'dotenv'
-import { OpenfireConfig } from '../../utils/config'
+import { OpenfireConfig } from '../utils/config'
 
 /**
  * Group/Force representation from OpenFire
