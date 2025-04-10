@@ -4,32 +4,35 @@ import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 
+const defaultHost = '10.211.55.16'
+
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [host, setHost] = useState(defaultHost)
   const [error, setError] = useState<string | null>(null)
   const { setXmppClient } = useWargame()
 
   const loginRoles = [
-    ['admin', 'pwd'],
-    ['blue-co', 'pwd'],
-    ['red-co', 'pwd'],
-    ['no-perms', 'pwd'],
+    [host, 'admin', 'pwd'],
+    [host, 'blue-co', 'pwd'],
+    [host, 'red-co', 'pwd'],
+    [host, 'no-perms', 'pwd'],
   ]
 
   const loginEnabled = useMemo(() => {
-    return username && password
-  }, [username, password])
+    return username && password && host
+  }, [host, username, password])
 
   const handleMock = () => {
     setXmppClient(null)
   }
 
 
-  const doLogin = async (name: string, pwd: string) => {
+  const doLogin = async (host: string, name: string, pwd: string) => {
     const xmpp = new XMPPService()
     try {
-      const success = await xmpp.connect('10.211.55.16', name, pwd)
+      const success = await xmpp.connect(host, name, pwd)
       if (success) {
         setXmppClient(xmpp)
       } else {
@@ -41,16 +44,23 @@ const Login: React.FC = () => {
   }
 
   const handleLogin = () => {
-    doLogin(username, password)
+    doLogin(host, username, password)
   }
 
   return (
     <div className="login-container">
-      <Modal open={!!error} title="Login Error" onCancel={() => setError(null)}>
+      <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
         <p>{error}</p>
       </Modal>
       <Card title="War Rooms X - Login" className="login-card">
-        <Form layout="vertical">
+        <Form layout="vertical" onFinish={handleLogin} initialValues={{ host, username, password }}>
+        <Form.Item label="Host" name="host">
+            <Input 
+              placeholder="Enter your host" 
+              value={host} 
+              onChange={(e) => setHost(e.target.value)} 
+            />
+          </Form.Item>
           <Form.Item label="Username" name="username">
             <Input 
               placeholder="Enter your username" 
@@ -66,19 +76,18 @@ const Login: React.FC = () => {
             />
           </Form.Item>
           <Flex justify='center' vertical={false}>
-
-          { loginRoles.map(([name, pwd]) => (
-            <Button key={name} onClick={() => doLogin(name, pwd)}>
-              {name}
-            </Button>
-          ))}
+            { loginRoles.map(([host, name, pwd]) => (
+              <Button key={name} onClick={() => doLogin(host, name, pwd)}>
+                {name}
+              </Button>
+            ))}
           </Flex>
 
           <Flex vertical={false}>
             <Button onClick={handleMock} block>
               Mock
             </Button>
-            <Button type="primary" disabled={!loginEnabled} onClick={handleLogin} block>
+            <Button type="primary" htmlType="submit" disabled={!loginEnabled} block>
               Login
             </Button>
         </Flex>
