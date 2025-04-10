@@ -8,15 +8,8 @@ export interface GameStateType {
 
 export interface WargameContextType {
   loggedIn: boolean
-  setLoggedIn: (value: boolean) => void
-  gameState: GameStateType | null
-  setGameState: (value: GameStateType | null) => void
   rooms: RoomType[]
   setRooms: (value: RoomType[]) => void
-  playerForce: ForceDetails | null
-  setPlayerForce: (value: ForceDetails | null) => void
-  playerDetails: UserDetailsType | null
-  setPlayerDetails: (value: UserDetailsType | null) => void
   xmppClient: XMPPService | null | undefined
   setXmppClient: (value: XMPPService | null | undefined) => void
 }

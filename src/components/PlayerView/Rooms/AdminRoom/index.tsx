@@ -4,7 +4,6 @@ import './index.css'
 import { useRoom } from '../../../../hooks/useRoom'
 
 const AdminRoom: React.FC = () => {
-  // Find the admin room from mockRooms
   const roomConfig = { roomName: '__admin' }
   const adminRoom = useRoom(roomConfig)
 
