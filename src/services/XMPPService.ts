@@ -438,6 +438,7 @@ export class XMPPService {
     if (this.client.listeners('groupchat').length > 0) return
     
     this.client.on('groupchat', (message) => {
+      console.log('groupchat', message)
       // Skip messages without a body
       if (!message.body) return
       

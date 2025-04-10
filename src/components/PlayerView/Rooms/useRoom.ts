@@ -3,6 +3,7 @@ import { Message, RoomType } from '../../../types/rooms';
 import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
+import { RoomMessage } from '../../../services/types';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<Message[]>([])
@@ -30,23 +31,31 @@ export const useRoom = (room: RoomType) => {
     } else {
       // TODO: use real data
       if (xmppClient.mucService && messagesReceived.current === null) {
-        console.log('useRoom', messagesReceived.current)
         messagesReceived.current = true
         // join the room
         const fetchMessages = async () => {
           const joined = await xmppClient.joinRoom(room.roomName)
           console.log('joined', room.roomName, joined)
-          const messages = await xmppClient.getRoomHistory(room.roomName)
-          if (messages) {
-            setMessages(messages.map((message): Message => {
-              return {
-                id: message.id,
-                content: message.body,
-                sender: message.from,
-                timestamp: message.timestamp.toISOString()
-              }
-            }))
-          }
+          // lastly, register for new messages
+          xmppClient.onRoomMessage((message: RoomMessage) => {
+            setMessages(prev => [...prev, {
+              id: message.id,
+              content: message.body,
+              sender: message.from,
+              timestamp: message.timestamp.toISOString()
+            }])
+          })
+          // const messages = await xmppClient.getRoomHistory(room.roomName)
+          // if (messages) {
+          //   setMessages(messages.map((message): Message => {
+          //     return {
+          //       id: message.id,
+          //       content: message.body,
+          //       sender: message.from,
+          //       timestamp: message.timestamp.toISOString()
+          //     }
+          //   }))
+          // }
         }
         fetchMessages()
       }
