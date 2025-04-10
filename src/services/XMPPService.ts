@@ -512,13 +512,16 @@ export class XMPPService {
       }
       
       // Create the node
-      await this.client.createNode(this.pubsubService, nodeId, config)
+      console.log('about to create node', this.pubsubService, nodeId, config)
+      const createResults = await this.client.createNode(this.pubsubService, nodeId, config)
+      console.log('created pubsub node', createResults)
       
       // If content is provided, publish it to the node
       if (content) {
         // For StanzaJS, we need to provide a proper XML payload
         // The third parameter is for item attributes, and fourth is the payload
-        await this.client.publish(this.pubsubService, nodeId, content)
+        const pubResults = await this.client.publish(this.pubsubService, nodeId, content)
+        console.log('published pubsub node', pubResults)
       }
       
       return { success: true, id: nodeId }
@@ -739,9 +742,14 @@ export class XMPPService {
       }
       
       return null
-    } catch (error) {
-      console.error(`Error getting PubSub document ${nodeId}:`, error)
-      return null
+    } catch (error: unknown) {
+      // check for item not found
+      if(error && (error as { error?: { condition: string } })?.error?.condition === 'item-not-found') {
+        return null
+      } else {
+        console.error(`Error getting PubSub document ${nodeId}:`, error)
+        return null  
+      }
     }
   }
 

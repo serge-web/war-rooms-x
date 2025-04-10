@@ -34,7 +34,6 @@ export const usePlayerDetails = () => {
         try {
           const vCard = await xmppClient.getCurrentUserVCard()
           const bareJid = vCard.jid.split('/')[0]
-          console.log('vCard', vCard)
           try {
             if (vCard.organization) {
               const force = JSON.parse(vCard.organization)
