@@ -1,7 +1,7 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent } from 'stanza/protocol'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
+import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, VCardTemp } from 'stanza/protocol'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 
 /**
  * Service for handling XMPP connections and communications
@@ -10,6 +10,7 @@ export class XMPPService {
   private client: Agent | null = null
   private connected = false
   private jid = ''
+  private bareJid = ''
   private joinedRooms: Set<string> = new Set()
   private messageHandlers: RoomMessageHandler[] = []
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
@@ -41,6 +42,7 @@ export class XMPPService {
         this.client.on('session:started', () => {
           this.connected = true
           this.jid = this.client?.jid || ''
+          this.bareJid = this.jid.split('/')[0]
           
           // Set up PubSub event handler when connection is established
           this.setupPubSubEventHandler()
@@ -835,5 +837,66 @@ export class XMPPService {
    */
   async getNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
     return this.getPubSubNodeConfig(pubsubService, nodeId)
+  }
+
+  /**
+   * Get the vCard for the current user
+   * @returns Promise resolving to VCardData containing the user's vCard information
+   */
+  async getCurrentUserVCard(): Promise<VCardData> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the vCard for the current user using StanzaJS
+      const vCardResult = await this.client.getVCard(this.bareJid) as VCardTemp
+      
+      // Extract email from records if available
+      let email = ''
+      let nickname = ''
+      let organization = ''
+      let title = ''
+      let role = ''
+      let photo = ''
+      
+      // Process vCard records to extract relevant information
+      if (vCardResult.records) {
+        for (const record of vCardResult.records) {
+          if (record.type === 'email' && record.value) {
+            email = record.value
+          } else if (record.type === 'nickname' && record.value) {
+            nickname = record.value
+          } else if (record.type === 'organization' && record.value) {
+            organization = record.value
+          } else if (record.type === 'title' && record.value) {
+            title = record.value
+          } else if (record.type === 'role' && record.value) {
+            role = record.value
+          } else if (record.type === 'photo' && record.data) {
+            // Convert Buffer to base64 string if available
+            photo = `data:${record.mediaType || 'image/jpeg'};base64,${record.data.toString('base64')}`
+          }
+        }
+      }
+      
+      // Convert the StanzaJS vCard format to our VCardData interface
+      const vCard: VCardData = {
+        jid: this.jid,
+        fullName: vCardResult.fullName || '',
+        name: vCardResult.name,
+        nickname,
+        email,
+        organization,
+        title,
+        photo,
+        role
+      }
+      
+      return vCard
+    } catch (error) {
+      console.error('Error getting vCard for current user:', error)
+      throw error
+    }
   }
 }

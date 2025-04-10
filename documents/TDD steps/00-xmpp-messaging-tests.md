@@ -36,3 +36,10 @@ Focus on testing that we are able to:
 - update a pubsub document
 - delete a pubsub document
 - subscribe to document changes (including receiving an update when the pubsub document changes)
+
+## 1.5 XMPP Account Details
+
+As a Senior Typescript Developer, specializing in XMPP and TypeScript, it is your goal to write unit tests for XMPP messaging in the War-Rooms-X application. We need to produce tests to verify that the OpenFire server follows XMPP protocols, as implemented in the Stanza.js library. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
+
+Focus on testing that we are able to:
+- get the vCard for the current user

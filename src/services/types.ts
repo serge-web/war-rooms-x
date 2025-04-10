@@ -1,6 +1,31 @@
 import { DataForm, JSONItem, PubsubItem } from "stanza/protocol"
 
 /**
+ * Represents vCard data for a user, based on Stanza.js VCardTemp structure
+ */
+export interface VCardData {
+  jid: string
+  fullName?: string
+  name?: {
+    family?: string
+    given?: string
+    middle?: string
+    prefix?: string
+    suffix?: string
+  }
+  nickname?: string
+  email?: string
+  organization?: string
+  title?: string
+  photo?: string
+  role?: string
+  birthday?: string
+  url?: string
+  description?: string
+  // Additional vCard fields can be added as needed
+}
+
+/**
  * Represents a chat room in the XMPP MUC system
  */
 export interface Room {
