@@ -5,7 +5,9 @@ import RoomContent from '../RoomContent'
 import './index.css'
 import { useRooms } from './useRooms'
 import { RoomType } from '../../../../types/rooms'
-import { ConfigProvider, ThemeConfig } from 'antd'
+import { ConfigProvider, ThemeConfig, Typography } from 'antd'
+
+const { Text } = Typography
 
 const specialRoom = (room: RoomType): boolean => {
   return room.roomName.startsWith('__')
@@ -67,6 +69,16 @@ const RoomsList: React.FC = () => {
     return <div>Component not found</div>
   }
 
+  // Custom tab renderer to use Ant Design Text component
+  const onRenderTab = (node: FlexLayout.TabNode, renderValues: FlexLayout.ITabRenderValues) => {
+    renderValues.content = (
+      <Text style={{ padding: '0 5px' }}>
+        {node.getName()}
+      </Text>
+    )
+    return null
+  }
+
   return (
     <ConfigProvider
     theme={theme}>
@@ -74,6 +86,7 @@ const RoomsList: React.FC = () => {
         <FlexLayout.Layout 
           model={model} 
           factory={factory}
+          onRenderTab={onRenderTab}
         />
       </div>
       </ConfigProvider>
