@@ -26,8 +26,8 @@ describe('XMPP Discovery', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // Act
-    const supportsMUC = await xmppService.supportsMUC(host)
-    const supportsPubSub = await xmppService.supportsPubSub(host)
+    const supportsMUC = await xmppService.supportsMUC()
+    const supportsPubSub = await xmppService.supportsPubSub()
     
     // Assert
     expect(supportsMUC).toBe(true)
@@ -39,7 +39,7 @@ describe('XMPP Discovery', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // Act
-    const features = await xmppService.discoverServerFeatures(host)
+    const features = await xmppService.discoverServerFeatures()
     
     // Assert
     expect(features).not.toBeNull()

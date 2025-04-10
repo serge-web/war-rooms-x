@@ -16,8 +16,8 @@ export class XMPPService {
   private messageHandlers: RoomMessageHandler[] = []
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
   private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
-  private pubsubService: string | null = null
-  private mucService: string | null = null
+  public pubsubService: string | null = null
+  public mucService: string | null = null
 
   /**
    * Connect to the XMPP server
@@ -43,6 +43,7 @@ export class XMPPService {
         }
 
         this.client.on('session:started', () => {
+          console.log('handling session started')
           this.connected = true
           this.jid = this.client?.jid || ''
           this.bareJid = this.jid.split('/')[0]
@@ -64,9 +65,6 @@ export class XMPPService {
                 })
               }
             })
-          }
-
-          if (this.client) {
             this.supportsMUC().then(res => {
               if (res) {
                 // get the muc service
@@ -78,7 +76,8 @@ export class XMPPService {
                 })
               }
             })
-          }          
+          }
+
           resolve(true)
         })
 
@@ -232,14 +231,13 @@ export class XMPPService {
     }
 
     try {
-      const mucService = await this.getMUCService()
       
-      if (!mucService) {
+      if (!this.mucService) {
         console.error('Could not find MUC service')
         return []
       }
       
-      const items = await this.client.getDiscoItems(mucService)
+      const items = await this.client.getDiscoItems(this.mucService)
       
       // Convert DiscoItems to Room objects
       return items.items
@@ -725,6 +723,7 @@ export class XMPPService {
     }
 
     try {
+      console.log(this.pubsubService)
       if (!this.pubsubService) {
         throw new Error('PubSub service not available')
       }
@@ -748,7 +747,6 @@ export class XMPPService {
 
   // Define the pubsub event handler function
   private pubsubEventHandler = (message: Message) => {
-    console.log('item updated!', message)
     if (!message.pubsub) return
     const pubsub = message.pubsub as PubsubEvent
     

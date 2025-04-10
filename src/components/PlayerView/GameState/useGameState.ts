@@ -10,16 +10,24 @@ export const useGameState = () => {
   // TODO - also handle details, extract from the room description
 
   useEffect(() => {
-    if (xmppClient === undefined) {
-      // waiting for login
-    } else if (xmppClient === null) {
-      // ok, use mock data
-      setGameState(mockGameState)
-    } else {
-      // TODO: use real data
-
+    const fetchGameState = async () => {
+      if (xmppClient === undefined) {
+        // waiting for login
+      } else if (xmppClient === null) {
+        // ok, use mock data
+        setGameState(mockGameState)
+      } else {
+        // TODO: use real data
+        if (xmppClient.pubsubService) {
+          const gameState = await xmppClient.getPubSubDocument('game-state')
+          console.log('game state', gameState)
+          // setGameState(gameState)
+        }
+      }
     }
-  }, [xmppClient]);
+    
+    fetchGameState()
+  }, [xmppClient, xmppClient?.pubsubService]);
 
   return { gameState };
 }

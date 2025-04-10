@@ -25,12 +25,21 @@ const Login: React.FC = () => {
     setXmppClient(null)
   }
 
-  const fakeLogin = async (name: string, pwd: string) => {
+
+  const doLogin = async (name: string, pwd: string) => {
     const xmpp = new XMPPService()
     try {
-      const connected = await xmpp.connect('10.211.55.16', name, pwd)
-      if (connected) {
-        setXmppClient(xmpp)
+      const success = await xmpp.connect('10.211.55.16', name, pwd)
+      if (success) {
+        // Wait for pubsub service to be initialized
+        const checkPubSub = () => {
+          if (xmpp.pubsubService) {
+            setXmppClient(xmpp)
+          } else {
+            setTimeout(checkPubSub, 100) // Check again after 100ms
+          }
+        }
+        checkPubSub()
       } else {
         setError('Auth failed, please check username and password')
       }
@@ -39,19 +48,8 @@ const Login: React.FC = () => {
     }
   }
 
-
-  const handleLogin = async () => {
-    const xmpp = new XMPPService()
-    try {
-      const connected = await xmpp.connect('10.211.55.16', username, password)
-      if (connected) {
-        setXmppClient(xmpp)
-      } else {
-        setError('Auth failed, please check username and password')
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : String(error))
-    }
+  const handleLogin = () => {
+    doLogin(username, password)
   }
 
   return (
@@ -78,7 +76,7 @@ const Login: React.FC = () => {
           <Flex justify='center' vertical={false}>
 
           { loginRoles.map(([name, pwd]) => (
-            <Button key={name} onClick={() => fakeLogin(name, pwd)}>
+            <Button key={name} onClick={() => doLogin(name, pwd)}>
               {name}
             </Button>
           ))}
