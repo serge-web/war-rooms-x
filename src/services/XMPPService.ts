@@ -11,6 +11,7 @@ export class XMPPService {
   private connected = false
   private jid = ''
   public bareJid = ''
+  private server = ''
   private joinedRooms: Set<string> = new Set()
   private messageHandlers: RoomMessageHandler[] = []
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
@@ -43,6 +44,7 @@ export class XMPPService {
           this.connected = true
           this.jid = this.client?.jid || ''
           this.bareJid = this.jid.split('/')[0]
+          this.server = host
           
           // Set up PubSub event handler when connection is established
           this.setupPubSubEventHandler()
