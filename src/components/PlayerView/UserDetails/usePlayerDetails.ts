@@ -31,20 +31,40 @@ export const usePlayerDetails = () => {
         })
       } else {
         // get the AccountInfo from the xmpp client
-        const vCard = await xmppClient.getCurrentUserVCard()
-        const bareJid = vCard.jid.split('/')[0]
-        setPlayerDetails({
-          id: vCard.role || bareJid,
-          role: vCard.role || 'unknown',
-          forceName: vCard.organization || 'unknown'
-        })
-        // const accountInfo = xmppClient.getAccountInfo()
-        // console.log('AccountInfo:', accountInfo)
+        try {
+          const vCard = await xmppClient.getCurrentUserVCard()
+          const bareJid = vCard.jid.split('/')[0]
+          try {
+            if (vCard.organization) {
+              const force = JSON.parse(vCard.organization)
+              setPlayerDetails({
+                id: vCard.role || bareJid,
+                role: vCard.role || 'unknown',
+                forceName: force.fullName,
+                color: force.color
+              })
+            }
+          } catch (err) {
+            console.log('problem extracting force from organisation:', err)
+            setPlayerDetails({
+              id: vCard.role || bareJid,
+              role: vCard.role || 'unknown',
+              forceName: 'unknown'
+            })
+          }
+        } catch (err) {
+          console.log('problem getting vCard:', err)
+          setPlayerDetails({
+            id: xmppClient.bareJid,
+            role: xmppClient.bareJid,
+            forceName: 'unknown'
+          })
+        }
       }
     }
     
     fetchPlayerDetails()
   }, [xmppClient]);
 
-  return { playerDetails };
+  return { playerDetails }
 }

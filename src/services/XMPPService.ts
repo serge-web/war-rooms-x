@@ -10,7 +10,7 @@ export class XMPPService {
   private client: Agent | null = null
   private connected = false
   private jid = ''
-  private bareJid = ''
+  public bareJid = ''
   private joinedRooms: Set<string> = new Set()
   private messageHandlers: RoomMessageHandler[] = []
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []

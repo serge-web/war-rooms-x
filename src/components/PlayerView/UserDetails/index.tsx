@@ -7,14 +7,8 @@ import { usePlayerDetails } from './usePlayerDetails'
 const { Text, Title } = Typography
 
 const UserDetails: React.FC = () => {
-  const { setXmppClient, loggedIn, xmppClient } = useWargame()
+  const { setXmppClient, xmppClient } = useWargame()
   const { playerDetails } = usePlayerDetails()
-
-  if (!loggedIn)
-    return
-
-  if (!playerDetails)
-    return
 
   console.log('player details', playerDetails)
   const handleLogout = () => {
@@ -41,7 +35,7 @@ const UserDetails: React.FC = () => {
           <div style={{ marginLeft: 12, flex: 1 }}>
             <Space direction='vertical' size={0} style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Title level={5} style={{ margin: 0 }}>{playerDetails.role || playerDetails.id}</Title>
+                <Title level={5} style={{ margin: 0 }}>{playerDetails?.role || playerDetails?.id || 'unknown'}</Title>
               </div>
             </Space>
           </div>
@@ -53,8 +47,8 @@ const UserDetails: React.FC = () => {
           <Space direction='vertical' size={4} style={{ width: '100%' }}>
             {playerDetails && (
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <TeamOutlined style={{ color: playerDetails.color, marginRight: 8 }} />
-                <Text strong>{playerDetails.forceName}</Text>
+                <TeamOutlined style={{ color: playerDetails?.color, marginRight: 8 }} />
+                <Text strong>{playerDetails?.forceName || 'unknown'}</Text>
               </div>
             )}
           </Space>
