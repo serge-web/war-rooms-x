@@ -20,7 +20,6 @@ describe('XMPP PubSub', () => {
   }
   let xmppService: XMPPService
   let host: string
-  let pubsubService: string
 
   beforeEach(async () => {
     // Set up the XMPP service and connect before each test
@@ -33,8 +32,7 @@ describe('XMPP PubSub', () => {
     const connected = await xmppService.connect(host, username, password)
     expect(connected).toBe(true)
     
-    // Get the pubsub service JID (typically 'pubsub.domain')
-    pubsubService = `pubsub.${host}`
+    // The pubsubService will be automatically discovered and stored in XMPPService
   })
 
   afterEach(async () => {
@@ -54,13 +52,10 @@ describe('XMPP PubSub', () => {
     const discoveredPubSubService = await xmppService.getPubSubService()
     expect(discoveredPubSubService).not.toBeNull()
     
-    if (discoveredPubSubService) {
-      // Use the discovered service instead of the assumed one
-      pubsubService = discoveredPubSubService
-    }
+    // The discovered service will be automatically stored in XMPPService.pubsubService
     
     // Act - List PubSub nodes
-    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodes = await xmppService.listPubSubNodes()
     
     // Assert
     expect(Array.isArray(nodes)).toBe(true)    
@@ -71,22 +66,22 @@ describe('XMPP PubSub', () => {
     expect(xmppService.isConnected()).toBe(true)
 
     // check the test node does not exist
-    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodes = await xmppService.listPubSubNodes()
     const nodeExists = nodes.some(node => node.id === testNodeId)
 
     // if the node exists, delete it
     if (nodeExists) {
-      await xmppService.deletePubSubNode(pubsubService, testNodeId)
+      await xmppService.deletePubSubNode(testNodeId)
     }
 
     // Act - Create a pub-sub leaf node using the module-level test content
-    const result = await xmppService.createPubSubDocument(pubsubService, testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, testJsonContent)
+    const result = await xmppService.createPubSubDocument(testNodeId, { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, testJsonContent)
 
     // Assert
     expect(result.success).toBe(true)
     
     // Verify node exists
-    const nodes2 = await xmppService.listPubSubNodes(pubsubService)
+    const nodes2 = await xmppService.listPubSubNodes()
     const nodeExists2 = nodes2.some(node => node.id === testNodeId)
     expect(nodeExists2).toBe(true)
   })
@@ -96,7 +91,7 @@ describe('XMPP PubSub', () => {
     expect(xmppService.isConnected()).toBe(true)
 
     // Act - Retrieve the item from the pub-sub leaf node
-    const result = await xmppService.getPubSubDocument(pubsubService, testNodeId)
+    const result = await xmppService.getPubSubDocument(testNodeId)
 
     // Assert
     expect(result).not.toBeNull()
@@ -118,7 +113,7 @@ describe('XMPP PubSub', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // First verify the node exists and has our initial content
-    const initialDoc = await xmppService.getPubSubDocument(pubsubService, testNodeId)
+    const initialDoc = await xmppService.getPubSubDocument(testNodeId)
     expect(initialDoc).not.toBeNull()
     
     // Create updated content with the same structure but different values
@@ -133,14 +128,14 @@ describe('XMPP PubSub', () => {
     
     // Act - Update the document in the node by publishing new content
     // This uses the Stanza publish() method via our wrapper
-    const result = await xmppService.publishJsonToPubSubNode(pubsubService, testNodeId, updatedJsonContent)
+    const result = await xmppService.publishJsonToPubSubNode(testNodeId, updatedJsonContent)
     
     // Assert
     expect(result.success).toBe(true)
     expect(result.itemId).toBeDefined()
     
     // Verify the document was updated by retrieving it
-    const updatedDoc = await xmppService.getPubSubDocument(pubsubService, testNodeId)
+    const updatedDoc = await xmppService.getPubSubDocument(testNodeId)
     expect(updatedDoc).not.toBeNull()
     
     // Verify the content was updated
@@ -163,18 +158,18 @@ describe('XMPP PubSub', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // First verify the node exists
-    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodes = await xmppService.listPubSubNodes()
     const nodeExists = nodes.some(node => node.id === testNodeId)
     expect(nodeExists).toBe(true)
     
     // Act - Delete the node
-    const result = await xmppService.deletePubSubNode(pubsubService, testNodeId)
+    const result = await xmppService.deletePubSubNode(testNodeId)
     
     // Assert
     expect(result.success).toBe(true)
     
     // Verify node no longer exists
-    const nodesAfterDelete = await xmppService.listPubSubNodes(pubsubService)
+    const nodesAfterDelete = await xmppService.listPubSubNodes()
     const nodeExistsAfterDelete = nodesAfterDelete.some(node => node.id === testNodeId)
     expect(nodeExistsAfterDelete).toBe(false)
   })
@@ -188,11 +183,11 @@ describe('XMPP PubSub', () => {
     const testSubscriptionNodeId = 'test-subscription-node'
     
     // Check if the test node exists and delete it if it does
-    const nodes = await xmppService.listPubSubNodes(pubsubService)
+    const nodes = await xmppService.listPubSubNodes()
     const nodeExists = nodes.some(node => node.id === testSubscriptionNodeId)
     
     if (nodeExists) {
-      await xmppService.deletePubSubNode(pubsubService, testSubscriptionNodeId)
+      await xmppService.deletePubSubNode(testSubscriptionNodeId)
     }
     
     // Create the test node with initial content
@@ -206,7 +201,6 @@ describe('XMPP PubSub', () => {
     }
     
     const createResult = await xmppService.createPubSubDocument(
-      pubsubService, 
       testSubscriptionNodeId, 
       { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, 
       initialContent
@@ -230,7 +224,7 @@ describe('XMPP PubSub', () => {
     }
     
     // Act - Subscribe to the node
-    const subscribeResult = await xmppService.subscribeToPubSubDocument(pubsubService, testSubscriptionNodeId)
+    const subscribeResult = await xmppService.subscribeToPubSubDocument(testSubscriptionNodeId)
     expect(subscribeResult.success).toBe(true)
 
     // Subscribe to document changes
@@ -247,7 +241,7 @@ describe('XMPP PubSub', () => {
     }
     
     // Publish the updated content
-    const updateResult = await xmppService.publishJsonToPubSubNode(pubsubService, testSubscriptionNodeId, updatedContent)
+    const updateResult = await xmppService.publishJsonToPubSubNode(testSubscriptionNodeId, updatedContent)
     expect(updateResult.success).toBe(true)
 
     await new Promise(resolve => setTimeout(resolve, 1000))
@@ -278,7 +272,7 @@ describe('XMPP PubSub', () => {
     } catch (error) {
       // If we get here, the notification was not received, so the test should fail
       // First verify that the document was actually updated
-      const updatedDoc = await xmppService.getPubSubDocument(pubsubService, testSubscriptionNodeId)
+      const updatedDoc = await xmppService.getPubSubDocument(testSubscriptionNodeId)
       
       if (updatedDoc?.content) {
         const content = updatedDoc.content as JSONItem
@@ -302,14 +296,14 @@ describe('XMPP PubSub', () => {
       
       try {
         // Try to unsubscribe, but don't fail the test if this fails
-        await xmppService.unsubscribeFromPubSubDocument(pubsubService, testSubscriptionNodeId)
+        await xmppService.unsubscribeFromPubSubDocument(testSubscriptionNodeId)
       } catch (e) {
         console.log('Error unsubscribing, continuing cleanup:', e)
       }
       
       try {
         // Try to delete the node, but don't fail the test if this fails
-        await xmppService.deletePubSubNode(pubsubService, testSubscriptionNodeId)
+        await xmppService.deletePubSubNode(testSubscriptionNodeId)
       } catch (e) {
         console.log('Error deleting node, continuing:', e)
       }

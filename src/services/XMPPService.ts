@@ -467,18 +467,21 @@ export class XMPPService {
   }
 
   /**
-   * List all PubSub documents (nodes) from a service
-   * @param pubsubService The PubSub service JID
+   * List all PubSub documents (nodes) from the server's PubSub service
    * @returns Promise resolving to array of PubSubDocument objects
    */
-  async listPubSubNodes(pubsubService: string): Promise<PubSubDocument[]> {
+  async listPubSubNodes(): Promise<PubSubDocument[]> {
     if (!this.client || !this.connected) {
       return []
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Get all nodes from the pubsub service
-      const items = await this.client.getDiscoItems(pubsubService)
+      const items = await this.client.getDiscoItems(this.pubsubService)
       
       // Convert DiscoItems to PubSubDocument objects
       return items.items
@@ -495,27 +498,29 @@ export class XMPPService {
 
   /**
    * Create a new PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID for the new node
    * @param config Configuration options for the node
    * @param content Optional initial content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async createPubSubDocument(pubsubService: string, nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+  async createPubSubDocument(nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Create the node
-
-      await this.client.createNode(pubsubService, nodeId, config)
+      await this.client.createNode(this.pubsubService, nodeId, config)
       
       // If content is provided, publish it to the node
       if (content) {
         // For StanzaJS, we need to provide a proper XML payload
         // The third parameter is for item attributes, and fourth is the payload
-        await this.client.publish(pubsubService, nodeId, content)
+        await this.client.publish(this.pubsubService, nodeId, content)
       }
       
       return { success: true, id: nodeId }
@@ -527,20 +532,23 @@ export class XMPPService {
 
   /**
    * Update a PubSub document (publish to a node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to update
    * @param content The new content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async updatePubSubDocument(pubsubService: string, nodeId: string, content: string): Promise<PubSubDocumentResult> {
+  async updatePubSubDocument(nodeId: string, content: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Publish to the node
       // For StanzaJS, we need to provide a proper XML payload
-      await this.client.publish(pubsubService, nodeId, {}, `<content>${content}</content>`)
+      await this.client.publish(this.pubsubService, nodeId, {}, `<content>${content}</content>`)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -552,19 +560,22 @@ export class XMPPService {
   /**
    * Update a JSON document in a PubSub node. Note: the publisher for a message does not receive subscription notifications, so
    * that notifications are manually triggered for local subscribers.
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to update
    * @param content The new JSON content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async publishJsonToPubSubNode(pubsubService: string, nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
+  async publishJsonToPubSubNode(nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Publish the JSON content to the node
-      const result = await this.client.publish(pubsubService, nodeId, content)
+      const result = await this.client.publish(this.pubsubService, nodeId, content)
       
       // Manually trigger the document change event for local subscribers
       // This ensures that our local handlers are notified even if the XMPP server
@@ -586,18 +597,21 @@ export class XMPPService {
 
   /**
    * Delete a PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to delete
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async deletePubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+  async deletePubSubDocument(nodeId: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Delete the node
-      await this.client.deleteNode(pubsubService, nodeId)
+      await this.client.deleteNode(this.pubsubService, nodeId)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -608,26 +622,28 @@ export class XMPPService {
 
   /**
    * Alias for deletePubSubDocument - Delete a PubSub node
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to delete
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async deletePubSubNode(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
-    return this.deletePubSubDocument(pubsubService, nodeId)
+  async deletePubSubNode(nodeId: string): Promise<PubSubDocumentResult> {
+    return this.deletePubSubDocument(nodeId)
   }
 
   /**
    * Subscribe to a PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to subscribe to
    * @returns Promise resolving to PubSubSubscribeResult
    */
-  async subscribeToPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubSubscribeResult> {
+  async subscribeToPubSubDocument(nodeId: string): Promise<PubSubSubscribeResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Set up the PubSub event handler if not already done
       this.setupPubSubEventHandler()
 
@@ -637,7 +653,7 @@ export class XMPPService {
       }
       
       // Subscribe to the node
-      const result = await this.client.subscribeToNode(pubsubService, nodeId)
+      const result = await this.client.subscribeToNode(this.pubsubService, nodeId)
       
       // Store the subscription ID for later use when unsubscribing
       if (result && result.subid) {
@@ -653,22 +669,25 @@ export class XMPPService {
 
   /**
    * Unsubscribe from a PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to unsubscribe from
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async unsubscribeFromPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+  async unsubscribeFromPubSubDocument(nodeId: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Get the subscription ID if available
       const subid = this.subscriptionIds.get(nodeId)
       
       // Unsubscribe from the node with the subscription ID if available
       if (subid) {
-        await this.client.unsubscribeFromNode(pubsubService, {
+        await this.client.unsubscribeFromNode(this.pubsubService, {
           node: nodeId,
           subid
         })
@@ -678,7 +697,7 @@ export class XMPPService {
       } else {
         // Try without subscription ID, but this might fail
         try {
-          await this.client.unsubscribeFromNode(pubsubService, nodeId)
+          await this.client.unsubscribeFromNode(this.pubsubService, nodeId)
         } catch (e) {
           // Ignore the error if it's about missing subscription ID
           const error = e as { pubsubError?: string }
@@ -697,20 +716,23 @@ export class XMPPService {
 
   /**
    * Get the content of a PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to get content from
    * @returns Promise resolving to PubSubDocument or null if not found
    */
-  async getPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocument | null> {
+  async getPubSubDocument(nodeId: string): Promise<PubSubDocument | null> {
     if (!this.client || !this.connected) {
       return null
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // TODO: using paging to only retrieve the last item from the node
       
       // Get the items from the node
-      const result = await this.client.getItems(pubsubService, nodeId)
+      const result = await this.client.getItems(this.pubsubService, nodeId)
 
       if (result.items && result.items.length > 0) {
         const item = result.items[0] as PubSubDocument
@@ -781,19 +803,22 @@ export class XMPPService {
 
   /**
    * Create a child node within a collection node
-   * @param pubsubService The PubSub service JID
    * @param parentNodeId The ID of the parent collection node
    * @param childNodeId The ID for the new child node
    * @param config Configuration options for the child node
    * @param content Optional initial content for the child node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async createPubSubChildNode(pubsubService: string, parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+  async createPubSubChildNode(parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: childNodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Create the child node with collection association
       const childConfig = {
         ...config,
@@ -801,11 +826,11 @@ export class XMPPService {
       }
       
       // Create the node with parent association
-      await this.client.createNode(pubsubService, childNodeId, childConfig)
+      await this.client.createNode(this.pubsubService, childNodeId, childConfig)
       
       // If content is provided, publish it to the node
       if (content) {
-        await this.client.publish(pubsubService, childNodeId, content)
+        await this.client.publish(this.pubsubService, childNodeId, content)
       }
       
       return { success: true, id: childNodeId }
@@ -817,18 +842,21 @@ export class XMPPService {
 
   /**
    * Get the configuration of a PubSub node
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to get configuration for
    * @returns Promise resolving to PubSubOptions containing the node configuration
    */
-  async getPubSubNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
+  async getPubSubNodeConfig(nodeId: string): Promise<PubSubOptions> {
     if (!this.client || !this.connected) {
       throw new Error('Not connected')
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Get the node configuration using StanzaJS
-      const result = await this.client.getNodeConfig(pubsubService, nodeId)
+      const result = await this.client.getNodeConfig(this.pubsubService, nodeId)
       
       // Extract the node type from the configuration form
       let nodeType: 'leaf' | 'collection' = 'leaf' // Default to leaf
@@ -858,12 +886,11 @@ export class XMPPService {
   
   /**
    * Alias for getPubSubNodeConfig - Get the configuration of a PubSub node
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to get configuration for
    * @returns Promise resolving to PubSubOptions containing the node configuration
    */
-  async getNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
-    return this.getPubSubNodeConfig(pubsubService, nodeId)
+  async getNodeConfig(nodeId: string): Promise<PubSubOptions> {
+    return this.getPubSubNodeConfig(nodeId)
   }
 
   /**
