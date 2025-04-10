@@ -22,7 +22,7 @@ const RoomsList: React.FC = () => {
       config: room
     }))
     const first = convertedRooms[0]
-    const afterFirst = convertedRooms.slice(1)
+    const afterFirst = convertedRooms?.slice(1) || []
     const jsonModel: FlexLayout.IJsonModel = {
       global: { tabEnableClose: false, tabEnablePopout: true },
       borders: [],
@@ -33,16 +33,16 @@ const RoomsList: React.FC = () => {
           {
             type: 'tabset',
             weight: 50,
-            children: [first]
+            children: afterFirst
           }
         ]
       }
     }
-    if (afterFirst.length > 0) {
-      jsonModel.layout.children.push({
+    if (first) {
+      jsonModel.layout.children.unshift({
         type: 'tabset',
         weight: 50,
-        children: afterFirst
+        children: [first]
       })
     }
     return FlexLayout.Model.fromJson(jsonModel)
