@@ -223,12 +223,9 @@ describe('XMPP PubSub', () => {
       }
     }
     
-    // Act - Subscribe to the node
-    const subscribeResult = await xmppService.subscribeToPubSubDocument(testSubscriptionNodeId)
+    // Act - Subscribe to the node and register the handler in one call
+    const subscribeResult = await xmppService.subscribeToPubSubDocument(testSubscriptionNodeId, documentChangeHandler)
     expect(subscribeResult.success).toBe(true)
-
-    // Subscribe to document changes
-    xmppService.onPubSubDocumentChange(documentChangeHandler)
     
     // Update the document content
     const updatedContent: JSONItem = { 
@@ -291,12 +288,9 @@ describe('XMPP PubSub', () => {
       // Clear the timeout to prevent hanging
       clearTimeout(timeoutId)
       
-      // Clean up - Unsubscribe from document changes
-      xmppService.offPubSubDocumentChange(documentChangeHandler)
-      
       try {
-        // Try to unsubscribe, but don't fail the test if this fails
-        await xmppService.unsubscribeFromPubSubDocument(testSubscriptionNodeId)
+        // Try to unsubscribe and remove the handler in one call, but don't fail the test if this fails
+        await xmppService.unsubscribeFromPubSubDocument(testSubscriptionNodeId, documentChangeHandler)
       } catch (e) {
         console.log('Error unsubscribing, continuing cleanup:', e)
       }

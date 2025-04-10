@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, VCardTemp } from 'stanza/protocol'
+import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions, VCardTemp } from 'stanza/protocol'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 
 /**
@@ -43,7 +43,6 @@ export class XMPPService {
         }
 
         this.client.on('session:started', () => {
-          console.log('handling session started')
           this.connected = true
           this.jid = this.client?.jid || ''
           this.bareJid = this.jid.split('/')[0]
@@ -54,24 +53,24 @@ export class XMPPService {
 
           // check if pubsub is enabled
           if (this.client) {
-            this.supportsPubSub().then(res => {
-              if (res) {
-                // get the pubsub service
-                this.getPubSubService().then(service => {
-                  if (service) {
-                    console.log('PubSub service:', service)
-                    this.pubsubService = service
-                  }
-                })
-              }
-            })
             this.supportsMUC().then(res => {
               if (res) {
                 // get the muc service
                 this.getMUCService().then(service => {
                   if (service) {
-                    console.log('MUC service:', service)
                     this.mucService = service
+                  }
+                })
+              }
+            })
+            // do pubsub last, since that's what we're 
+            // waiting for before marking client as `live`
+            this.supportsPubSub().then(res => {
+              if (res) {
+                // get the pubsub service
+                this.getPubSubService().then(service => {
+                  if (service) {
+                    this.pubsubService = service
                   }
                 })
               }
@@ -633,11 +632,12 @@ export class XMPPService {
   }
 
   /**
-   * Subscribe to a PubSub document (node)
+   * Subscribe to a PubSub document (node) and register a change handler
    * @param nodeId The ID of the node to subscribe to
+   * @param handler Optional handler function to call when the document changes
    * @returns Promise resolving to PubSubSubscribeResult
    */
-  async subscribeToPubSubDocument(nodeId: string): Promise<PubSubSubscribeResult> {
+  async subscribeToPubSubDocument(nodeId: string, handler?: PubSubDocumentChangeHandler): Promise<PubSubSubscribeResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -663,6 +663,21 @@ export class XMPPService {
         this.subscriptionIds.set(nodeId, result.subid)
       }
       
+      // Register the handler if provided
+      if (handler) {
+        this.pubsubChangeHandlers.push(handler)
+      }
+
+      // if a handler is provided, and the node exists, call the handler with the current content
+      // if (handler) {
+      //   const result = await this.client.getItems(this.pubsubService, nodeId)
+
+      //   const content = await this.getPubSubDocument(nodeId)
+      //   if (content) {
+      //     handler(content)
+      //   }
+      // }
+      
       return { success: true, id: nodeId, subscriptionId: result?.subid }
     } catch (error) {
       console.error(`Error subscribing to PubSub document ${nodeId}:`, error)
@@ -673,9 +688,10 @@ export class XMPPService {
   /**
    * Unsubscribe from a PubSub document (node)
    * @param nodeId The ID of the node to unsubscribe from
+   * @param handler Optional handler function to remove
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async unsubscribeFromPubSubDocument(nodeId: string): Promise<PubSubDocumentResult> {
+  async unsubscribeFromPubSubDocument(nodeId: string, handler?: PubSubDocumentChangeHandler): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -710,12 +726,59 @@ export class XMPPService {
         }
       }
       
+      // Remove the handler if provided
+      if (handler) {
+        const index = this.pubsubChangeHandlers.indexOf(handler)
+        if (index !== -1) {
+          this.pubsubChangeHandlers.splice(index, 1)
+        }
+      }
+      
       return { success: true, id: nodeId }
     } catch (error) {
       console.error(`Error unsubscribing from PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
     }
   }
+
+  
+
+  /**
+   * Get the subscriptions for current user
+   */
+  async clearPubSubSubscriptions(): Promise<PubsubSubscriptions | null> {
+    if (!this.client || !this.connected) {
+      return null
+    }
+
+    try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
+      // TODO: using paging to only retrieve the last item from the node
+      
+      // Get the items from the node
+      const result = await this.client.getSubscriptions(this.pubsubService)
+      
+      // delete all subscriptions
+      if (result && result.items) {
+        for (const item of result.items) {
+          const subOpts: XMPP.PubsubUnsubscribeOptions = {
+            node: item.node,
+            subid: item.subid
+          }
+          await this.client.unsubscribeFromNode(this.pubsubService, subOpts)
+        }
+      }
+
+      return result
+    } catch (error: unknown) {
+      console.error(`Error getting PubSub subscriptions:`, error)
+      return null  
+    }
+  }
+
 
   /**
    * Get the content of a PubSub document (node)
@@ -728,7 +791,6 @@ export class XMPPService {
     }
 
     try {
-      console.log(this.pubsubService)
       if (!this.pubsubService) {
         throw new Error('PubSub service not available')
       }

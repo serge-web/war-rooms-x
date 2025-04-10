@@ -13,10 +13,30 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     return xmppClient !== undefined
   }, [xmppClient])
 
+  const setXMPPClientWrapper = (client: XMPPService | null | undefined) => {
+    if (client === null || client === undefined) {
+      setXmppClient(client)
+      return
+    }
+    // check client has initialised
+    const checkPubSub = () => {
+      // console.log('checking pubsub)
+      if (client && client.pubsubService) {
+        // now clear my subscriptions
+        client.clearPubSubSubscriptions().then(() => {
+          setXmppClient(client)
+        })
+      } else {
+        setTimeout(checkPubSub, 100) // Check again after 100ms
+      }
+    }
+    checkPubSub()    
+  }
+
   const value = {
     loggedIn,
     xmppClient,
-    setXmppClient
+    setXmppClient: setXMPPClientWrapper
   }
 
   return (

@@ -31,15 +31,7 @@ const Login: React.FC = () => {
     try {
       const success = await xmpp.connect('10.211.55.16', name, pwd)
       if (success) {
-        // Wait for pubsub service to be initialized
-        const checkPubSub = () => {
-          if (xmpp.pubsubService) {
-            setXmppClient(xmpp)
-          } else {
-            setTimeout(checkPubSub, 100) // Check again after 100ms
-          }
-        }
-        checkPubSub()
+        setXmppClient(xmpp)
       } else {
         setError('Auth failed, please check username and password')
       }

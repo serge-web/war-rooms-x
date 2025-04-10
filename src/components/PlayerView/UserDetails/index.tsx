@@ -14,6 +14,7 @@ const UserDetails: React.FC = () => {
     if (xmppClient) {
       xmppClient.disconnect()
     }
+    console.clear()
     setXmppClient(undefined)
   }
 
