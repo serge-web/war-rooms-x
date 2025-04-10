@@ -5,9 +5,16 @@ import RoomContent from '../RoomContent'
 import './index.css'
 import { useRooms } from './useRooms'
 import { RoomType } from '../../../../types/rooms'
+import { ConfigProvider, ThemeConfig } from 'antd'
 
 const specialRoom = (room: RoomType): boolean => {
   return room.roomName.startsWith('__')
+}
+
+const theme: ThemeConfig = {
+   token: {
+     fontFamily: 'monospace' 
+   } 
 }
 
 const RoomsList: React.FC = () => {
@@ -61,12 +68,15 @@ const RoomsList: React.FC = () => {
   }
 
   return (
-    <div className="rooms-list-container flex-layout-container">
-      <FlexLayout.Layout 
-        model={model} 
-        factory={factory}
-      />
-    </div>
+    <ConfigProvider
+    theme={theme}>
+      <div className="rooms-list-container flex-layout-container">
+        <FlexLayout.Layout 
+          model={model} 
+          factory={factory}
+        />
+      </div>
+      </ConfigProvider>
   )
 }
 
