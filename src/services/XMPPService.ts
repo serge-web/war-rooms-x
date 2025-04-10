@@ -102,6 +102,8 @@ export class XMPPService {
    */
   async disconnect(): Promise<void> {
     if (this.client && this.connected) {
+      // TODO: clear pubsub subscriptions
+      // TODO: leave rooms
       this.client.disconnect()
       this.connected = false
     }
@@ -277,6 +279,7 @@ export class XMPPService {
       
       // Add to our joined rooms set
       this.joinedRooms.add(roomJid)
+      console.log('joined rooms', this.joinedRooms)
       
       // Register the message handler if provided
       if (messageHandler) {
@@ -355,20 +358,23 @@ export class XMPPService {
     try {
       // Check if we've joined this room
       if (!this.joinedRooms.has(roomJid)) {
-        return { success: false, id: '', error: 'Not joined to this room' }
+        console.log('not in room', this.joinedRooms )
+        return { success: false, id: '', error: 'Not joined to this room: ' + roomJid }
       }
       
       // Generate a unique ID for the message
       const id = `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`
       
       // Send the message
-      await this.client.sendMessage({
+      const res = await this.client.sendMessage({
         to: roomJid,
         type: 'groupchat',
         body,
         id
       })
-      
+      if (!res) {
+        return { success: false, id: '', error: 'Failed to send message' }
+      }
       return { success: true, id }
     } catch (error) {
       console.error(`Error sending message to room ${roomJid}:`, error)

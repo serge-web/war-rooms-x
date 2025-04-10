@@ -28,3 +28,8 @@ export interface MockRoom {
   messages: Message[]
   theme?: ThemConfig
 }
+
+export interface UserError {
+  title: string, 
+  message: string
+}

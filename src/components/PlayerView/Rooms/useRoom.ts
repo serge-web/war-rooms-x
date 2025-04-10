@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
-import { Message, RoomType } from '../../../types/rooms';
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Message, RoomType, UserError } from '../../../types/rooms';
 import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
-import { RoomMessage } from '../../../services/types';
+import { RoomMessage, SendMessageResult } from '../../../services/types';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<Message[]>([])
@@ -11,8 +11,32 @@ export const useRoom = (room: RoomType) => {
   const [canSubmit, setCanSubmit] = useState(true)
   const { xmppClient } = useWargame()
   const messagesReceived = useRef<boolean | null>(null)
+  const [error, setError] = useState<UserError | null>(null)
+
+  const clearError = () => {
+    setError(null)
+  }
 
   // TODO - also handle details, extract from the room description
+  const sendMessage = useCallback((message: string) => {
+    if (xmppClient && xmppClient.mucService) {
+      const sendMessage = async (message: string) => {
+        const res: SendMessageResult = (await xmppClient.sendRoomMessage(room.roomName, message))
+        if (res && !res.success) {
+          setError({title:'Message sending error', message: 'Error sending message:' + res.error})
+        }  
+      }
+      sendMessage(message)
+    } else if (xmppClient === null) {
+      setMessages(prev => [...prev, {
+        id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        content: message,
+        sender: 'mock',
+        timestamp: new Date().toISOString(),
+        isHistory: false
+      }])
+    }
+  }, [xmppClient, room])
 
   useEffect(() => {
     const messageHandler = (message: RoomMessage) => {
@@ -37,7 +61,8 @@ export const useRoom = (room: RoomType) => {
       }
       setCanSubmit(Math.random() > 0.5)
     } else {
-      // TODO: use real data
+      // TODO: handle room theme, if present
+      // TODO: handle other room metadata (esp. permissions)
       if (xmppClient.mucService && messagesReceived.current === null) {
         messagesReceived.current = true
         // join the room
@@ -48,12 +73,13 @@ export const useRoom = (room: RoomType) => {
       }
     }
     return () => {
-      console.log('leaving room', room.roomName)
+      // TODO: we should reinstate this code, but it is getting called too many times
+      // possibly related to useEffect cleanup running more than once in dev code
       if (xmppClient && xmppClient.mucService) {
         xmppClient.leaveRoom(room.roomName, messageHandler)
       }
     }
   }, [room, xmppClient]);
 
-  return { messages, theme, canSubmit };
+  return { messages, theme, canSubmit, sendMessage, error, clearError };
 }
