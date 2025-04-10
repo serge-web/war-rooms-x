@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex } from 'antd'
+import { Button, Form, Input, Card, Flex, Modal } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
+import { XMPPService } from '../../services/XMPPService'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const { setXmppClient } = useWargame()
 
   const loginEnabled = useMemo(() => {
@@ -16,15 +18,26 @@ const Login: React.FC = () => {
     setXmppClient(null)
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // collect username and password, and use in mock auth
     console.log('Logging in with:', username, password)
-    window.alert('Login not implemented')
     // generate the XMPP client, try to log in
+    const xmpp = new XMPPService()
+    try {
+      const connected = await xmpp.connect('10.211.55.16', username, password)
+      if (connected) {
+        setXmppClient(xmpp)
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : String(error))
+    }
   }
 
   return (
     <div className="login-container">
+      <Modal open={!!error} title="Login Error" onCancel={() => setError('')}>
+        <p>{error}</p>
+      </Modal>
       <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical">
           <Form.Item label="Username" name="username">
