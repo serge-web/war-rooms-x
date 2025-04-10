@@ -7,7 +7,7 @@ import { XMPPService } from '../../services/XMPPService'
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const { setXmppClient } = useWargame()
 
   const loginEnabled = useMemo(() => {
@@ -19,14 +19,13 @@ const Login: React.FC = () => {
   }
 
   const handleLogin = async () => {
-    // collect username and password, and use in mock auth
-    console.log('Logging in with:', username, password)
-    // generate the XMPP client, try to log in
     const xmpp = new XMPPService()
     try {
       const connected = await xmpp.connect('10.211.55.16', username, password)
       if (connected) {
         setXmppClient(xmpp)
+      } else {
+        setError('Auth failed, please check username and password')
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : String(error))
@@ -35,7 +34,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Modal open={!!error} title="Login Error" onCancel={() => setError('')}>
+      <Modal open={!!error} title="Login Error" onCancel={() => setError(null)}>
         <p>{error}</p>
       </Modal>
       <Card title="War Rooms X - Login" className="login-card">
