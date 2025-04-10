@@ -255,10 +255,15 @@ export class XMPPService {
   /**
    * Join a MUC room
    * @param roomJid The JID of the room to join
-   * @param nickname Optional nickname to use in the room (defaults to local part of user JID)
+   * @param messageHandler Optional handler function to register for room messages
+   * @param suppressErrors Optional flag to suppress error logging
    * @returns Promise resolving to JoinRoomResult
    */
-  async joinRoom(roomJid: string, suppressErrors: boolean = false): Promise<JoinRoomResult> {
+  async joinRoom(
+    roomJid: string, 
+    messageHandler?: RoomMessageHandler, 
+    suppressErrors: boolean = false
+  ): Promise<JoinRoomResult> {
     if (!this.client || !this.connected) {
       return { success: false, roomJid, error: 'Not connected' }
     }
@@ -273,6 +278,11 @@ export class XMPPService {
       // Add to our joined rooms set
       this.joinedRooms.add(roomJid)
       
+      // Register the message handler if provided
+      if (messageHandler) {
+        this.onRoomMessage(roomJid, messageHandler)
+      }
+      
       return { success: true, roomJid }
     } catch (error) {
       if (!suppressErrors) {
@@ -285,9 +295,10 @@ export class XMPPService {
   /**
    * Leave a MUC room
    * @param roomJid The JID of the room to leave
+   * @param messageHandler Optional handler function to unregister (if null, removes all handlers)
    * @returns Promise resolving to LeaveRoomResult
    */
-  async leaveRoom(roomJid: string): Promise<LeaveRoomResult> {
+  async leaveRoom(roomJid: string, messageHandler?: RoomMessageHandler | null): Promise<LeaveRoomResult> {
     if (!this.client || !this.connected) {
       return { success: false, roomJid, error: 'Not connected' }
     }
@@ -306,6 +317,14 @@ export class XMPPService {
       
       // Remove from our joined rooms set
       this.joinedRooms.delete(roomJid)
+      
+      // Unregister message handler if provided
+      if (messageHandler) {
+        this.offRoomMessage(roomJid, messageHandler)
+      } else if (messageHandler === null) {
+        // If null is explicitly passed, remove all handlers for this room
+        this.messageHandlers.delete(roomJid)
+      }
       
       return { success: true, roomJid }
     } catch (error) {
@@ -438,7 +457,6 @@ export class XMPPService {
     if (this.client.listeners('groupchat').length > 0) return
     
     this.client.on('groupchat', (message) => {
-      console.log('groupchat', message)
       // Skip messages without a body
       if (!message.body) return
       

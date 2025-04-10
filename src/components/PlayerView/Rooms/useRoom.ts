@@ -15,6 +15,14 @@ export const useRoom = (room: RoomType) => {
   // TODO - also handle details, extract from the room description
 
   useEffect(() => {
+    const messageHandler = (message: RoomMessage) => {
+      setMessages(prev => [...prev, {
+        id: message.id,
+        content: message.body,
+        sender: message.from,
+        timestamp: message.timestamp.toISOString()
+      }])
+    }
     if (xmppClient === undefined) {
       // waiting for login
     } else if (xmppClient === null) {
@@ -34,17 +42,15 @@ export const useRoom = (room: RoomType) => {
         messagesReceived.current = true
         // join the room
         const fetchMessages = async () => {
-          xmppClient.onRoomMessage(room.roomName, (message: RoomMessage) => {
-            setMessages(prev => [...prev, {
-              id: message.id,
-              content: message.body,
-              sender: message.from,
-              timestamp: message.timestamp.toISOString()
-            }])
-          })
-          await xmppClient.joinRoom(room.roomName)
+          await xmppClient.joinRoom(room.roomName, messageHandler)
         }
         fetchMessages()
+      }
+    }
+    return () => {
+      console.log('leaving room', room.roomName)
+      if (xmppClient && xmppClient.mucService) {
+        xmppClient.leaveRoom(room.roomName, messageHandler)
       }
     }
   }, [room, xmppClient]);
