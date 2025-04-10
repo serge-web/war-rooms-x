@@ -2,26 +2,17 @@ import React, { useMemo, useState } from 'react'
 import { Button, Form, Input, Card, Flex } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
-import { mockRooms } from '../PlayerView/Rooms/RoomsList/mockRooms'
-import { MockRoom, RoomType } from '../../types/rooms'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setRooms, setXmppClient } = useWargame()
+  const { setXmppClient } = useWargame()
 
   const loginEnabled = useMemo(() => {
     return username && password
   }, [username, password])
 
   const handleMock = () => {
-    // populate the mock data
-    setRooms(mockRooms.map((room:MockRoom): RoomType => {
-      return {
-        roomName: room.id,
-        naturalName: room.name,
-      }
-    }))
     setXmppClient(null)
   }
 
