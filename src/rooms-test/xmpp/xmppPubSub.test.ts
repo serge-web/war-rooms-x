@@ -47,11 +47,11 @@ describe('XMPP PubSub', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // Verify that the server supports PubSub
-    const supportsPubSub = await xmppService.supportsPubSub(host)
+    const supportsPubSub = await xmppService.supportsPubSub()
     expect(supportsPubSub).toBe(true)
     
     // Act - Get PubSub service
-    const discoveredPubSubService = await xmppService.getPubSubService(host)
+    const discoveredPubSubService = await xmppService.getPubSubService()
     expect(discoveredPubSubService).not.toBeNull()
     
     if (discoveredPubSubService) {

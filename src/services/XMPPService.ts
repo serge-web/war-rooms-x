@@ -16,6 +16,8 @@ export class XMPPService {
   private messageHandlers: RoomMessageHandler[] = []
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
   private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
+  private pubsubService: string | null = null
+  private mucService: string | null = null
 
   /**
    * Connect to the XMPP server
@@ -48,7 +50,35 @@ export class XMPPService {
           
           // Set up PubSub event handler when connection is established
           this.setupPubSubEventHandler()
-          
+
+          // check if pubsub is enabled
+          if (this.client) {
+            this.supportsPubSub().then(res => {
+              if (res) {
+                // get the pubsub service
+                this.getPubSubService().then(service => {
+                  if (service) {
+                    console.log('PubSub service:', service)
+                    this.pubsubService = service
+                  }
+                })
+              }
+            })
+          }
+
+          if (this.client) {
+            this.supportsMUC().then(res => {
+              if (res) {
+                // get the muc service
+                this.getMUCService().then(service => {
+                  if (service) {
+                    console.log('MUC service:', service)
+                    this.mucService = service
+                  }
+                })
+              }
+            })
+          }          
           resolve(true)
         })
 
@@ -97,16 +127,15 @@ export class XMPPService {
 
   /**
    * Discover server features and capabilities
-   * @param server The server JID to query
    * @returns Promise resolving to discovery info data
    */
-  async discoverServerFeatures(server: string): Promise<DiscoInfoResult | null> {
-    if (!this.client || !this.connected) {
+  async discoverServerFeatures(): Promise<DiscoInfoResult | null> {
+    if (!this.client || !this.connected || !this.server) {
       return null
     }
 
     try {
-      return await this.client.getDiscoInfo(server)
+      return await this.client.getDiscoInfo(this.server)
     } catch (error) {
       console.error('Error discovering server features:', error)
       return null
@@ -115,12 +144,11 @@ export class XMPPService {
 
   /**
    * Check if the server supports a specific feature
-   * @param server The server JID to query
    * @param feature The feature namespace to check for
    * @returns Promise resolving to boolean indicating if feature is supported
    */
-  async serverSupportsFeature(server: string, feature: string): Promise<boolean> {
-    const info = await this.discoverServerFeatures(server)
+  async serverSupportsFeature(feature: string): Promise<boolean> {
+    const info = await this.discoverServerFeatures()
     if (!info) return false
     
     return info.features.some(f => f.startsWith(feature))
@@ -128,18 +156,19 @@ export class XMPPService {
 
   /**
    * Check if the server supports MUC (Multi-User Chat)
-   * @param server The server JID to query
    * @returns Promise resolving to boolean indicating if MUC is supported
    */
-  async supportsMUC(server: string): Promise<boolean> {
+  async supportsMUC(): Promise<boolean> {
+    if (!this.server) return false
+    
     // First try direct feature detection
-    const directSupport = await this.serverSupportsFeature(server, 'http://jabber.org/protocol/muc')
+    const directSupport = await this.serverSupportsFeature('http://jabber.org/protocol/muc')
     if (directSupport) return true
     
     // If not found directly, check for MUC service
     try {
       if (this.client) {
-        const items = await this.client.getDiscoItems(server)
+        const items = await this.client.getDiscoItems(this.server)
         // Look for conference/muc service in items
         for (const item of items.items) {
           if (item.jid && (item.jid.includes('conference') || item.jid.includes('muc'))) {
@@ -156,12 +185,11 @@ export class XMPPService {
 
   /**
    * Check if the server supports PubSub
-   * @param server The server JID to query
    * @returns Promise resolving to boolean indicating if PubSub is supported
    */
-  async supportsPubSub(server: string): Promise<boolean> {
+  async supportsPubSub(): Promise<boolean> {
     // Check for any pubsub-related feature
-    const info = await this.discoverServerFeatures(server)
+    const info = await this.discoverServerFeatures()
     if (!info) return false
     
     return info.features.some(feature => feature.includes('pubsub'))
@@ -169,16 +197,15 @@ export class XMPPService {
 
   /**
    * Get the MUC (conference) service JID for the server
-   * @param server The server domain
    * @returns Promise resolving to the MUC service JID or null if not found
    */
-  async getMUCService(server: string): Promise<string | null> {
-    if (!this.client || !this.connected) {
+  async getMUCService(): Promise<string | null> {
+    if (!this.client || !this.connected || !this.server) {
       return null
     }
 
     try {
-      const items = await this.client.getDiscoItems(server)
+      const items = await this.client.getDiscoItems(this.server)
       
       // Look for conference/muc service in items
       for (const item of items.items) {
@@ -188,7 +215,7 @@ export class XMPPService {
       }
       
       // If not found in items, try the standard conference subdomain
-      return `conference.${server}`
+      return `conference.${this.server}`
     } catch (error) {
       console.error('Error discovering MUC service:', error)
       return null
@@ -205,8 +232,7 @@ export class XMPPService {
     }
 
     try {
-      const server = this.jid.split('@')[1]
-      const mucService = await this.getMUCService(server)
+      const mucService = await this.getMUCService()
       
       if (!mucService) {
         console.error('Could not find MUC service')
@@ -415,16 +441,15 @@ export class XMPPService {
 
   /**
    * Get the PubSub service JID for the server
-   * @param server The server domain
    * @returns Promise resolving to the PubSub service JID or null if not found
    */
-  async getPubSubService(server: string): Promise<string | null> {
-    if (!this.client || !this.connected) {
+  async getPubSubService(): Promise<string | null> {
+    if (!this.client || !this.connected || !this.server) {
       return null
     }
 
     try {
-      const items = await this.client.getDiscoItems(server)
+      const items = await this.client.getDiscoItems(this.server)
       
       // Look for pubsub service in items
       for (const item of items.items) {
@@ -434,7 +459,7 @@ export class XMPPService {
       }
       
       // If not found in items, try the standard pubsub subdomain
-      return `pubsub.${server}`
+      return `pubsub.${this.server}`
     } catch (error) {
       console.error('Error discovering PubSub service:', error)
       return null

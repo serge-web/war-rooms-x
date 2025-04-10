@@ -17,6 +17,7 @@ export const useGameState = () => {
       setGameState(mockGameState)
     } else {
       // TODO: use real data
+
     }
   }, [xmppClient]);
 
