@@ -21,7 +21,6 @@ export const useGameState = () => {
       } else {
         // TODO: use real data
         if (xmppClient.pubsubService) {
-          console.log('about to subscribe to pubsub document')
           const state = await xmppClient.getPubSubDocument('game-state')
           if (state) {
             setGameState(state.content?.json as GameStateType)
