@@ -263,14 +263,11 @@ export class XMPPService {
     }
 
     try {
-      // If nickname not provided, use the local part of the JID
-      const nick = this.jid.split('@')[0]
-      
       // Set up message handler for this room if not already done
       this.setupRoomMessageHandler()
       
       // Join the room
-      await this.client.joinRoom(roomJid, nick)
+      await this.client.joinRoom(roomJid, this.bareJid)
       
       // Add to our joined rooms set
       this.joinedRooms.add(roomJid)
@@ -377,13 +374,59 @@ export class XMPPService {
         return []
       }
       
-      // For this initial implementation, we'll use a simplified approach
-      // In a real implementation, you would use MAM (Message Archive Management)
-      // or another appropriate XEP to retrieve message history
-      
-      // Return an empty array for now - this would be replaced with actual
-      // history retrieval in a production implementation
-      return []
+      // retrieve history for this room, if necessary
+      const startTime = new Date().getTime()
+      const messages: XMPP.Stanzas.Forward[] = []
+      const setMessages = (newMessages: XMPP.Stanzas.Forward[]) => {
+        messages.push(...newMessages)
+      }
+
+      console.log('getting messages for', roomJid)
+
+      // implement actual history retrieval
+      const getHistory = (jid: string, start: number, entries: XMPP.Stanzas.Forward[]) => {
+        // capture the page size and the start index
+        // TODO: currently the `count` is being ignored
+        const pOpts: Partial<XMPP.MAMQueryOptions> = {
+          paging: {count: 10, index: start}
+        }
+        // const time = new Date().getTime()
+        console.log('getting more results', jid, start)
+        this.client!.searchHistory(jid, pOpts).then((results) => {
+          const msgs:XMPP.Stanzas.Forward[] = results.results?.map((msg) => msg.item as XMPP.Stanzas.Forward) || []
+          console.log('received batch', msgs, results)
+          const numReceived = results.results?.length || 0
+          // const elapsedSecs = (new Date().getTime() - time) / 1000
+          // console.log('got history after secs', elapsedSecs, jid, start, msgs.length, results)
+          entries.push(...msgs)
+          // msgs.forEach((msg) => {
+          //   // console.log('history entry', msg.delay?.timestamp, msg.message?.id)
+          // })
+          if (!results.complete) {
+            console.log('about to get another batch')
+            getHistory(jid, start + numReceived, entries)
+          } else {
+            const elapsedSecs = (new Date().getTime() - startTime) / 1000
+            console.log('History received for', jid.split('@')[0] + ' (' + entries.length, 'msgs in', elapsedSecs, 'secs)')
+            setMessages(entries)
+          }
+          return entries
+        }).catch((err) => {
+          console.error('getHistory error', jid, err)
+        })
+      }
+      getHistory(roomJid, 0, [])
+
+      console.log('messages retrieved', messages.length)
+
+      return messages.map((msg) => ({
+        id: msg.message?.id || '',
+        roomJid: roomJid,
+        from: msg.message?.from || '',
+        body: msg.message?.body || '',
+        timestamp: msg.delay?.timestamp || new Date(),
+        isHistory: true
+      }))
     } catch (error) {
       console.error(`Error getting history for room ${roomJid}:`, error)
       return []
