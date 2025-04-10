@@ -26,4 +26,5 @@ export interface MockRoom {
   name: string
   unreadCount: number
   messages: Message[]
+  theme?: ThemConfig
 }

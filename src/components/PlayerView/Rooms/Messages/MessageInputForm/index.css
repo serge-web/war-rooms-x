@@ -16,8 +16,8 @@
 
 .message-input-form button {
   padding: 8px 16px;
-  background-color: #3498db;
-  color: white;
+  /* background-color: #3498db;
+  color: white; */
   border: none;
   border-radius: 4px;
   cursor: pointer;

@@ -4,22 +4,26 @@ import MessageInputForm from '../Messages/MessageInputForm'
 import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
 import { RoomType } from '../../../../types/rooms'
+import { ConfigProvider } from 'antd'
 
 interface RoomProps {
   room: RoomType
 }
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
-  const { messages } = useRoom(room)
-  
+  const { messages, theme, canSubmit } = useRoom(room)
+  console.log('theme', theme)
   return (
+    <ConfigProvider
+    theme={theme}>
     <div className='room-content' data-testid={`room-content-${room.roomName}`}>
       <MessageList messages={messages} />
-      <MessageInputForm 
+      { canSubmit && <MessageInputForm 
         onSendMessage={(content) => console.log('Message sent:', content)} 
         disabled={false} 
-      />
+      />}
     </div>
+    </ConfigProvider>
   )
   
 }
