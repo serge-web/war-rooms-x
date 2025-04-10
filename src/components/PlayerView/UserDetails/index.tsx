@@ -1,21 +1,35 @@
 import React from 'react'
-import { Card, Avatar, Typography, Space, Tooltip, Button, Divider, Badge } from 'antd'
-import { UserOutlined, TeamOutlined, LogoutOutlined } from '@ant-design/icons'
+import { Card, Avatar, Typography, Space, Tooltip, Button, Badge } from 'antd'
+import { UserOutlined, LogoutOutlined } from '@ant-design/icons'
 import { useWargame } from '../../../contexts/WargameContext'
 import { usePlayerDetails } from './usePlayerDetails'
 
-const { Text, Title } = Typography
+const { Title } = Typography
 
 const UserDetails: React.FC = () => {
   const { setXmppClient, xmppClient } = useWargame()
   const { playerDetails } = usePlayerDetails()
 
-  console.log('player details', playerDetails)
   const handleLogout = () => {
     if (xmppClient) {
       xmppClient.disconnect()
     }
     setXmppClient(undefined)
+  }
+
+  const debugAction = async () => {
+    // // create vCard for this user
+    // if (xmppClient) {
+    //   const vCard: VCardData = {
+    //     jid: xmppClient.bareJid,
+    //     fullName: 'No Perms',
+    //     organization: JSON.stringify({
+    //       fullName: 'No Force',
+    //       color: '#aaa'
+    //     })
+    //   }
+    //   await xmppClient.setVCard(vCard)
+    // }
   }
 
   return (
@@ -29,31 +43,18 @@ const UserDetails: React.FC = () => {
             <Avatar 
               size={48} 
               icon={<UserOutlined />} 
-              style={{ backgroundColor: '#00f' }} 
+              style={{ backgroundColor: playerDetails?.color || '#00f' }} 
             />
           </Badge>
           <div style={{ marginLeft: 12, flex: 1 }}>
             <Space direction='vertical' size={0} style={{ width: '100%' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Title level={5} style={{ margin: 0 }}>{playerDetails?.role || playerDetails?.id || 'unknown'}</Title>
+              <div>
+                <Title level={3} style={{ margin: 0 }}>{playerDetails?.role || playerDetails?.id || 'unknown'}</Title>
+                <Title level={5} style={{ margin: 0 }}>{playerDetails?.forceName || 'unknown'}</Title>
               </div>
             </Space>
           </div>
         </div>
-        
-        <Divider style={{ margin: '8px 0' }} />
-        
-        <div style={{ flex: 1 }}>
-          <Space direction='vertical' size={4} style={{ width: '100%' }}>
-            {playerDetails && (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <TeamOutlined style={{ color: playerDetails?.color, marginRight: 8 }} />
-                <Text strong>{playerDetails?.forceName || 'unknown'}</Text>
-              </div>
-            )}
-          </Space>
-        </div>
-        
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
           <Tooltip title='Logout'>
             <Button 
@@ -66,6 +67,7 @@ const UserDetails: React.FC = () => {
               Logout
             </Button>
           </Tooltip>
+          <Button type='primary' onClick={debugAction} size='small'>Debug</Button>
         </div>
       </div>
     </Card>

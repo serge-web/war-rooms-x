@@ -34,18 +34,21 @@ export const usePlayerDetails = () => {
         try {
           const vCard = await xmppClient.getCurrentUserVCard()
           const bareJid = vCard.jid.split('/')[0]
+          console.log('vCard', vCard)
           try {
             if (vCard.organization) {
               const force = JSON.parse(vCard.organization)
               setPlayerDetails({
-                id: vCard.role || bareJid,
-                role: vCard.role || 'unknown',
+                id: bareJid,
+                role: vCard.fullName|| 'unknown',
                 forceName: force.fullName,
                 color: force.color
               })
             }
           } catch (err) {
-            console.log('problem extracting force from organisation:', err)
+            if (err instanceof Error && !err.message.includes('is not valid JSON')) {
+              console.log('problem extracting force from organisation:', err)
+            }
             setPlayerDetails({
               id: vCard.role || bareJid,
               role: vCard.role || 'unknown',
