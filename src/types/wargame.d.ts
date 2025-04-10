@@ -1,4 +1,4 @@
-import { XMPPService } from "../rooms-api/xmpp/XMPPService"
+import { XMPPService } from "../services/XMPPService"
 
 export interface GameStateType {
   turn: number
@@ -8,8 +8,6 @@ export interface GameStateType {
 
 export interface WargameContextType {
   loggedIn: boolean
-  rooms: RoomType[]
-  setRooms: (value: RoomType[]) => void
   xmppClient: XMPPService | null | undefined
   setXmppClient: (value: XMPPService | null | undefined) => void
 }

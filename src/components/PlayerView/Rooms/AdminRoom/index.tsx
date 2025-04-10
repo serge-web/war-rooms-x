@@ -1,7 +1,7 @@
 import React from 'react'
 import RoomContent from '../RoomContent'
 import './index.css'
-import { useRoom } from '../../../../hooks/useRoom'
+import { useRoom } from '../useRoom'
 
 const AdminRoom: React.FC = () => {
   const roomConfig = { roomName: '__admin' }

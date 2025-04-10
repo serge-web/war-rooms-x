@@ -1,4 +1,4 @@
-import { XMPPRestService, Group, Room, User } from '../../rooms-api/xmpp/XMPPRestService'
+import { XMPPRestService, Group, Room, User } from '../../services/XMPPRestService'
 import { loadOpenfireConfig } from '../../utils/config'
 
 describe('XMPP REST API', () => {

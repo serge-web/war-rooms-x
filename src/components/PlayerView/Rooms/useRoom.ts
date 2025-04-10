@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Message, RoomType } from '../types/rooms';
-import { mockRooms } from '../components/PlayerView/Rooms/RoomsList/mockRooms';
-import { useWargame } from '../contexts/WargameContext';
+import { Message, RoomType } from '../../../types/rooms';
+import { mockRooms } from './RoomsList/mockRooms';
+import { useWargame } from '../../../contexts/WargameContext';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<Message[]>([])

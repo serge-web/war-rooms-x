@@ -2,7 +2,7 @@ import React from 'react'
 import './index.css'
 import MessageInputForm from '../Messages/MessageInputForm'
 import MessageList from '../Messages/MessageList'
-import { useRoom } from '../../../../hooks/useRoom'
+import { useRoom } from '../useRoom'
 import { RoomType } from '../../../../types/rooms'
 
 interface RoomProps {
