@@ -505,8 +505,6 @@ export class XMPPService {
       // Skip messages without a body
       if (!message.body) return
 
-      console.log('group message rx', message)
-      
       const roomMessage: RoomMessage = {
         id: message.id || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         roomJid: message.from.split('/')[0], // Remove the resource part
@@ -1159,8 +1157,16 @@ export class XMPPService {
 
     try {
       // Get the vCard for the specified user using StanzaJS
-      const vCardResult = await this.client.getVCard(jid) as VCardTemp
+      const fullJid = `${jid}@${this.server}`
+      console.log('getting vCard for', fullJid)
+      const vCardResult = await this.client.getVCard(fullJid) as VCardTemp
+
+
+      // // Get disco info for the user
+      // const discoInfo = await this.client.getDiscoInfo(fullJid)
       
+      console.log('vCard result', vCardResult, fullJid)
+
       // Extract email from records if available
       let email = ''
       let nickname = ''
