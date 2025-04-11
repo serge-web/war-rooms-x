@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Message, RoomType, UserError } from '../../../types/rooms';
+import { Message, RoomType, User, UserError } from '../../../types/rooms';
 import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
@@ -7,6 +7,7 @@ import { RoomMessage, SendMessageResult } from '../../../services/types';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<Message[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
   const { xmppClient } = useWargame()
@@ -69,7 +70,14 @@ export const useRoom = (room: RoomType) => {
         const fetchMessages = async () => {
           await xmppClient.joinRoom(room.roomName, messageHandler)
         }
-        fetchMessages()
+        fetchMessages().then(() => {
+          // now get the users
+          const fetchUsers = async () => {
+            const users = await xmppClient.getRoomMembers(room.roomName)
+            setUsers(users)
+          }
+          fetchUsers()
+        })
       }
     }
     return () => {
@@ -81,5 +89,5 @@ export const useRoom = (room: RoomType) => {
     }
   }, [room, xmppClient]);
 
-  return { messages, theme, canSubmit, sendMessage, error, clearError };
+  return { messages, users, theme, canSubmit, sendMessage, error, clearError };
 }

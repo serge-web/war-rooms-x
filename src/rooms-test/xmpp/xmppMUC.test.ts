@@ -161,7 +161,7 @@ describe('XMPP MUC (Multi-User Chat)', () => {
       expect(noPermsService.isConnected()).toBe(true)
       
       // Act - Try to join the room
-      const joinResult = await noPermsService.joinRoom(roomJid, true)
+      const joinResult = await noPermsService.joinRoom(roomJid, undefined, true)
 
       // Assert - User should not be able to join the room
       expect(joinResult.success).toBe(false)
