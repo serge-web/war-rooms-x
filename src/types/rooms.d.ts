@@ -33,3 +33,8 @@ export interface UserError {
   title: string, 
   message: string
 }
+
+export interface User {
+  jid: string
+  name: string
+}

@@ -75,9 +75,9 @@ export const useRoom = (room: RoomType) => {
     return () => {
       // TODO: we should reinstate this code, but it is getting called too many times
       // possibly related to useEffect cleanup running more than once in dev code
-      if (xmppClient && xmppClient.mucService) {
-        xmppClient.leaveRoom(room.roomName, messageHandler)
-      }
+      // if (xmppClient && xmppClient.mucService) {
+      //   xmppClient.leaveRoom(room.roomName, messageHandler)
+      // }
     }
   }, [room, xmppClient]);
 
