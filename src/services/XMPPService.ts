@@ -1,8 +1,8 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
 import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions, VCardTemp } from 'stanza/protocol'
-import { User } from '../types/rooms'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult, VCardData } from './types'
+import { GameMessage, User } from '../types/rooms'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 
 /**
  * Special constant for registering handlers that listen to messages from all rooms
@@ -390,15 +390,15 @@ export class XMPPService {
    * @param body The message body
    * @returns Promise resolving to SendMessageResult
    */
-  async sendRoomMessage(roomJid: string, body: string): Promise<SendMessageResult> {
+  async sendRoomMessage(body: GameMessage): Promise<SendMessageResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: '', error: 'Not connected' }
     }
 
+    const roomJid = body.details.channel
     try {
       // Check if we've joined this room
       if (!this.joinedRooms.has(roomJid)) {
-        console.log('not in room', this.joinedRooms )
         return { success: false, id: '', error: 'Not joined to this room: ' + roomJid }
       }
       
@@ -409,8 +409,8 @@ export class XMPPService {
       const res = await this.client.sendMessage({
         to: roomJid,
         type: 'groupchat',
-        body,
-        id
+        body: JSON.stringify(body),
+        id: body.id
       })
       if (!res) {
         return { success: false, id: '', error: 'Failed to send message' }
@@ -422,76 +422,76 @@ export class XMPPService {
     }
   }
 
-  /**
-   * Get message history for a room
-   * @param roomJid The JID of the room
-   * @param limit Optional maximum number of messages to retrieve
-   * @returns Promise resolving to array of RoomMessage objects
-   */
-  async getRoomHistory(roomJid: string): Promise<RoomMessage[]> {
-    if (!this.client || !this.connected) {
-      return []
-    }
+  // /**
+  //  * Get message history for a room
+  //  * @param roomJid The JID of the room
+  //  * @param limit Optional maximum number of messages to retrieve
+  //  * @returns Promise resolving to array of RoomMessage objects
+  //  */
+  // async getRoomHistory(roomJid: string): Promise<RoomMessage[]> {
+  //   if (!this.client || !this.connected) {
+  //     return []
+  //   }
 
-    try {
-      // Check if we've joined this room
-      if (!this.joinedRooms.has(roomJid)) {
-        console.error(`Cannot get history for room ${roomJid}: not joined`)
-        return []
-      }
+  //   try {
+  //     // Check if we've joined this room
+  //     if (!this.joinedRooms.has(roomJid)) {
+  //       console.error(`Cannot get history for room ${roomJid}: not joined`)
+  //       return []
+  //     }
       
-      // retrieve history for this room, if necessary
-      const startTime = new Date().getTime()
-      const messages: XMPP.Stanzas.Forward[] = []
-      const setMessages = (newMessages: XMPP.Stanzas.Forward[]) => {
-        messages.push(...newMessages)
-      }
+  //     // retrieve history for this room, if necessary
+  //     const startTime = new Date().getTime()
+  //     const messages: XMPP.Stanzas.Forward[] = []
+  //     const setMessages = (newMessages: XMPP.Stanzas.Forward[]) => {
+  //       messages.push(...newMessages)
+  //     }
 
-      // implement actual history retrieval
-      const getHistory = async (jid: string, start: number, entries: XMPP.Stanzas.Forward[]): Promise<XMPP.Stanzas.Forward[]> => {
-        // capture the page size and the start index
-        // TODO: currently the `count` is being ignored
-        const pOpts: Partial<XMPP.MAMQueryOptions> = {
-          // paging: {count: 10, index: start}
-        }
-        try {
-          const results = await this.client!.searchHistory(jid, pOpts)
-          const msgs: XMPP.Stanzas.Forward[] = results.results?.map((msg) => msg.item as XMPP.Stanzas.Forward) || []
-          const numReceived = results.results?.length || 0
-          entries.push(...msgs)
+  //     // implement actual history retrieval
+  //     const getHistory = async (jid: string, start: number, entries: XMPP.Stanzas.Forward[]): Promise<XMPP.Stanzas.Forward[]> => {
+  //       // capture the page size and the start index
+  //       // TODO: currently the `count` is being ignored
+  //       const pOpts: Partial<XMPP.MAMQueryOptions> = {
+  //         // paging: {count: 10, index: start}
+  //       }
+  //       try {
+  //         const results = await this.client!.searchHistory(jid, pOpts)
+  //         const msgs: XMPP.Stanzas.Forward[] = results.results?.map((msg) => msg.item as XMPP.Stanzas.Forward) || []
+  //         const numReceived = results.results?.length || 0
+  //         entries.push(...msgs)
           
-          if (!results.complete) {
-            // Recursively get more history and await the result
-            await getHistory(jid, start + numReceived, entries)
-          } else {
-            const elapsedSecs = (new Date().getTime() - startTime) / 1000
-            console.log('History received for', jid.split('@')[0] + ' (' + entries.length, 'msgs in', elapsedSecs, 'secs)')
-            setMessages(entries)
-          }
-          return entries
-        } catch (err) {
-          console.error('getHistory error', jid, err)
-          return entries // Return what we have so far even if there was an error
-        }
-      }
+  //         if (!results.complete) {
+  //           // Recursively get more history and await the result
+  //           await getHistory(jid, start + numReceived, entries)
+  //         } else {
+  //           const elapsedSecs = (new Date().getTime() - startTime) / 1000
+  //           console.log('History received for', jid.split('@')[0] + ' (' + entries.length, 'msgs in', elapsedSecs, 'secs)')
+  //           setMessages(entries)
+  //         }
+  //         return entries
+  //       } catch (err) {
+  //         console.error('getHistory error', jid, err)
+  //         return entries // Return what we have so far even if there was an error
+  //       }
+  //     }
       
-      // Call the async function and wait for it to complete
-      await getHistory(roomJid, 0, [])
+  //     // Call the async function and wait for it to complete
+  //     await getHistory(roomJid, 0, [])
       
-      // Now that we have all messages, map them to the expected format
-      return messages.map((msg) => ({
-        id: msg.message?.id || '',
-        roomJid: roomJid,
-        from: msg.message?.from || '',
-        body: msg.message?.body || '',
-        timestamp: msg.delay?.timestamp || new Date(),
-        isHistory: true
-      }))
-    } catch (error) {
-      console.error(`Error getting history for room ${roomJid}:`, error)
-      return []
-    }
-  }
+  //     // Now that we have all messages, map them to the expected format
+  //     return messages.map((msg) => ({
+  //       id: msg.message?.id || '',
+  //       roomJid: roomJid,
+  //       from: msg.message?.from || '',
+  //       body: msg.message?.body || '',
+  //       timestamp: msg.delay?.timestamp || new Date(),
+  //       isHistory: true
+  //     }))
+  //   } catch (error) {
+  //     console.error(`Error getting history for room ${roomJid}:`, error)
+  //     return []
+  //   }
+  // }
 
   /**
    * Set up the message handler for MUC room messages
@@ -506,22 +506,16 @@ export class XMPPService {
       // Skip messages without a body
       if (!message.body) return
 
-      const roomMessage: RoomMessage = {
-        id: message.id || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        roomJid: message.from.split('/')[0], // Remove the resource part
-        from: message.from,
-        body: message.body,
-        timestamp: new Date(),
-        isHistory: false
-      }
+      console.log('groupchat', message)
       
+      const roomId = message.from.split('/')[0]
       // Notify handlers registered for this specific room
-      const roomHandlers = this.messageHandlers.get(roomMessage.roomJid) || []
-      roomHandlers.forEach(handler => handler(roomMessage))
+      const roomHandlers = this.messageHandlers.get(roomId) || []
+      roomHandlers.forEach(handler => handler(message))
       
       // Also notify handlers registered for ALL_ROOMS
       const allRoomsHandlers = this.messageHandlers.get(ALL_ROOMS) || []
-      allRoomsHandlers.forEach(handler => handler(roomMessage))
+      allRoomsHandlers.forEach(handler => handler(message))
     })
   }
 

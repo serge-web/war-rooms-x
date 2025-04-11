@@ -14,10 +14,27 @@ export interface RoomType {
   subject?: string
 }
 
+export interface MessageDetails {
+  messageType: 'chat' | 'map'
+  senderId: string
+  senderName: string
+  senderForce: string
+  turn: string
+  phase: string
+  timestamp: string
+  channel: string
+}
+
+export interface GameMessage {
+  id: string
+  details: MessageDetails
+  content: object
+}
+
 export interface XMPPMessage {
   id: string
   sender: string
-  content: string
+  content: GameMessage
   timestamp: string
 }
 
@@ -25,7 +42,7 @@ export interface MockRoom {
   id: string
   name: string
   unreadCount: number
-  messages: XMPPMessage[]
+  messages: ReceivedMessage[]
   theme?: ThemConfig
 }
 

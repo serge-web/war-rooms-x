@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { XMPPMessage, RoomType, User, UserError } from '../../../types/rooms';
+import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms';
 import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
-import { RoomMessage, SendMessageResult } from '../../../services/types';
+import { SendMessageResult } from '../../../services/types';
+import { useGameState } from '../GameState/useGameState';
+import { usePlayerDetails } from '../UserDetails/usePlayerDetails';
+import { ReceivedMessage } from 'stanza/protocol';
 
 export const useRoom = (room: RoomType) => {
-  const [messages, setMessages] = useState<XMPPMessage[]>([])
+  const [messages, setMessages] = useState<GameMessage[]>([])
+  const { gameState } = useGameState()
+  const { playerDetails } = usePlayerDetails()
   const [users, setUsers] = useState<User[]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
@@ -19,34 +24,54 @@ export const useRoom = (room: RoomType) => {
   }
 
   // TODO - also handle details, extract from the room description
-  const sendMessage = useCallback((message: string) => {
+  const sendMessage = useCallback((messageType: MessageDetails['messageType'], content: object) => {
+    const message: GameMessage = {
+      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      details: {
+        messageType,
+        senderId: playerDetails?.id || '',
+        senderName: playerDetails?.role || '',
+        senderForce: playerDetails?.forceName || '',
+        turn: gameState?.turn || '',
+        phase: gameState?.currentPhase || '',
+        timestamp: new Date().toISOString(),
+        channel: room.roomName
+      },
+      content
+    }
     if (xmppClient && xmppClient.mucService) {
-      const sendMessage = async (message: string) => {
-        const res: SendMessageResult = (await xmppClient.sendRoomMessage(room.roomName, message))
+      const sendMessage = async (message: GameMessage) => {
+        const res: SendMessageResult = (await xmppClient.sendRoomMessage(message))
         if (res && !res.success) {
           setError({title:'Message sending error', message: 'Error sending message:' + res.error})
         }  
       }
       sendMessage(message)
     } else if (xmppClient === null) {
-      setMessages(prev => [...prev, {
+      // mock the data
+      const mockMessage: GameMessage = {
         id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        content: message,
-        sender: 'mock',
-        timestamp: new Date().toISOString(),
-        isHistory: false
-      }])
+        details: {
+          messageType,
+          senderId: playerDetails?.id || '',
+          senderName: playerDetails?.role || '',
+          senderForce: playerDetails?.forceName || '',
+          turn: gameState?.turn || '',
+          phase: gameState?.currentPhase || '',
+          timestamp: new Date().toISOString(),
+          channel: room.roomName
+        },
+        content
+      }
+      setMessages(prev => [...prev, mockMessage])
     }
-  }, [xmppClient, room])
+  }, [xmppClient, room, gameState, playerDetails])
 
   useEffect(() => {
-    const messageHandler = (message: RoomMessage) => {
-      setMessages(prev => [...prev, {
-        id: message.id,
-        content: message.body,
-        sender: message.from,
-        timestamp: message.timestamp.toISOString()
-      }])
+    const messageHandler = (message: ReceivedMessage): void => {
+      if (message.body !== undefined) {
+        setMessages(prev => [...prev, JSON.parse(message.body as string) as GameMessage])
+      }
     }
     if (xmppClient === undefined) {
       // waiting for login

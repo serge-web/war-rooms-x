@@ -2,22 +2,22 @@ import React from 'react'
 import MessageBubble from '../MessageBubble'
 import { List } from 'antd'
 import './index.css'
-import { XMPPMessage } from '../../../../../types/rooms'
+import { GameMessage } from '../../../../../types/rooms'
 
 interface MessageListProps {
-  messages: XMPPMessage[]
-  currentUser?: string
+  messages: GameMessage[]
+  currentUser: string
 }
 
 const MessageList: React.FC<MessageListProps> = ({ 
   messages, 
-  currentUser = 'currentUser' 
+  currentUser
 }) => {
-  const renderer = (message: XMPPMessage) => (
+  const renderer = (message: GameMessage) => (
     <MessageBubble 
       key={message.id} 
       message={message} 
-      isSelf={message.sender === currentUser} 
+      isSelf={message.details.senderId === currentUser} 
     />
   )
   return (

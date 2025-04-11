@@ -1,4 +1,4 @@
-import { DataForm, JSONItem, PubsubItem } from "stanza/protocol"
+import { DataForm, JSONItem, PubsubItem, ReceivedMessage } from "stanza/protocol"
 
 /**
  * Represents vCard data for a user, based on Stanza.js VCardTemp structure
@@ -15,7 +15,7 @@ export interface VCardData {
   }
   nickname?: string
   email?: string
-  organization?: string
+  organization?: string // stringified 
   title?: string
   photo?: string
   role?: string
@@ -34,19 +34,6 @@ export interface Room {
   description?: string
   occupants?: number
   isPasswordProtected?: boolean
-}
-
-/**
- * Represents a message in a MUC room
- */
-export interface RoomMessage {
-  id: string
-  roomJid: string
-  from: string
-  body: string
-  timestamp: Date
-  isHistory?: boolean
-  delay?: Date
 }
 
 /**
@@ -79,7 +66,7 @@ export interface LeaveRoomResult {
 /**
  * Message handler function type
  */
-export type RoomMessageHandler = (message: RoomMessage) => void
+export type RoomMessageHandler = (message: ReceivedMessage) => void
 
 /**
  * Represents a PubSub document
