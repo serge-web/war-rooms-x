@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions, VCardTemp } from 'stanza/protocol'
+import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions, VCardTemp } from 'stanza/protocol'
 import { User } from '../types/rooms'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 
@@ -41,6 +41,7 @@ export class XMPPService {
           websocket: `ws://${host}:7070/ws/`
         }
       })
+      console.log('client', this.client)
 
       return new Promise<boolean>((resolve) => {
         if (!this.client) {
@@ -1084,6 +1085,25 @@ export class XMPPService {
     return this.getPubSubNodeConfig(nodeId)
   }
 
+  /**
+   * Get the vCard for the current user
+   * @returns Promise resolving to VCardData containing the user's vCard information
+   */
+  async getFullName(bareJid: string): Promise<string | undefined> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the vCard for the current user using StanzaJS
+      const vCardResult = await this.client.getAccountInfo(bareJid) as AccountManagement
+      
+      return vCardResult.fullName
+    } catch (error) {
+      console.error('Error getting account info for user:', bareJid, error)
+      throw error
+    }
+  }
   /**
    * Get the vCard for the current user
    * @returns Promise resolving to VCardData containing the user's vCard information

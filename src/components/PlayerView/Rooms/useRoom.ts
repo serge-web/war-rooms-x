@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Message, RoomType, User, UserError } from '../../../types/rooms';
+import { XMPPMessage, RoomType, User, UserError } from '../../../types/rooms';
 import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { RoomMessage, SendMessageResult } from '../../../services/types';
 
 export const useRoom = (room: RoomType) => {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<XMPPMessage[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)

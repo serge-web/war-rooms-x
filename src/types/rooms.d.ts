@@ -14,7 +14,7 @@ export interface RoomType {
   subject?: string
 }
 
-export interface Message {
+export interface XMPPMessage {
   id: string
   sender: string
   content: string
@@ -25,7 +25,7 @@ export interface MockRoom {
   id: string
   name: string
   unreadCount: number
-  messages: Message[]
+  messages: XMPPMessage[]
   theme?: ThemConfig
 }
 
