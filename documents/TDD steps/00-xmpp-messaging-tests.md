@@ -43,3 +43,10 @@ As a Senior Typescript Developer, specializing in XMPP and TypeScript, it is you
 
 Focus on testing that we are able to:
 - get the vCard for the current user
+
+## 1.6 XMPP Room Member Details
+
+As a Senior Typescript Developer, specializing in XMPP and TypeScript, it is your goal to write unit tests for XMPP messaging in the War-Rooms-X application. We need to produce tests to verify that the OpenFire server follows XMPP protocols, as implemented in the Stanza.js library. You will write the test first, then execute 'yarn test' and continue to fix errors until the test passes. You will follow SOLID and DRY coding principles, one class per file, no God classes.
+
+Focus on testing that we are able to:
+- get the list of members for a specific MUC room

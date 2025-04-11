@@ -195,6 +195,40 @@ describe('XMPP MUC (Multi-User Chat)', () => {
     expect(leaveResult.success).toBe(true)
   })
 
+  it('should get the list of members for a specific MUC room', async () => {
+    // Arrange
+    expect(xmppService.isConnected()).toBe(true)
+    const openfireConfig = loadOpenfireConfig()
+    const roomJid = `${openfireConfig.rooms['red-chat']}@conference.${host}`
+    
+    // Join the room first
+    const joinResult = await xmppService.joinRoom(roomJid, undefined)
+    expect(joinResult.success).toBe(true)
+    
+    // Act
+    const members = await xmppService.getRoomMembers(roomJid)
+    
+    // Assert
+    expect(members).not.toBeNull()
+    expect(Array.isArray(members)).toBe(true)
+    
+    // There should be at least one member (ourselves)
+    expect(members.length).toBeGreaterThan(0)
+    
+    // Each member should have the expected properties
+    if (members.length > 0) {
+      const member = members[0]
+      expect(member).toHaveProperty('jid')
+      expect(member).toHaveProperty('name')
+      expect(typeof member.jid).toBe('string')
+      expect(typeof member.name).toBe('string')
+    }
+    
+    // Leave the room
+    const leaveResult = await xmppService.leaveRoom(roomJid, undefined)
+    expect(leaveResult.success).toBe(true)
+  })
+
   it('should receive a message from a room', async () => {
     // Arrange
     expect(xmppService.isConnected()).toBe(true)

@@ -1,6 +1,7 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
 import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions, VCardTemp } from 'stanza/protocol'
+import { User } from '../types/rooms'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 
 /**
@@ -94,6 +95,37 @@ export class XMPPService {
     } catch (error) {
       console.error('Error connecting to XMPP server:', error)
       return false
+    }
+  }
+
+  /**
+   * Get the list of members (occupants) for a specific MUC room
+   * @param roomJid The JID of the room to get members for
+   * @returns Promise resolving to an array of room members (User objects)
+   */
+  async getRoomMembers(roomJid: string): Promise<User[]> {
+    if (!this.client || !this.connected || !this.mucService) {
+      return []
+    }
+
+    // Verify the room exists and we've joined it
+    if (!this.joinedRooms.has(roomJid)) {
+      console.warn(`Cannot get members for room ${roomJid}: not joined`)
+      return []
+    }
+
+    try {
+      // Get the room occupants using disco#items query
+      const result = await this.client.getDiscoItems(roomJid)
+      
+      // Map the disco items to User objects
+      return result.items.map(item => ({
+        jid: item.jid || '',
+        name: item.name || (item.jid ? item.jid.split('@')[0] : '')
+      }))
+    } catch (error) {
+      console.error(`Error getting members for room ${roomJid}:`, error)
+      return []
     }
   }
 
