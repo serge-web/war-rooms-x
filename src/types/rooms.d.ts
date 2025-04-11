@@ -25,10 +25,14 @@ export interface MessageDetails {
   channel: string
 }
 
+export interface ChatMessage {
+  value: string
+}
+
 export interface GameMessage {
   id: string
   details: MessageDetails
-  content: object
+  content: object | ChatMessage
 }
 
 export interface XMPPMessage {

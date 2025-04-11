@@ -141,12 +141,19 @@ export class XMPPService {
   async disconnect(): Promise<void> {
     if (this.client && this.connected) {
       // TODO: clear pubsub subscriptions
-      this.subscriptionIds.forEach((subid, nodeId) =>
+      this.subscriptionIds.forEach(async (subid, nodeId) =>
       {
         if (this.pubsubService) {
-          this.client?.unsubscribeFromNode(this.pubsubService, { node: nodeId, subid: subid })
+          try {
+            await this.client?.unsubscribeFromNode(this.pubsubService, { node: nodeId, subid: subid })
+          } catch (error) {
+            console.error('Error clearing subscription:', nodeId, subid, error)
+          }
         }
       })
+
+      // pause before actually disconnecting
+      await new Promise(resolve => setTimeout(resolve, 200))
 
       // TODO: leave rooms
       this.client.disconnect()
@@ -510,7 +517,7 @@ export class XMPPService {
       // Skip messages without a body
       if (!message.body) return
 
-      console.log('groupchat', message)
+      // console.log('groupchat', message)
       
       const roomId = message.from.split('/')[0]
       // Notify handlers registered for this specific room
@@ -788,16 +795,6 @@ export class XMPPService {
         this.pubsubChangeHandlers.push(handler)
       }
 
-      // if a handler is provided, and the node exists, call the handler with the current content
-      // if (handler) {
-      //   const result = await this.client.getItems(this.pubsubService, nodeId)
-
-      //   const content = await this.getPubSubDocument(nodeId)
-      //   if (content) {
-      //     handler(content)
-      //   }
-      // }
-      
       return { success: true, id: nodeId, subscriptionId: result?.subid }
     } catch (error) {
       console.error(`Error subscribing to PubSub document ${nodeId}:`, error)
@@ -823,9 +820,12 @@ export class XMPPService {
       
       // Get the subscription ID if available
       const subid = this.subscriptionIds.get(nodeId)
+
+      console.log('retrieved subId', nodeId, subid)
       
       // Unsubscribe from the node with the subscription ID if available
       if (subid) {
+        console.log('about to unsub using id', subid)
         await this.client.unsubscribeFromNode(this.pubsubService, {
           node: nodeId,
           subid
@@ -835,15 +835,17 @@ export class XMPPService {
         this.subscriptionIds.delete(nodeId)
       } else {
         // Try without subscription ID, but this might fail
-        try {
+//        try {
+          console.log('about to unsub without id')
           await this.client.unsubscribeFromNode(this.pubsubService, nodeId)
-        } catch (e) {
+          console.log('unsubscribed without id')
+  //      } catch (e) {
           // Ignore the error if it's about missing subscription ID
-          const error = e as { pubsubError?: string }
-          if (error?.pubsubError !== 'subid-required') {
-            throw e
-          }
-        }
+    //      const error = e as { pubsubError?: string }
+          // if (error?.pubsubError !== 'subid-required') {
+          //   throw e
+          // }
+      //  }
       }
       
       // Remove the handler if provided
