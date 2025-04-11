@@ -1,18 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { mockGameState } from '../UserDetails/mockData';
 import { useWargame } from '../../../contexts/WargameContext';
 import { GameStateType } from '../../../types/wargame';
 import { PubSubDocumentChangeHandler } from '../../../services/types';
+import { incrementState } from './incrementState';
 
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameStateType | null>(null)
   const { xmppClient } = useWargame()
   
+  const nextTurn = useCallback(async () => {
+    if (gameState && xmppClient?.pubsubService) {
+      const newState = incrementState(gameState)
+      const res = await xmppClient.updatePubSubDocument('game-state', newState)
+      console.log('updatePubSubDocument', res)
+    }
+  }, [gameState, xmppClient])
+
   useEffect(() => {
     if (!xmppClient) {
       return
     }
     const docHandler: PubSubDocumentChangeHandler = (document) => {
+      console.log('PubSub document changed', document)
       const state = document.content?.json
       if (state) {
         setGameState(state)
@@ -65,5 +75,5 @@ export const useGameState = () => {
       // }
   }, [xmppClient]);
 
-  return { gameState };
+  return { gameState, nextTurn };
 }

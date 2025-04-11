@@ -3,6 +3,7 @@ import { Agent } from 'stanza'
 import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
 import { GameMessage, User } from '../types/rooms'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
+import { NS_JSON_0 } from 'stanza/Namespaces'
 
 /**
  * Special constant for registering handlers that listen to messages from all rooms
@@ -665,7 +666,7 @@ export class XMPPService {
    * @param content The new content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async updatePubSubDocument(nodeId: string, content: string): Promise<PubSubDocumentResult> {
+  async updatePubSubDocument(nodeId: string, content: object): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -677,7 +678,11 @@ export class XMPPService {
       
       // Publish to the node
       // For StanzaJS, we need to provide a proper XML payload
-      await this.client.publish(this.pubsubService, nodeId, {}, `<content>${content}</content>`)
+      const jsonItem: JSONItem = {
+        itemType: NS_JSON_0,
+        json: content
+      }
+      await this.client.publish(this.pubsubService, nodeId, jsonItem)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -942,6 +947,7 @@ export class XMPPService {
 
   // Define the pubsub event handler function
   private pubsubEventHandler = (message: Message) => {
+    console.log('PubSub event received', message)
     if (!message.pubsub) return
     const pubsub = message.pubsub as PubsubEvent
     
@@ -964,7 +970,7 @@ export class XMPPService {
    */
   private setupPubSubEventHandler(): void {
     if (!this.client) return
-
+    
     // Check if this handler is already registered
     const existingListeners = this.client.listeners('pubsub:published')
     
