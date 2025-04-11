@@ -3,24 +3,18 @@ import './index.css'
 import MessageInputForm from '../Messages/MessageInputForm'
 import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
-import { RoomType, UserError } from '../../../../types/rooms'
-import { ConfigProvider, Modal } from 'antd'
+import { RoomType } from '../../../../types/rooms'
+import { ConfigProvider } from 'antd'
+import ErrorModal from '../../../Utilities/ErrorModal'
 
 interface RoomProps {
   room: RoomType
 }
 
-const ErrorModal: React.FC<{error: UserError | null, clearError: () => void}> = ({error, clearError}) => {
-  return (
-    <Modal open={!!error} title={error?.title  } onOk={clearError} onCancel={clearError}>
-      <p>{error?.message}</p>
-    </Modal>
-  )
-}
+
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
-  console.log('error', error)
   return (
     <ConfigProvider
     theme={theme}>
