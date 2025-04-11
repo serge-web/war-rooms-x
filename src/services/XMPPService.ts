@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions, VCardTemp } from 'stanza/protocol'
+import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
 import { GameMessage, User } from '../types/rooms'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 
@@ -32,13 +32,13 @@ export class XMPPService {
    * @param password The password for authentication
    * @returns Promise resolving to true if connection was successful
    */
-  async connect(host: string, username: string, password: string): Promise<boolean> {
+  async connect(ip: string, host: string, username: string, password: string): Promise<boolean> {
     try {
       this.client = XMPP.createClient({
         jid: `${username}@${host}`,
         password,
         transports: {
-          websocket: `ws://${host}:7070/ws/`
+          websocket: `ws://${ip}:7070/ws/`
         }
       })
       console.log('client', this.client)
@@ -123,8 +123,6 @@ export class XMPPService {
     try {
       // Get the room occupants using disco#items query
       const result = await this.client.getDiscoItems(roomJid)
-
-      console.log('room members', result)
       
       // Map the disco items to User objects
       return result.items.map(item => ({
@@ -143,6 +141,13 @@ export class XMPPService {
   async disconnect(): Promise<void> {
     if (this.client && this.connected) {
       // TODO: clear pubsub subscriptions
+      this.subscriptionIds.forEach((subid, nodeId) =>
+      {
+        if (this.pubsubService) {
+          this.client?.unsubscribeFromNode(this.pubsubService, { node: nodeId, subid: subid })
+        }
+      })
+
       // TODO: leave rooms
       this.client.disconnect()
       this.connected = false
@@ -319,7 +324,6 @@ export class XMPPService {
       
       // Add to our joined rooms set
       this.joinedRooms.add(roomJid)
-      console.log('joined rooms', this.joinedRooms)
       
       // Register the message handler if provided
       if (messageHandler) {
@@ -770,7 +774,7 @@ export class XMPPService {
       if (this.subscriptionIds.has(nodeId)) {
         return { success: false, id: nodeId, error: 'Already subscribed' }
       }
-      
+
       // Subscribe to the node
       const result = await this.client.subscribeToNode(this.pubsubService, nodeId)
       
@@ -922,9 +926,10 @@ export class XMPPService {
       }
       
       return null
-    } catch (error: unknown) {
+    } catch (error) {
       // check for item not found
-      if(error && (error as { error?: { condition: string } })?.error?.condition === 'item-not-found') {
+      const sError = error as { error: { condition: string } }
+      if(sError && sError.error?.condition === 'item-not-found') {
         return null
       } else {
         console.error(`Error getting PubSub document ${nodeId}:`, error)

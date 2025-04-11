@@ -19,14 +19,14 @@ const UserDetails: React.FC = () => {
   }
 
   const debugAction = async () => {
-    // // create vCard for this user
+    // create vCard for this user
     // if (xmppClient) {
     //   const vCard: VCardData = {
     //     jid: xmppClient.bareJid,
-    //     fullName: 'No Perms',
+    //     fullName: 'Umpire',
     //     organization: JSON.stringify({
-    //       fullName: 'No Force',
-    //       color: '#aaa'
+    //       fullName: 'Umpire',
+    //       color: '#ccc'
     //     })
     //   }
     //   await xmppClient.setVCard(vCard)
