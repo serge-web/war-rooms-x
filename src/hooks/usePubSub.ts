@@ -40,18 +40,11 @@ export const usePubSub = <T extends object>(nodeId: string) => {
     
     // Subscribe to the PubSub document and get its current content
     const subAndGet = async () => {
-      const subId: string[] = []
       if (xmppClient.pubsubService) {
         const results = await xmppClient.subscribeToPubSubDocument(nodeId, docHandler)
-        console.log('PubSub subscription result', results)
         if (!results.success) {
           if (results.error?.includes('Already subscribed')) {
             console.log('Already subscribed to PubSub document')
-          }
-        } else {
-          if (results.subscriptionId) {
-            console.log('Subscribed to PubSub document', results.subscriptionId)
-            subId.push(results.subscriptionId)
           }
         }
       }
@@ -60,12 +53,9 @@ export const usePubSub = <T extends object>(nodeId: string) => {
       if (doc) {
         setDocument(doc.content?.json as T)
       }
-      return subId[0]
     }
     
-    subAndGet().then((res: string) => {
-      console.log('subId', res)
-    })
+    subAndGet()
     
     // Cleanup: unsubscribe from the PubSub document when the component unmounts
     return () => {

@@ -82,6 +82,10 @@ export class XMPPService {
                   }
                 })
               }
+              // this.client?.subscribeToNode(this.pubsubService || '', { node: 'game-state' })
+              // this.client?.on('pubsub:published', (event) => {
+              //   console.log('PubSub published event received', event)
+              // })
             })
           }
 
@@ -779,9 +783,6 @@ export class XMPPService {
         throw new Error('PubSub service not available')
       }
       
-      // Set up the PubSub event handler if not already done
-      this.setupPubSubEventHandler()
-
       // check we aren't already subscribed to this node
       if (this.subscriptionIds.has(nodeId)) {
         return { success: false, id: nodeId, error: 'Already subscribed in client' }
@@ -790,13 +791,29 @@ export class XMPPService {
       // check if we're already subscribed to this node
       const subscriptions = await this.client.getSubscriptions(this.pubsubService)
       if (subscriptions) {
+        const mySubs = subscriptions.items?.filter((item) => {
+          return (item.node === nodeId) && (item.jid === this.bareJid)
+        })
+        // map to unsubscribe promises
+        const unsubscribePromises = mySubs?.map((subscription) => {
+          return this.client?.unsubscribeFromNode(this.pubsubService || '', {
+            node: nodeId,
+            subid: subscription.subid
+          })
+        })
+        // await all unsubscribe promises
+        if (unsubscribePromises) {
+          await Promise.all(unsubscribePromises).then((items) => {
+            console.log('unsub results', items)
+          })
+        }
         // do unsubscribe
         // get any subscriptions for this node
         // await this.client.unsubscribeFromNode(this.pubsubService, {
         //   node: nodeId,
         //   subid: subscription.subid
         // })
-        return { success: false, id: nodeId, error: 'Already subscribed at server' }
+        // return { success: false, id: nodeId, error: 'Already subscribed at server' }
       }
 
       // Subscribe to the node
@@ -978,9 +995,12 @@ export class XMPPService {
     
     // Check if this handler is already registered
     const existingListeners = this.client.listeners('pubsub:published')
+
+    console.log('existing pubSub listeners', existingListeners)
     
     // Only add the listener if it's not already present
     if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
+      console.log('registering listener')
       this.client.on('pubsub:published', this.pubsubEventHandler)
     }
   }
@@ -990,7 +1010,6 @@ export class XMPPService {
    * @param handler The handler function to call when a document changes
    */
   onPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
-    this.setupPubSubEventHandler()
     this.pubsubChangeHandlers.push(handler)
   }
 
