@@ -789,7 +789,6 @@ export class XMPPService {
 
       // check if we're already subscribed to this node
       const subscriptions = await this.client.getSubscriptions(this.pubsubService)
-      console.log('subscriptions', subscriptions)
       if (subscriptions) {
         // do unsubscribe
         // get any subscriptions for this node

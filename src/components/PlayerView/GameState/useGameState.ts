@@ -13,7 +13,9 @@ export const useGameState = () => {
     if (gameState && xmppClient?.pubsubService) {
       const newState = incrementState(gameState)
       const res = await xmppClient.updatePubSubDocument('game-state', newState)
-      console.log('updatePubSubDocument', res)
+      if (!res.success) {
+        console.error('Failed to update game state', res)
+      }
     }
   }, [gameState, xmppClient])
 
@@ -21,58 +23,35 @@ export const useGameState = () => {
     if (!xmppClient) {
       return
     }
-    const docHandler: PubSubDocumentChangeHandler = (document) => {
-      console.log('PubSub document changed', document)
-      const state = document.content?.json
-      if (state) {
-        setGameState(state)
-      }
-    }
-    const fetchGameState = async (docHandler: PubSubDocumentChangeHandler) => {
       if (xmppClient === undefined) {
         // waiting for login
       } else if (xmppClient === null) {
           // ok, use mock data
           setGameState(mockGameState)
-        } else {
-    
+      } else {
+        const docHandler: PubSubDocumentChangeHandler = (document) => {
+          console.log('PubSub document changed', document)
+          const state = document.content?.json
+          if (state) {
+            setGameState(state)
+          }
+        }
+        const subAndGet = async () => {
           if (xmppClient.pubsubService) {
             const results = await xmppClient.subscribeToPubSubDocument('game-state', docHandler)
             if (!results.success) {
               if (results.error?.includes('Already subscribed')) {
-                return
+                console.log('Already subscribed to PubSub document')
               }
-            }        
-            const state = await xmppClient.getPubSubDocument('game-state')
-            if (state) {
-              setGameState(state.content?.json as GameStateType)
             }
-    
-            if(!state) {
-              console.error('Creating missing state document ', results)
-              // // ok, create it
-              // const stateMsg: JSONItem = {
-              //   itemType: NS_JSON_0,
-              //   json: mockGameState
-              // }
-              // // create the pubsub node for game state
-              // const results2 = await xmppClient.createPubSubDocument('game-state', { 'pubsub#access_model': 'open', 'pubsub#node_type': 'leaf' }, stateMsg)
-              // console.log('created pubsub node', results2)  
-              // setGameState(mockGameState)
-            }
+          }  
+          const state = await xmppClient.getPubSubDocument('game-state')
+          if (state) {
+            setGameState(state.content?.json as GameStateType)
           }
         }
+        subAndGet()
       }
-      // const doUnsub = async() => {
-      //   console.log('about to unsubscribe', !!docHandler)
-      //   await xmppClient?.unsubscribeFromPubSubDocument('game-state', docHandler)
-      // }
-    
-      fetchGameState(docHandler)
-
-      // return () => {
-      //   doUnsub()
-      // }
   }, [xmppClient]);
 
   return { gameState, nextTurn };
