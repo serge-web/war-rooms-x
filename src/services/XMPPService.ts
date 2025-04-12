@@ -825,7 +825,7 @@ export class XMPPService {
    * @param handler Optional handler function to remove
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async unsubscribeFromPubSubDocument(nodeId: string, handler?: PubSubDocumentChangeHandler): Promise<PubSubDocumentResult> {
+  async unsubscribeFromPubSubDocument(nodeId: string, handler?: PubSubDocumentChangeHandler, subscriptionId?: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -838,11 +838,8 @@ export class XMPPService {
       // Get the subscription ID if available
       const subid = this.subscriptionIds.get(nodeId)
 
-      console.log('retrieved subId', nodeId, subid)
-      
       // Unsubscribe from the node with the subscription ID if available
       if (subid) {
-        console.log('about to unsub using id', subid)
         await this.client.unsubscribeFromNode(this.pubsubService, {
           node: nodeId,
           subid
@@ -852,17 +849,14 @@ export class XMPPService {
         this.subscriptionIds.delete(nodeId)
       } else {
         // Try without subscription ID, but this might fail
-//        try {
-          console.log('about to unsub without id')
+        if (subscriptionId) {
+          await this.client.unsubscribeFromNode(this.pubsubService, {
+            node: nodeId,
+            subid: subscriptionId
+          })
+        } else {
           await this.client.unsubscribeFromNode(this.pubsubService, nodeId)
-          console.log('unsubscribed without id')
-  //      } catch (e) {
-          // Ignore the error if it's about missing subscription ID
-    //      const error = e as { pubsubError?: string }
-          // if (error?.pubsubError !== 'subid-required') {
-          //   throw e
-          // }
-      //  }
+        }
       }
       
       // Remove the handler if provided
@@ -875,7 +869,6 @@ export class XMPPService {
       
       return { success: true, id: nodeId }
     } catch (error) {
-      console.error(`Error unsubscribing from PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
     }
   }
