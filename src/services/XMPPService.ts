@@ -784,7 +784,20 @@ export class XMPPService {
 
       // check we aren't already subscribed to this node
       if (this.subscriptionIds.has(nodeId)) {
-        return { success: false, id: nodeId, error: 'Already subscribed' }
+        return { success: false, id: nodeId, error: 'Already subscribed in client' }
+      }
+
+      // check if we're already subscribed to this node
+      const subscriptions = await this.client.getSubscriptions(this.pubsubService)
+      console.log('subscriptions', subscriptions)
+      if (subscriptions) {
+        // do unsubscribe
+        // get any subscriptions for this node
+        // await this.client.unsubscribeFromNode(this.pubsubService, {
+        //   node: nodeId,
+        //   subid: subscription.subid
+        // })
+        return { success: false, id: nodeId, error: 'Already subscribed at server' }
       }
 
       // Subscribe to the node
