@@ -110,16 +110,12 @@ export class XMPPRestService {
     const passwordVal = password || process.env.PASSWORD || 'pwd'
     
     try {
-      console.log('about to generate auth string', usernameVal, passwordVal)
       // Basic authentication for OpenFire REST API
       const authString = Buffer.from(`${usernameVal}:${passwordVal}`).toString('base64')
       this.client.defaults.headers.common['Authorization'] = `Basic ${authString}`
       
       // Test authentication by making a simple request
-      console.log('about to make request')
       const response = await this.client.get('/system/properties')
-
-//      console.log('REST response', response)
       
       if (response.status === 200) {
         this.authenticated = true
