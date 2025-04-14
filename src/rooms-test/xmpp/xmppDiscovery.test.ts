@@ -13,7 +13,7 @@ describe('XMPP Discovery', () => {
     const { username, password } = openfireConfig.credentials[0] // Use the first credential (admin)
     
     // Connect to XMPP server before each test
-    await xmppService.connect(host, username, password)
+    await xmppService.connect(openfireConfig.ip, host, username, password)
   })
 
   afterEach(async () => {
@@ -26,8 +26,8 @@ describe('XMPP Discovery', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // Act
-    const supportsMUC = await xmppService.supportsMUC(host)
-    const supportsPubSub = await xmppService.supportsPubSub(host)
+    const supportsMUC = await xmppService.supportsMUC()
+    const supportsPubSub = await xmppService.supportsPubSub()
     
     // Assert
     expect(supportsMUC).toBe(true)
@@ -39,7 +39,7 @@ describe('XMPP Discovery', () => {
     expect(xmppService.isConnected()).toBe(true)
     
     // Act
-    const features = await xmppService.discoverServerFeatures(host)
+    const features = await xmppService.discoverServerFeatures()
     
     // Assert
     expect(features).not.toBeNull()

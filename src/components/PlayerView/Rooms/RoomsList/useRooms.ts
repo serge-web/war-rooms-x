@@ -22,6 +22,20 @@ export const useRooms = () => {
       }))
     } else {
       // TODO: use real data
+      if (xmppClient.mucService) {
+        const fetchRooms = async () => {
+          const rooms = await xmppClient.listRooms()
+          if (rooms) {
+            setRooms(rooms.map((room): RoomType => {
+              return {
+                roomName: room.jid,
+                naturalName: room.name,
+              }
+            }))
+          }
+        }
+        fetchRooms()
+      }
     }
   }, [xmppClient]);
 

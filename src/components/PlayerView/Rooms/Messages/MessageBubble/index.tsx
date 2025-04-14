@@ -1,19 +1,33 @@
 import React from 'react'
 import './index.css'
-import { Message } from '../../../../../types/rooms'
+import { ChatMessage, GameMessage } from '../../../../../types/rooms'
+import { renderObjectContent } from './renderObjectContent'
+
+const renderMessage = (mType: string, jsonObject: object): React.ReactNode => {
+  switch(mType) {
+  case 'chat': {
+    return (jsonObject as ChatMessage).value
+  }  
+  default : {
+    return renderObjectContent(jsonObject)
+  }
+  }
+}
 
 const MessageBubble: React.FC<{
-  message: Message
+  message: GameMessage
   isSelf: boolean
-}> = ({ message, isSelf }) => (
-  <div 
-    data-testid={`message-${message.id}`} 
-    className={`message-bubble ${isSelf ? 'self' : 'other'}`}
-  >
-    {!isSelf && <div className="sender-name">{message.sender}</div>}
-    <div className="message-content">{message.content}</div>
-    <div className="message-timestamp">{message.timestamp}</div>
+}> = ({ message, isSelf }) => {
+  const from = message.details.senderName
+  return (
+    <div 
+      data-testid={`message-${message.id}`} 
+      className={`message-bubble ${isSelf ? 'self' : 'other'}`}
+    >
+      {!isSelf && <div className="sender-name">{from}</div>}
+    <div className="message-content" data-testid="message-content">{renderMessage(message.details.messageType,message.content)}</div>
+    <div className="message-timestamp">{message.details.timestamp}</div>
   </div>
 )
-
+}
 export default MessageBubble

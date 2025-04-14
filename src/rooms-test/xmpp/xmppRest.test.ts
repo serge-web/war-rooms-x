@@ -96,6 +96,8 @@ describe('XMPP REST API', () => {
       // Act
       const result = await xmppRestService.getGroups()
       
+      console.log('Groups:', result)
+
       // Assert
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
@@ -327,6 +329,7 @@ describe('XMPP REST API', () => {
         
         // Verify the user exists by getting all users
         const getUsersResult = await xmppRestService.getUsers()
+        console.log('Users:', getUsersResult)
         expect(getUsersResult.success).toBe(true)
         
         const users = getUsersResult.data?.users as User[]

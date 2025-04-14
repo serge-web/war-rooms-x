@@ -1,12 +1,12 @@
 import React from 'react'
-import { Card, Typography, Space, Tag, Divider } from 'antd'
+import { Card, Typography, Space, Tag, Button } from 'antd'
 import { ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
 import { useGameState } from './useGameState'
 
 const { Text } = Typography
 
 const GameState: React.FC = () => {
-  const { gameState } = useGameState()
+  const { gameState, nextTurn } = useGameState()
 
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
@@ -44,14 +44,18 @@ const GameState: React.FC = () => {
                 {gameState.currentPhase}
               </Tag>
             </div>
-          </div>
-          
-          <Divider style={{ margin: '8px 0' }} />
-          
+          </div>          
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <ClockCircleOutlined style={{ marginRight: 8, color: '#1677ff' }} />
             <Text style={{ marginLeft: 8 }} data-testid='current-time'>{formattedDate}</Text>
           </div>
+          <Button
+            type="primary"
+            onClick={nextTurn}
+            style={{ marginTop: 8 }}
+          >
+            Next Turn
+          </Button>
         </Space>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>

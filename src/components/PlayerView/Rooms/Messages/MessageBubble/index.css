@@ -26,10 +26,54 @@
 
 .message-content {
   margin-bottom: 4px;
+  word-break: break-word;
 }
 
 .message-timestamp {
   font-size: 0.8em;
   opacity: 0.7;
   text-align: right;
+}
+
+/* Object rendering styles */
+.message-object,
+.message-array {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+}
+
+.message-object-item,
+.message-array-item {
+  margin-bottom: 2px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.message-label {
+  font-weight: 600;
+  margin-right: 6px;
+  color: inherit;
+}
+
+.message-value {
+  display: inline-flex;
+  align-items: center;
+}
+
+.message-value.message-string {
+  color: #16a34a;
+}
+
+.message-value.message-number {
+  color: #2563eb;
+}
+
+.message-value.message-boolean {
+  color: #9333ea;
+}
+
+.message-value.message-null {
+  color: #dc2626;
+  font-style: italic;
 }

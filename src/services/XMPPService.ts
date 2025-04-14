@@ -1,7 +1,18 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent } from 'stanza/protocol'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessage, RoomMessageHandler, SendMessageResult } from './types'
+import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
+import { GameMessage, User } from '../types/rooms'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
+import { NS_JSON_0 } from 'stanza/Namespaces'
+
+/**
+ * Special constant for registering handlers that listen to messages from all rooms
+ */
+export const ALL_ROOMS = '__ALL_ROOMS__'
+
+// const eventName = 'pubsub:event'
+const publishedName = 'pubsub:published'
+const pubsubEvent = publishedName
 
 /**
  * Service for handling XMPP connections and communications
@@ -10,10 +21,14 @@ export class XMPPService {
   private client: Agent | null = null
   private connected = false
   private jid = ''
+  public bareJid = ''
+  private server = ''
   private joinedRooms: Set<string> = new Set()
-  private messageHandlers: RoomMessageHandler[] = []
+  private messageHandlers: Map<string, RoomMessageHandler[]> = new Map()
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
   private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
+  public pubsubService: string | null = null
+  public mucService: string | null = null
 
   /**
    * Connect to the XMPP server
@@ -22,13 +37,13 @@ export class XMPPService {
    * @param password The password for authentication
    * @returns Promise resolving to true if connection was successful
    */
-  async connect(host: string, username: string, password: string): Promise<boolean> {
+  async connect(ip: string, host: string, username: string, password: string): Promise<boolean> {
     try {
       this.client = XMPP.createClient({
         jid: `${username}@${host}`,
         password,
         transports: {
-          websocket: `ws://${host}:7070/ws/`
+          websocket: `ws://${ip}:7070/ws/`
         }
       })
 
@@ -41,10 +56,40 @@ export class XMPPService {
         this.client.on('session:started', () => {
           this.connected = true
           this.jid = this.client?.jid || ''
+          this.bareJid = this.jid.split('/')[0]
+          this.server = host
           
           // Set up PubSub event handler when connection is established
           this.setupPubSubEventHandler()
-          
+
+          // check if pubsub is enabled
+          if (this.client) {
+            this.supportsMUC().then(res => {
+              if (res) {
+                // get the muc service
+                this.getMUCService().then(service => {
+                  if (service) {
+                    this.mucService = service
+                  }
+                })
+              }
+            })
+            // do pubsub last, since that's what we're 
+            // waiting for before marking client as `live`
+            this.supportsPubSub().then(res => {
+              if (res) {
+                // get the pubsub service
+                this.getPubSubService().then(service => {
+                  if (service) {
+                    this.pubsubService = service
+                  }
+                })
+              }
+            })
+
+            this.client.sendPresence()
+          }
+
           resolve(true)
         })
 
@@ -66,10 +111,57 @@ export class XMPPService {
   }
 
   /**
+   * Get the list of members (occupants) for a specific MUC room
+   * @param roomJid The JID of the room to get members for
+   * @returns Promise resolving to an array of room members (User objects)
+   */
+  async getRoomMembers(roomJid: string): Promise<User[]> {
+    if (!this.client || !this.connected || !this.mucService) {
+      return []
+    }
+
+    // Verify the room exists and we've joined it
+    if (!this.joinedRooms.has(roomJid)) {
+      console.warn(`Cannot get members for room ${roomJid}: not joined`)
+      return []
+    }
+
+    try {
+      // Get the room occupants using disco#items query
+      const result = await this.client.getDiscoItems(roomJid)
+      
+      // Map the disco items to User objects
+      return result.items.map(item => ({
+        jid: item.jid || '',
+        name: item.name || (item.jid ? item.jid.split('@')[0] : '')
+      }))
+    } catch (error) {
+      console.error(`Error getting members for room ${roomJid}:`, error)
+      return []
+    }
+  }
+
+  /**
    * Disconnect from the XMPP server
    */
   async disconnect(): Promise<void> {
     if (this.client && this.connected) {
+      // TODO: clear pubsub subscriptions
+      this.subscriptionIds.forEach(async (subid, nodeId) =>
+      {
+        if (this.pubsubService) {
+          try {
+            await this.client?.unsubscribeFromNode(this.pubsubService, { node: nodeId, subid: subid })
+          } catch (error) {
+            console.error('Error clearing subscription:', nodeId, subid, error)
+          }
+        }
+      })
+
+      // pause before actually disconnecting
+      await new Promise(resolve => setTimeout(resolve, 200))
+
+      // TODO: leave rooms
       this.client.disconnect()
       this.connected = false
     }
@@ -93,16 +185,15 @@ export class XMPPService {
 
   /**
    * Discover server features and capabilities
-   * @param server The server JID to query
    * @returns Promise resolving to discovery info data
    */
-  async discoverServerFeatures(server: string): Promise<DiscoInfoResult | null> {
-    if (!this.client || !this.connected) {
+  async discoverServerFeatures(): Promise<DiscoInfoResult | null> {
+    if (!this.client || !this.connected || !this.server) {
       return null
     }
 
     try {
-      return await this.client.getDiscoInfo(server)
+      return await this.client.getDiscoInfo(this.server)
     } catch (error) {
       console.error('Error discovering server features:', error)
       return null
@@ -111,12 +202,11 @@ export class XMPPService {
 
   /**
    * Check if the server supports a specific feature
-   * @param server The server JID to query
    * @param feature The feature namespace to check for
    * @returns Promise resolving to boolean indicating if feature is supported
    */
-  async serverSupportsFeature(server: string, feature: string): Promise<boolean> {
-    const info = await this.discoverServerFeatures(server)
+  async serverSupportsFeature(feature: string): Promise<boolean> {
+    const info = await this.discoverServerFeatures()
     if (!info) return false
     
     return info.features.some(f => f.startsWith(feature))
@@ -124,18 +214,19 @@ export class XMPPService {
 
   /**
    * Check if the server supports MUC (Multi-User Chat)
-   * @param server The server JID to query
    * @returns Promise resolving to boolean indicating if MUC is supported
    */
-  async supportsMUC(server: string): Promise<boolean> {
+  async supportsMUC(): Promise<boolean> {
+    if (!this.server) return false
+    
     // First try direct feature detection
-    const directSupport = await this.serverSupportsFeature(server, 'http://jabber.org/protocol/muc')
+    const directSupport = await this.serverSupportsFeature('http://jabber.org/protocol/muc')
     if (directSupport) return true
     
     // If not found directly, check for MUC service
     try {
       if (this.client) {
-        const items = await this.client.getDiscoItems(server)
+        const items = await this.client.getDiscoItems(this.server)
         // Look for conference/muc service in items
         for (const item of items.items) {
           if (item.jid && (item.jid.includes('conference') || item.jid.includes('muc'))) {
@@ -152,12 +243,11 @@ export class XMPPService {
 
   /**
    * Check if the server supports PubSub
-   * @param server The server JID to query
    * @returns Promise resolving to boolean indicating if PubSub is supported
    */
-  async supportsPubSub(server: string): Promise<boolean> {
+  async supportsPubSub(): Promise<boolean> {
     // Check for any pubsub-related feature
-    const info = await this.discoverServerFeatures(server)
+    const info = await this.discoverServerFeatures()
     if (!info) return false
     
     return info.features.some(feature => feature.includes('pubsub'))
@@ -165,16 +255,15 @@ export class XMPPService {
 
   /**
    * Get the MUC (conference) service JID for the server
-   * @param server The server domain
    * @returns Promise resolving to the MUC service JID or null if not found
    */
-  async getMUCService(server: string): Promise<string | null> {
-    if (!this.client || !this.connected) {
+  async getMUCService(): Promise<string | null> {
+    if (!this.client || !this.connected || !this.server) {
       return null
     }
 
     try {
-      const items = await this.client.getDiscoItems(server)
+      const items = await this.client.getDiscoItems(this.server)
       
       // Look for conference/muc service in items
       for (const item of items.items) {
@@ -184,7 +273,7 @@ export class XMPPService {
       }
       
       // If not found in items, try the standard conference subdomain
-      return `conference.${server}`
+      return `conference.${this.server}`
     } catch (error) {
       console.error('Error discovering MUC service:', error)
       return null
@@ -201,15 +290,13 @@ export class XMPPService {
     }
 
     try {
-      const server = this.jid.split('@')[1]
-      const mucService = await this.getMUCService(server)
       
-      if (!mucService) {
+      if (!this.mucService) {
         console.error('Could not find MUC service')
         return []
       }
       
-      const items = await this.client.getDiscoItems(mucService)
+      const items = await this.client.getDiscoItems(this.mucService)
       
       // Convert DiscoItems to Room objects
       return items.items
@@ -227,26 +314,33 @@ export class XMPPService {
   /**
    * Join a MUC room
    * @param roomJid The JID of the room to join
-   * @param nickname Optional nickname to use in the room (defaults to local part of user JID)
+   * @param messageHandler Optional handler function to register for room messages
+   * @param suppressErrors Optional flag to suppress error logging
    * @returns Promise resolving to JoinRoomResult
    */
-  async joinRoom(roomJid: string, suppressErrors: boolean = false): Promise<JoinRoomResult> {
+  async joinRoom(
+    roomJid: string, 
+    messageHandler?: RoomMessageHandler, 
+    suppressErrors: boolean = false
+  ): Promise<JoinRoomResult> {
     if (!this.client || !this.connected) {
       return { success: false, roomJid, error: 'Not connected' }
     }
 
     try {
-      // If nickname not provided, use the local part of the JID
-      const nick = this.jid.split('@')[0]
-      
       // Set up message handler for this room if not already done
       this.setupRoomMessageHandler()
       
       // Join the room
-      await this.client.joinRoom(roomJid, nick)
+      await this.client.joinRoom(roomJid, this.bareJid)
       
       // Add to our joined rooms set
       this.joinedRooms.add(roomJid)
+      
+      // Register the message handler if provided
+      if (messageHandler) {
+        this.onRoomMessage(messageHandler, roomJid)
+      }
       
       return { success: true, roomJid }
     } catch (error) {
@@ -260,9 +354,10 @@ export class XMPPService {
   /**
    * Leave a MUC room
    * @param roomJid The JID of the room to leave
+   * @param messageHandler Optional handler function to unregister (if null, removes all handlers)
    * @returns Promise resolving to LeaveRoomResult
    */
-  async leaveRoom(roomJid: string): Promise<LeaveRoomResult> {
+  async leaveRoom(roomJid: string, messageHandler?: RoomMessageHandler | null): Promise<LeaveRoomResult> {
     if (!this.client || !this.connected) {
       return { success: false, roomJid, error: 'Not connected' }
     }
@@ -281,6 +376,14 @@ export class XMPPService {
       
       // Remove from our joined rooms set
       this.joinedRooms.delete(roomJid)
+      
+      // Unregister message handler if provided
+      if (messageHandler) {
+        this.offRoomMessage(messageHandler, roomJid)
+      } else if (messageHandler === null) {
+        // If null is explicitly passed, remove all handlers for this room
+        this.messageHandlers.delete(roomJid)
+      }
       
       return { success: true, roomJid }
     } catch (error) {
@@ -303,28 +406,31 @@ export class XMPPService {
    * @param body The message body
    * @returns Promise resolving to SendMessageResult
    */
-  async sendRoomMessage(roomJid: string, body: string): Promise<SendMessageResult> {
+  async sendRoomMessage(body: GameMessage): Promise<SendMessageResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: '', error: 'Not connected' }
     }
 
+    const roomJid = body.details.channel
     try {
       // Check if we've joined this room
       if (!this.joinedRooms.has(roomJid)) {
-        return { success: false, id: '', error: 'Not joined to this room' }
+        return { success: false, id: '', error: 'Not joined to this room: ' + roomJid }
       }
       
       // Generate a unique ID for the message
       const id = `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`
       
       // Send the message
-      await this.client.sendMessage({
+      const res = await this.client.sendMessage({
         to: roomJid,
         type: 'groupchat',
-        body,
-        id
+        body: JSON.stringify(body),
+        id: body.id
       })
-      
+      if (!res) {
+        return { success: false, id: '', error: 'Failed to send message' }
+      }
       return { success: true, id }
     } catch (error) {
       console.error(`Error sending message to room ${roomJid}:`, error)
@@ -332,36 +438,76 @@ export class XMPPService {
     }
   }
 
-  /**
-   * Get message history for a room
-   * @param roomJid The JID of the room
-   * @param limit Optional maximum number of messages to retrieve
-   * @returns Promise resolving to array of RoomMessage objects
-   */
-  async getRoomHistory(roomJid: string): Promise<RoomMessage[]> {
-    if (!this.client || !this.connected) {
-      return []
-    }
+  // /**
+  //  * Get message history for a room
+  //  * @param roomJid The JID of the room
+  //  * @param limit Optional maximum number of messages to retrieve
+  //  * @returns Promise resolving to array of RoomMessage objects
+  //  */
+  // async getRoomHistory(roomJid: string): Promise<RoomMessage[]> {
+  //   if (!this.client || !this.connected) {
+  //     return []
+  //   }
 
-    try {
-      // Check if we've joined this room
-      if (!this.joinedRooms.has(roomJid)) {
-        console.error(`Cannot get history for room ${roomJid}: not joined`)
-        return []
-      }
+  //   try {
+  //     // Check if we've joined this room
+  //     if (!this.joinedRooms.has(roomJid)) {
+  //       console.error(`Cannot get history for room ${roomJid}: not joined`)
+  //       return []
+  //     }
       
-      // For this initial implementation, we'll use a simplified approach
-      // In a real implementation, you would use MAM (Message Archive Management)
-      // or another appropriate XEP to retrieve message history
+  //     // retrieve history for this room, if necessary
+  //     const startTime = new Date().getTime()
+  //     const messages: XMPP.Stanzas.Forward[] = []
+  //     const setMessages = (newMessages: XMPP.Stanzas.Forward[]) => {
+  //       messages.push(...newMessages)
+  //     }
+
+  //     // implement actual history retrieval
+  //     const getHistory = async (jid: string, start: number, entries: XMPP.Stanzas.Forward[]): Promise<XMPP.Stanzas.Forward[]> => {
+  //       // capture the page size and the start index
+  //       // TODO: currently the `count` is being ignored
+  //       const pOpts: Partial<XMPP.MAMQueryOptions> = {
+  //         // paging: {count: 10, index: start}
+  //       }
+  //       try {
+  //         const results = await this.client!.searchHistory(jid, pOpts)
+  //         const msgs: XMPP.Stanzas.Forward[] = results.results?.map((msg) => msg.item as XMPP.Stanzas.Forward) || []
+  //         const numReceived = results.results?.length || 0
+  //         entries.push(...msgs)
+          
+  //         if (!results.complete) {
+  //           // Recursively get more history and await the result
+  //           await getHistory(jid, start + numReceived, entries)
+  //         } else {
+  //           const elapsedSecs = (new Date().getTime() - startTime) / 1000
+  //           console.log('History received for', jid.split('@')[0] + ' (' + entries.length, 'msgs in', elapsedSecs, 'secs)')
+  //           setMessages(entries)
+  //         }
+  //         return entries
+  //       } catch (err) {
+  //         console.error('getHistory error', jid, err)
+  //         return entries // Return what we have so far even if there was an error
+  //       }
+  //     }
       
-      // Return an empty array for now - this would be replaced with actual
-      // history retrieval in a production implementation
-      return []
-    } catch (error) {
-      console.error(`Error getting history for room ${roomJid}:`, error)
-      return []
-    }
-  }
+  //     // Call the async function and wait for it to complete
+  //     await getHistory(roomJid, 0, [])
+      
+  //     // Now that we have all messages, map them to the expected format
+  //     return messages.map((msg) => ({
+  //       id: msg.message?.id || '',
+  //       roomJid: roomJid,
+  //       from: msg.message?.from || '',
+  //       body: msg.message?.body || '',
+  //       timestamp: msg.delay?.timestamp || new Date(),
+  //       isHistory: true
+  //     }))
+  //   } catch (error) {
+  //     console.error(`Error getting history for room ${roomJid}:`, error)
+  //     return []
+  //   }
+  // }
 
   /**
    * Set up the message handler for MUC room messages
@@ -375,52 +521,64 @@ export class XMPPService {
     this.client.on('groupchat', (message) => {
       // Skip messages without a body
       if (!message.body) return
+
+      // console.log('groupchat', message)
       
-      const roomMessage: RoomMessage = {
-        id: message.id || `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        roomJid: message.from.split('/')[0], // Remove the resource part
-        from: message.from,
-        body: message.body,
-        timestamp: new Date(),
-        isHistory: false
-      }
+      const roomId = message.from.split('/')[0]
+      // Notify handlers registered for this specific room
+      const roomHandlers = this.messageHandlers.get(roomId) || []
+      roomHandlers.forEach(handler => handler(message))
       
-      // Notify all registered handlers
-      this.messageHandlers.forEach(handler => handler(roomMessage))
+      // Also notify handlers registered for ALL_ROOMS
+      const allRoomsHandlers = this.messageHandlers.get(ALL_ROOMS) || []
+      allRoomsHandlers.forEach(handler => handler(message))
     })
   }
 
   /**
    * Register a handler for room messages
    * @param handler The handler function to call when a message is received
+   * @param roomJid Optional JID of the room to register the handler for, or ALL_ROOMS to listen to all rooms
    */
-  onRoomMessage(handler: RoomMessageHandler): void {
-    this.messageHandlers.push(handler)
+  onRoomMessage(handler: RoomMessageHandler, roomJid?: string): void {
+    const roomJidVal = roomJid || ALL_ROOMS
+    const handlers = this.messageHandlers.get(roomJidVal) || []
+    handlers.push(handler)
+    this.messageHandlers.set(roomJidVal, handlers)
   }
 
   /**
    * Remove a message handler
    * @param handler The handler function to remove
+   * @param roomJid Optional JID of the room to remove the handler from, or ALL_ROOMS to remove from all rooms listener
    */
-  offRoomMessage(handler: RoomMessageHandler): void {
-    const index = this.messageHandlers.indexOf(handler)
-    if (index !== -1) {
-      this.messageHandlers.splice(index, 1)
+  offRoomMessage(handler: RoomMessageHandler, roomJid?: string): void {
+    const roomJidVal = roomJid || ALL_ROOMS
+    const handlers = this.messageHandlers.get(roomJidVal)
+    if (handlers) {
+      const index = handlers.indexOf(handler)
+      if (index !== -1) {
+        handlers.splice(index, 1)
+        if (handlers.length === 0) {
+          this.messageHandlers.delete(roomJidVal)
+        } else {
+          this.messageHandlers.set(roomJidVal, handlers)
+        }
+      }
     }
   }
 
   /**
    * Get the PubSub service JID for the server
-   * @param server The server domain
    * @returns Promise resolving to the PubSub service JID or null if not found
    */
-  async getPubSubService(server: string): Promise<string | null> {
-    if (!this.client || !this.connected) {
+  async getPubSubService(): Promise<string | null> {
+    if (!this.client || !this.connected || !this.server) {
       return null
     }
 
     try {
-      const items = await this.client.getDiscoItems(server)
+      const items = await this.client.getDiscoItems(this.server)
       
       // Look for pubsub service in items
       for (const item of items.items) {
@@ -430,7 +588,7 @@ export class XMPPService {
       }
       
       // If not found in items, try the standard pubsub subdomain
-      return `pubsub.${server}`
+      return `pubsub.${this.server}`
     } catch (error) {
       console.error('Error discovering PubSub service:', error)
       return null
@@ -438,18 +596,21 @@ export class XMPPService {
   }
 
   /**
-   * List all PubSub documents (nodes) from a service
-   * @param pubsubService The PubSub service JID
+   * List all PubSub documents (nodes) from the server's PubSub service
    * @returns Promise resolving to array of PubSubDocument objects
    */
-  async listPubSubNodes(pubsubService: string): Promise<PubSubDocument[]> {
+  async listPubSubNodes(): Promise<PubSubDocument[]> {
     if (!this.client || !this.connected) {
       return []
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Get all nodes from the pubsub service
-      const items = await this.client.getDiscoItems(pubsubService)
+      const items = await this.client.getDiscoItems(this.pubsubService)
       
       // Convert DiscoItems to PubSubDocument objects
       return items.items
@@ -466,52 +627,66 @@ export class XMPPService {
 
   /**
    * Create a new PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID for the new node
    * @param config Configuration options for the node
    * @param content Optional initial content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async createPubSubDocument(pubsubService: string, nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+  async createPubSubDocument(nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Create the node
-
-      await this.client.createNode(pubsubService, nodeId, config)
+      await this.client.createNode(this.pubsubService, nodeId, config)
       
       // If content is provided, publish it to the node
       if (content) {
         // For StanzaJS, we need to provide a proper XML payload
         // The third parameter is for item attributes, and fourth is the payload
-        await this.client.publish(pubsubService, nodeId, content)
+        await this.client.publish(this.pubsubService, nodeId, content)
       }
       
       return { success: true, id: nodeId }
     } catch (error) {
-      console.error(`Error creating PubSub document ${nodeId}:`, error)
-      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+      if ((error as {error: {condition: string}}).error?.condition === 'conflict') {
+        // don't worry ,it's already there
+        return { success: true, id: nodeId }
+      } else {
+        console.error(`Error creating PubSub document ${nodeId}:`, error)
+        return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }  
+      }
     }
   }
 
   /**
    * Update a PubSub document (publish to a node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to update
    * @param content The new content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async updatePubSubDocument(pubsubService: string, nodeId: string, content: string): Promise<PubSubDocumentResult> {
+  async updatePubSubDocument(nodeId: string, content: object): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Publish to the node
       // For StanzaJS, we need to provide a proper XML payload
-      await this.client.publish(pubsubService, nodeId, {}, `<content>${content}</content>`)
+      const jsonItem: JSONItem = {
+        itemType: NS_JSON_0,
+        json: content
+      }
+      await this.client.publish(this.pubsubService, nodeId, jsonItem)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -523,19 +698,22 @@ export class XMPPService {
   /**
    * Update a JSON document in a PubSub node. Note: the publisher for a message does not receive subscription notifications, so
    * that notifications are manually triggered for local subscribers.
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to update
    * @param content The new JSON content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async publishJsonToPubSubNode(pubsubService: string, nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
+  async publishJsonToPubSubNode(nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Publish the JSON content to the node
-      const result = await this.client.publish(pubsubService, nodeId, content)
+      const result = await this.client.publish(this.pubsubService, nodeId, content)
       
       // Manually trigger the document change event for local subscribers
       // This ensures that our local handlers are notified even if the XMPP server
@@ -557,18 +735,21 @@ export class XMPPService {
 
   /**
    * Delete a PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to delete
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async deletePubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+  async deletePubSubDocument(nodeId: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Delete the node
-      await this.client.deleteNode(pubsubService, nodeId)
+      await this.client.deleteNode(this.pubsubService, nodeId)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -579,43 +760,72 @@ export class XMPPService {
 
   /**
    * Alias for deletePubSubDocument - Delete a PubSub node
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to delete
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async deletePubSubNode(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
-    return this.deletePubSubDocument(pubsubService, nodeId)
+  async deletePubSubNode(nodeId: string): Promise<PubSubDocumentResult> {
+    return this.deletePubSubDocument(nodeId)
   }
 
   /**
-   * Subscribe to a PubSub document (node)
-   * @param pubsubService The PubSub service JID
+   * Subscribe to a PubSub document (node) and register a change handler
    * @param nodeId The ID of the node to subscribe to
+   * @param handler Optional handler function to call when the document changes
    * @returns Promise resolving to PubSubSubscribeResult
    */
-  async subscribeToPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubSubscribeResult> {
+  async subscribeToPubSubDocument(nodeId: string, handler?: PubSubDocumentChangeHandler): Promise<PubSubSubscribeResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
-      // Set up the PubSub event handler if not already done
-      this.setupPubSubEventHandler()
-
-      // check we aren't already subscribed to this node
-      if (this.subscriptionIds.has(nodeId)) {
-        return { success: false, id: nodeId, error: 'Already subscribed' }
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
       }
       
+      // check we aren't already subscribed to this node
+      if (this.subscriptionIds.has(nodeId)) {
+        return { success: true, id: nodeId, subscriptionId: this.subscriptionIds.get(nodeId) }
+      } else {
+      // check if we're already subscribed to this node
+      const subscriptions = await this.client.getSubscriptions(this.pubsubService)
+      if (subscriptions) {
+        const mySubs = subscriptions.items?.filter((item) => {
+          return (item.node === nodeId) && (item.jid === this.bareJid)
+        })
+        // map to unsubscribe promises
+        const unsubscribePromises = mySubs?.map((subscription) => {
+          return this.client?.unsubscribeFromNode(this.pubsubService || '', {
+            node: nodeId,
+            subid: subscription.subid
+          })
+        })
+        // await all unsubscribe promises
+        if (unsubscribePromises) {
+          try {
+            await Promise.all(unsubscribePromises)
+          } catch (error) {
+            console.warn(`Error unsubscribing from PubSub document ${nodeId}:`, error)
+          }
+        }
+      }
+
       // Subscribe to the node
-      const result = await this.client.subscribeToNode(pubsubService, nodeId)
+      const result = await this.client.subscribeToNode(this.pubsubService, nodeId)
       
       // Store the subscription ID for later use when unsubscribing
       if (result && result.subid) {
         this.subscriptionIds.set(nodeId, result.subid)
+        // Register the handler if provided
+        if (handler) {
+          this.pubsubChangeHandlers.push(handler)
+        }
+        return { success: true, id: nodeId, subscriptionId: result?.subid }
+      } else {
+        return { success: false, id: nodeId, error: 'Failed to subscribe:' }
       }
       
-      return { success: true, id: nodeId, subscriptionId: result?.subid }
+    }
     } catch (error) {
       console.error(`Error subscribing to PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
@@ -624,22 +834,26 @@ export class XMPPService {
 
   /**
    * Unsubscribe from a PubSub document (node)
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to unsubscribe from
+   * @param handler Optional handler function to remove
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async unsubscribeFromPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocumentResult> {
+  async unsubscribeFromPubSubDocument(nodeId: string, handler?: PubSubDocumentChangeHandler, subscriptionId?: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Get the subscription ID if available
       const subid = this.subscriptionIds.get(nodeId)
-      
+
       // Unsubscribe from the node with the subscription ID if available
       if (subid) {
-        await this.client.unsubscribeFromNode(pubsubService, {
+        await this.client.unsubscribeFromNode(this.pubsubService, {
           node: nodeId,
           subid
         })
@@ -648,40 +862,88 @@ export class XMPPService {
         this.subscriptionIds.delete(nodeId)
       } else {
         // Try without subscription ID, but this might fail
-        try {
-          await this.client.unsubscribeFromNode(pubsubService, nodeId)
-        } catch (e) {
-          // Ignore the error if it's about missing subscription ID
-          const error = e as { pubsubError?: string }
-          if (error?.pubsubError !== 'subid-required') {
-            throw e
-          }
+        if (subscriptionId) {
+          await this.client.unsubscribeFromNode(this.pubsubService, {
+            node: nodeId,
+            subid: subscriptionId
+          })
+        } else {
+          await this.client.unsubscribeFromNode(this.pubsubService, nodeId)
+        }
+      }
+      
+      // Remove the handler if provided
+      if (handler) {
+        const index = this.pubsubChangeHandlers.indexOf(handler)
+        if (index !== -1) {
+          this.pubsubChangeHandlers.splice(index, 1)
         }
       }
       
       return { success: true, id: nodeId }
     } catch (error) {
-      console.error(`Error unsubscribing from PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
     }
   }
 
+  
+
   /**
-   * Get the content of a PubSub document (node)
-   * @param pubsubService The PubSub service JID
-   * @param nodeId The ID of the node to get content from
-   * @returns Promise resolving to PubSubDocument or null if not found
+   * Get the subscriptions for current user
    */
-  async getPubSubDocument(pubsubService: string, nodeId: string): Promise<PubSubDocument | null> {
+  async clearPubSubSubscriptions(): Promise<PubsubSubscriptions | null> {
     if (!this.client || !this.connected) {
       return null
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // TODO: using paging to only retrieve the last item from the node
       
       // Get the items from the node
-      const result = await this.client.getItems(pubsubService, nodeId)
+      const result = await this.client.getSubscriptions(this.pubsubService)
+      
+      // delete all subscriptions
+      if (result && result.items) {
+        for (const item of result.items) {
+          const subOpts: XMPP.PubsubUnsubscribeOptions = {
+            node: item.node,
+            subid: item.subid
+          }
+          await this.client.unsubscribeFromNode(this.pubsubService, subOpts)
+        }
+      }
+
+      return result
+    } catch (error: unknown) {
+      console.error(`Error getting PubSub subscriptions:`, error)
+      return null  
+    }
+  }
+
+
+  /**
+   * Get the content of a PubSub document (node)
+   * @param nodeId The ID of the node to get content from
+   * @returns Promise resolving to PubSubDocument or null if not found
+   */
+  async getPubSubDocument(nodeId: string): Promise<PubSubDocument | null> {
+    if (!this.client || !this.connected) {
+      return null
+    }
+
+    try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
+      // TODO: using paging to only retrieve the last item from the node
+      
+      // Get the items from the node
+      const result = await this.client.getItems(this.pubsubService, nodeId)
 
       if (result.items && result.items.length > 0) {
         const item = result.items[0] as PubSubDocument
@@ -690,14 +952,19 @@ export class XMPPService {
       
       return null
     } catch (error) {
-      console.error(`Error getting PubSub document ${nodeId}:`, error)
-      return null
+      // check for item not found
+      const sError = error as { error: { condition: string } }
+      if(sError && sError.error?.condition === 'item-not-found') {
+        return null
+      } else {
+        console.error(`Error getting PubSub document ${nodeId}:`, error)
+        return null  
+      }
     }
   }
 
   // Define the pubsub event handler function
   private pubsubEventHandler = (message: Message) => {
-    console.log('item updated!', message)
     if (!message.pubsub) return
     const pubsub = message.pubsub as PubsubEvent
     
@@ -720,13 +987,13 @@ export class XMPPService {
    */
   private setupPubSubEventHandler(): void {
     if (!this.client) return
-
-    // Check if this handler is already registered
-    const existingListeners = this.client.listeners('pubsub:published')
     
+    // Check if this handler is already registered
+    const existingListeners = this.client.listeners(pubsubEvent)
+  
     // Only add the listener if it's not already present
     if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
-      this.client.on('pubsub:published', this.pubsubEventHandler)
+      this.client.on(pubsubEvent, this.pubsubEventHandler)
     }
   }
 
@@ -735,7 +1002,6 @@ export class XMPPService {
    * @param handler The handler function to call when a document changes
    */
   onPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
-    this.setupPubSubEventHandler()
     this.pubsubChangeHandlers.push(handler)
   }
 
@@ -752,19 +1018,22 @@ export class XMPPService {
 
   /**
    * Create a child node within a collection node
-   * @param pubsubService The PubSub service JID
    * @param parentNodeId The ID of the parent collection node
    * @param childNodeId The ID for the new child node
    * @param config Configuration options for the child node
    * @param content Optional initial content for the child node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async createPubSubChildNode(pubsubService: string, parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+  async createPubSubChildNode(parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: childNodeId, error: 'Not connected' }
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Create the child node with collection association
       const childConfig = {
         ...config,
@@ -772,11 +1041,11 @@ export class XMPPService {
       }
       
       // Create the node with parent association
-      await this.client.createNode(pubsubService, childNodeId, childConfig)
+      await this.client.createNode(this.pubsubService, childNodeId, childConfig)
       
       // If content is provided, publish it to the node
       if (content) {
-        await this.client.publish(pubsubService, childNodeId, content)
+        await this.client.publish(this.pubsubService, childNodeId, content)
       }
       
       return { success: true, id: childNodeId }
@@ -788,18 +1057,21 @@ export class XMPPService {
 
   /**
    * Get the configuration of a PubSub node
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to get configuration for
    * @returns Promise resolving to PubSubOptions containing the node configuration
    */
-  async getPubSubNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
+  async getPubSubNodeConfig(nodeId: string): Promise<PubSubOptions> {
     if (!this.client || !this.connected) {
       throw new Error('Not connected')
     }
 
     try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
       // Get the node configuration using StanzaJS
-      const result = await this.client.getNodeConfig(pubsubService, nodeId)
+      const result = await this.client.getNodeConfig(this.pubsubService, nodeId)
       
       // Extract the node type from the configuration form
       let nodeType: 'leaf' | 'collection' = 'leaf' // Default to leaf
@@ -829,11 +1101,251 @@ export class XMPPService {
   
   /**
    * Alias for getPubSubNodeConfig - Get the configuration of a PubSub node
-   * @param pubsubService The PubSub service JID
    * @param nodeId The ID of the node to get configuration for
    * @returns Promise resolving to PubSubOptions containing the node configuration
    */
-  async getNodeConfig(pubsubService: string, nodeId: string): Promise<PubSubOptions> {
-    return this.getPubSubNodeConfig(pubsubService, nodeId)
+  async getNodeConfig(nodeId: string): Promise<PubSubOptions> {
+    return this.getPubSubNodeConfig(nodeId)
+  }
+
+  /**
+   * Get the vCard for the current user
+   * @returns Promise resolving to VCardData containing the user's vCard information
+   */
+  async getFullName(bareJid: string): Promise<string | undefined> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the vCard for the current user using StanzaJS
+      const vCardResult = await this.client.getAccountInfo(bareJid) as AccountManagement
+      
+      return vCardResult.fullName
+    } catch (error) {
+      console.error('Error getting account info for user:', bareJid, error)
+      throw error
+    }
+  }
+  /**
+   * Get the vCard for the current user
+   * @returns Promise resolving to VCardData containing the user's vCard information
+   */
+  async getCurrentUserVCard(): Promise<VCardData> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the vCard for the current user using StanzaJS
+      const vCardResult = await this.client.getVCard(this.bareJid) as VCardTemp
+      
+      // Extract email from records if available
+      let email = ''
+      let nickname = ''
+      let organization = ''
+      let title = ''
+      let role = ''
+      let photo = ''
+      
+      // Process vCard records to extract relevant information
+      if (vCardResult.records) {
+        for (const record of vCardResult.records) {
+          if (record.type === 'email' && record.value) {
+            email = record.value
+          } else if (record.type === 'nickname' && record.value) {
+            nickname = record.value
+          } else if (record.type === 'organization' && record.value) {
+            organization = record.value
+          } else if (record.type === 'title' && record.value) {
+            title = record.value
+          } else if (record.type === 'role' && record.value) {
+            role = record.value
+          } else if (record.type === 'photo' && record.data) {
+            // Convert Buffer to base64 string if available
+            photo = `data:${record.mediaType || 'image/jpeg'};base64,${record.data.toString('base64')}`
+          }
+        }
+      }
+      
+      // Convert the StanzaJS vCard format to our VCardData interface
+      const vCard: VCardData = {
+        jid: this.jid,
+        fullName: vCardResult.fullName || '',
+        name: vCardResult.name,
+        nickname,
+        email,
+        organization,
+        title,
+        photo,
+        role
+      }
+      
+      return vCard
+    } catch (error) {
+      console.error('Error getting vCard for current user:', error)
+      throw error
+    }
+  }
+  
+  /**
+   * Get the vCard for a specific user
+   * @param jid The JID of the user to get the vCard for
+   * @returns Promise resolving to VCardData containing the user's vCard information
+   */
+  async getUserVCard(jid: string): Promise<VCardData> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Get the vCard for the specified user using StanzaJS
+      const fullJid = `${jid}@${this.server}`
+      console.log('getting vCard for', fullJid)
+      const vCardResult = await this.client.getVCard(fullJid) as VCardTemp
+
+
+      // // Get disco info for the user
+      // const discoInfo = await this.client.getDiscoInfo(fullJid)
+      
+      console.log('vCard result', vCardResult, fullJid)
+
+      // Extract email from records if available
+      let email = ''
+      let nickname = ''
+      let organization = ''
+      let title = ''
+      let role = ''
+      let photo = ''
+      
+      // Process vCard records to extract relevant information
+      if (vCardResult.records) {
+        for (const record of vCardResult.records) {
+          if (record.type === 'email' && record.value) {
+            email = record.value
+          } else if (record.type === 'nickname' && record.value) {
+            nickname = record.value
+          } else if (record.type === 'organization' && record.value) {
+            organization = record.value
+          } else if (record.type === 'title' && record.value) {
+            title = record.value
+          } else if (record.type === 'role' && record.value) {
+            role = record.value
+          } else if (record.type === 'photo' && record.data) {
+            // Convert Buffer to base64 string if available
+            photo = `data:${record.mediaType || 'image/jpeg'};base64,${record.data.toString('base64')}`
+          }
+        }
+      }
+      
+      // Convert the StanzaJS vCard format to our VCardData interface
+      const vCard: VCardData = {
+        jid,
+        fullName: vCardResult.fullName || '',
+        name: vCardResult.name,
+        nickname,
+        email,
+        organization,
+        title,
+        photo,
+        role
+      }
+      
+      return vCard
+    } catch (error) {
+      console.error(`Error getting vCard for user ${jid}:`, error)
+      throw error
+    }
+  }
+  
+  /**
+   * Set the vCard for the current user
+   * @param vCardData The vCard data to set
+   * @returns Promise resolving to true if successful
+   */
+  async setVCard(vCardData: VCardData): Promise<boolean> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      // Convert our VCardData to StanzaJS VCardTemp format
+      const vCardTemp: VCardTemp = {
+        fullName: vCardData.fullName || '',
+        name: vCardData.name || {},
+        records: []
+      }
+      
+      // Ensure records array is initialized
+      if (!vCardTemp.records) {
+        vCardTemp.records = []
+      }
+      
+      // Add records based on provided data
+      if (vCardData.email) {
+        vCardTemp.records.push({
+          type: 'email',
+          value: vCardData.email
+        })
+      }
+      
+      if (vCardData.nickname) {
+        vCardTemp.records.push({
+          type: 'nickname',
+          value: vCardData.nickname
+        })
+      }
+      
+      if (vCardData.organization) {
+        vCardTemp.records.push({
+          type: 'organization',
+          value: vCardData.organization
+        })
+      }
+      
+      if (vCardData.title) {
+        vCardTemp.records.push({
+          type: 'title',
+          value: vCardData.title
+        })
+      }
+      
+      if (vCardData.role) {
+        vCardTemp.records.push({
+          type: 'role',
+          value: vCardData.role
+        })
+      }
+      
+      // Handle photo if provided as base64 data URL
+      if (vCardData.photo && vCardData.photo.startsWith('data:')) {
+        // Extract media type and base64 data
+        const matches = vCardData.photo.match(/^data:(.+);base64,(.+)$/)
+        if (matches && matches.length === 3) {
+          const mediaType = matches[1]
+          const base64Data = matches[2]
+          const binaryData = Buffer.from(base64Data, 'base64')
+          
+          vCardTemp.records.push({
+            type: 'photo',
+            mediaType,
+            data: binaryData
+          })
+        }
+      }
+      
+      // Set the vCard using StanzaJS
+      // Note: StanzaJS doesn't have a setVCard method directly on the client
+      // We need to use the pubsub:publish event with the vcard-temp namespace
+      await this.client.sendIQ({
+        type: 'set',
+        vcard: vCardTemp
+      })
+      
+      return true
+    } catch (error) {
+      console.error('Error setting vCard for current user:', error)
+      throw error
+    }
   }
 }

@@ -5,21 +5,24 @@ import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
 import { RoomType } from '../../../../types/rooms'
 import { ConfigProvider } from 'antd'
+import ErrorModal from '../../../Utilities/ErrorModal'
+import { usePlayerDetails } from '../../UserDetails/usePlayerDetails'
 
 interface RoomProps {
   room: RoomType
 }
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
-  const { messages, theme, canSubmit } = useRoom(room)
-  console.log('theme', theme)
+  const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
+  const { playerDetails } = usePlayerDetails()
   return (
     <ConfigProvider
     theme={theme}>
     <div className='room-content' data-testid={`room-content-${room.roomName}`}>
-      <MessageList messages={messages} />
+      <ErrorModal error={error} clearError={clearError} />
+      <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
       { canSubmit && <MessageInputForm 
-        onSendMessage={(content) => console.log('Message sent:', content)} 
+        onSendMessage={sendMessage} 
         disabled={false} 
       />}
     </div>

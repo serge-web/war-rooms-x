@@ -1,24 +1,26 @@
-import { useState, useEffect } from 'react'
-import { mockGameState } from '../UserDetails/mockData';
-import { useWargame } from '../../../contexts/WargameContext';
-import { GameStateType } from '../../../types/wargame';
+import { useCallback } from 'react'
+import { mockGameState } from '../UserDetails/mockData'
+import { useWargame } from '../../../contexts/WargameContext'
+import { GameStateType } from '../../../types/wargame'
+import { incrementState } from './incrementState'
+import { usePubSub } from '../../../hooks/usePubSub'
 
 export const useGameState = () => {
-  const [gameState, setGameState] = useState<GameStateType | null>(null)
   const { xmppClient } = useWargame()
-
-  // TODO - also handle details, extract from the room description
-
-  useEffect(() => {
-    if (xmppClient === undefined) {
-      // waiting for login
-    } else if (xmppClient === null) {
-      // ok, use mock data
-      setGameState(mockGameState)
-    } else {
-      // TODO: use real data
+  const { document: gameState, updateDocument } = usePubSub<GameStateType>('game-state')
+  
+  // If XMPP client is null (not undefined), use mock data
+  const effectiveGameState = xmppClient === null ? mockGameState : gameState
+  
+  const nextTurn = useCallback(async () => {
+    if (effectiveGameState) {
+      const newState = incrementState(effectiveGameState)
+      const res = await updateDocument(newState)
+      if (!res.success) {
+        console.error('Failed to update game state', res)
+      }
     }
-  }, [xmppClient]);
+  }, [effectiveGameState, updateDocument])
 
-  return { gameState };
+  return { gameState: effectiveGameState, nextTurn }
 }

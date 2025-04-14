@@ -1,7 +1,7 @@
 import { XMPPService } from "../services/XMPPService"
 
 export interface GameStateType {
-  turn: number
+  turn: string
   currentTime: string
   currentPhase: string
 }

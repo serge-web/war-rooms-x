@@ -1,11 +1,16 @@
 import React from 'react'
 import './index.css'
 import { Button } from 'antd'
+import { MessageDetails } from '../../../../../types/rooms'
 
 const MessageInputForm: React.FC<{
-  onSendMessage: (content: string) => void
+  onSendMessage: (messageType: MessageDetails['messageType'], content: object) => void
   disabled: boolean
-}> = ({ onSendMessage, disabled }) => (
+}> = ({ onSendMessage, disabled }) => {
+  const send = (value: string) => {
+    onSendMessage('chat', { value })
+  }
+  return (
   <form 
     className="message-input-form"
     onSubmit={(e) => {
@@ -13,7 +18,7 @@ const MessageInputForm: React.FC<{
       const form = e.target as HTMLFormElement
       const input = form.elements.namedItem('messageInput') as HTMLInputElement
       if (input.value.trim()) {
-        onSendMessage(input.value)
+        send(input.value)
         input.value = ''
       }
     }}
@@ -26,6 +31,7 @@ const MessageInputForm: React.FC<{
     />
     <Button type="primary" htmlType="submit" disabled={disabled}>Send</Button>
   </form>
-)
+  )
+}
 
 export default MessageInputForm
