@@ -1,12 +1,29 @@
-import { CreateParams, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetManyParams, GetManyReferenceParams, GetOneParams, QueryFunctionContext, UpdateManyParams, UpdateParams } from "react-admin"
-import { XMPPRestService } from "../../services/XMPPRestService"
+import { CreateParams, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, QueryFunctionContext, UpdateManyParams, UpdateParams } from "react-admin"
+import { Group, XMPPRestService } from "../../services/XMPPRestService"
+
+interface RecordType {
+  id: string
+  [key: string]: string
+}
+
+const mapGroupResultsToRecord = (result: Group) => {
+  return {
+    id: result.name,
+    name: result.name,
+    description: result.description
+  }
+}
 
 export default (client: XMPPRestService): DataProvider => ({
   // get a list of records based on sort, filter, and pagination
-  getList:  async  (resource: string, params: GetListParams & QueryFunctionContext) => {
+  getList:  async  (resource: string, params: GetListParams & QueryFunctionContext): Promise<GetListResult> => {
     console.log('get list', resource, params)
     const res = await client.getClient()?.get('/' + resource)
-    return { data: res?.data, total: res?.data?.length }
+    if (!res) {
+      return { data: [], total: 0 }
+    }
+    const mapped: RecordType[] = res?.data.groups.map(mapGroupResultsToRecord)
+    return { data: mapped, total: mapped.length }
   },
   // get a single record by id
   getOne:    async (resource: string, params: GetOneParams & QueryFunctionContext) => {
