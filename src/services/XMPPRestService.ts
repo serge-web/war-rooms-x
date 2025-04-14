@@ -7,6 +7,7 @@ import { OpenfireConfig } from '../utils/config'
 export interface Group {
   name: string
   description?: string
+  members?: string[]
 }
 
 /**
