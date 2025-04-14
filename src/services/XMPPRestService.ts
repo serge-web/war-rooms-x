@@ -77,9 +77,9 @@ export class XMPPRestService {
    * @returns void
    */
   initialize(config: OpenfireConfig): void {
-    const { host, port, apiPath, secure } = config
+    const { ip, port, apiPath, secure } = config
     const protocol = secure ? 'https' : 'http'
-    this.baseUrl = `${protocol}://${host}:${port}${apiPath}`
+    this.baseUrl = `${protocol}://${ip}:${port}${apiPath}`
     
     this.client = axios.create({
       baseURL: this.baseUrl,
@@ -751,7 +751,7 @@ export class XMPPRestService {
         statusCode = axiosError.response.status
       }
       
-      console.error(errorMessage, error)
+      // console.error(errorMessage, error)
       this.setError(errorMessage, errorCode, statusCode)
       
       return {

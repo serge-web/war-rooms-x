@@ -43,7 +43,7 @@ describe('XMPP REST API', () => {
     expect(serverAvailable).toBe(true)
     expect(authenticated).toBe(true)
     expect(xmppRestService.isAuthenticated()).toBe(true)
-    expect(xmppRestService.getBaseUrl()).toContain(openfireConfig.host)
+    expect(xmppRestService.getBaseUrl()).toContain(openfireConfig.ip)
     expect(xmppRestService.getBaseUrl()).toContain(openfireConfig.port.toString())
     expect(xmppRestService.getBaseUrl()).toContain(openfireConfig.apiPath)
   })
@@ -96,7 +96,7 @@ describe('XMPP REST API', () => {
       // Act
       const result = await xmppRestService.getGroups()
       
-      console.log('Groups:', result)
+      console.log('Groups:', result.data?.groups)
 
       // Assert
       expect(result.success).toBe(true)
@@ -324,8 +324,6 @@ describe('XMPP REST API', () => {
         expect(createdUser.username).toBe(testUsername)
         expect(createdUser.name).toBe(testName)
         expect(createdUser.email).toBe(testEmail)
-        
-        console.log(`Successfully created test user: ${testUsername}`)
         
         // Verify the user exists by getting all users
         const getUsersResult = await xmppRestService.getUsers()
