@@ -17,6 +17,7 @@
     "flexlayout-react": "^0.8.9",
     "prettier": "^3.2.5",
     "react": "^19.0.0",
+    "react-admin": "^5.7.2",
     "react-dom": "^19.0.0",
     "react-router-dom": "^6.22.3",
     "stanza": "^12.18.0",
