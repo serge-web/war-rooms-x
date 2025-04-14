@@ -46,7 +46,6 @@ export class XMPPService {
           websocket: `ws://${ip}:7070/ws/`
         }
       })
-      console.log('client', this.client)
 
       return new Promise<boolean>((resolve) => {
         if (!this.client) {
@@ -208,7 +207,6 @@ export class XMPPService {
    */
   async serverSupportsFeature(feature: string): Promise<boolean> {
     const info = await this.discoverServerFeatures()
-    console.log('server features', info)
     if (!info) return false
     
     return info.features.some(f => f.startsWith(feature))

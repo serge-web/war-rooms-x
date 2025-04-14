@@ -4,7 +4,7 @@ import { loadOpenfireConfig } from '../../utils/config'
 describe('XMPP vCard Operations', () => {
   let adminXmppService: XMPPService
   let noPermsXmppService: XMPPService
-  let openfireConfig: { host: string, credentials: Array<{ username: string, password: string, role?: string }> }
+  let openfireConfig: { ip: string, host: string, credentials: Array<{ username: string, password: string, role?: string }> }
   let adminJid: string
   let noPermsJid: string
 
@@ -15,7 +15,7 @@ describe('XMPP vCard Operations', () => {
     
     // Load OpenFire configuration
     openfireConfig = loadOpenfireConfig()
-    const { host, credentials } = openfireConfig
+    const { ip, host, credentials } = openfireConfig
     
     // Get admin and no-perms credentials
     const adminCreds = credentials[0] // Admin user is usually the first credential
@@ -26,12 +26,12 @@ describe('XMPP vCard Operations', () => {
     }
     
     // Connect admin user
-    const adminConnected = await adminXmppService.connect(host, adminCreds.username, adminCreds.password)
+    const adminConnected = await adminXmppService.connect(ip, host, adminCreds.username, adminCreds.password)
     expect(adminConnected).toBe(true)
     adminJid = adminXmppService.getJID().split('/')[0] // Get bare JID
     
     // Connect no-perms user
-    const noPermsConnected = await noPermsXmppService.connect(host, noPermsCreds.username, noPermsCreds.password)
+    const noPermsConnected = await noPermsXmppService.connect(ip, host, noPermsCreds.username, noPermsCreds.password)
     expect(noPermsConnected).toBe(true)
     noPermsJid = noPermsXmppService.getJID().split('/')[0] // Get bare JID
 

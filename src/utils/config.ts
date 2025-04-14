@@ -18,6 +18,7 @@ export interface OpenfireConfig {
   restApiEnabled: boolean
   pubsubEnabled: boolean
   mucEnabled: boolean
+  ip: string
   host: string
   port: number
   apiPath: string

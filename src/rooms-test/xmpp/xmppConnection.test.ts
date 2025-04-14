@@ -15,11 +15,11 @@ describe('XMPP Connection', () => {
   it('should connect to the XMPP server using credentials from openfire.json', async () => {
     // Arrange
     const openfireConfig = loadOpenfireConfig()
-    const { host, credentials } = openfireConfig
+    const { ip, host, credentials } = openfireConfig
     const { username, password } = credentials[0] // Use the first credential (admin)
 
     // Act
-    const connected = await xmppService.connect(host, username, password)
+    const connected = await xmppService.connect(ip, host, username, password)
 
     // Assert
     expect(connected).toBe(true)
