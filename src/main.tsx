@@ -27,7 +27,10 @@ import App from './App.tsx'
 // //   console.log('Event:', event, data);
 // // })
 // client.on('pubsub:event', (data) => {
-//   console.log('Published:', data);
+//   console.log('Pubsub event:', data);
+// })
+// client.on('pubsub:published', (data) => {
+//   console.log('PubSub published:', data);
 // })
 
 // client.connect()
