@@ -6,7 +6,6 @@ interface RecordType {
   [key: string]: string | undefined
 }
 
-
 // Define mapper functions for each resource type
 const mapGroupResultsToRecord = (result: Group): RecordType => {
   return {
@@ -23,9 +22,16 @@ const mapUserToRecord = (result: User): RecordType => {
 }
 
 const mapRoomToRecord = (result: Room): RecordType => {
+  const forceMembers = result.memberGroups || []
+  const members = result.members || []
+  const owners = result.owners || []
+  const admins = result.admins || []
+  const fullList = forceMembers.concat(members).concat(owners).concat(admins)
+  const memberNames = fullList.map((m) => m.split('@')[0]).join(', ')
   return {
     id: result.roomName,
-    name: result.naturalName
+    name: result.naturalName,
+    members: memberNames
   }
 }
 

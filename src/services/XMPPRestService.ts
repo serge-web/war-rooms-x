@@ -42,6 +42,7 @@ export interface Room {
   owners?: string[]
   admins?: string[]
   members?: string[]
+  memberGroups?: string[]
   outcasts?: string[]
   maxUsers?: number
   creationDate?: string
