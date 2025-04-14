@@ -181,10 +181,11 @@ export class XMPPRestService {
       
       // Set Authorization header with the secret key
       this.client.defaults.headers.common['Authorization'] = apiKey
-      this.client.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
       
       // Test authentication by making a simple request
       const response = await this.client.get('/groups')
+
+      console.log('groups response', response)
       
       if (response.status === 200) {
         this.authenticated = true
