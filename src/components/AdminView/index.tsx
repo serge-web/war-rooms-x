@@ -9,6 +9,8 @@ export const AdminView: React.FC = () => {
   return (
   <Admin dataProvider={dataProvider(restClient)} layout={CustomLayout}>
     <Resource name="groups" list={ListGuesser} />
+    <Resource name="users" list={ListGuesser} />
+    <Resource name="chatrooms" list={ListGuesser} />
   </Admin>
   )
 }
