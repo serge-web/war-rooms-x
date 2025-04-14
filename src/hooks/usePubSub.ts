@@ -31,7 +31,6 @@ export const usePubSub = <T extends object>(nodeId: string) => {
     
     // Handler for PubSub document changes
     const docHandler: PubSubDocumentChangeHandler = (document) => {
-      console.log('PubSub document changed', document)
       const content = document.content?.json
       if (content) {
         setDocument(content as T)

@@ -79,14 +79,13 @@ export class XMPPService {
                 this.getPubSubService().then(service => {
                   if (service) {
                     this.pubsubService = service
+                    console.log('pubsub service:', service)
                   }
                 })
               }
-              // this.client?.subscribeToNode(this.pubsubService || '', { node: 'game-state' })
-              // this.client?.on('pubsub:published', (event) => {
-              //   console.log('PubSub published event received', event)
-              // })
             })
+
+            this.client.sendPresence()
           }
 
           resolve(true)
@@ -785,9 +784,8 @@ export class XMPPService {
       
       // check we aren't already subscribed to this node
       if (this.subscriptionIds.has(nodeId)) {
-        return { success: false, id: nodeId, error: 'Already subscribed in client' }
-      }
-
+        return { success: true, id: nodeId, subscriptionId: this.subscriptionIds.get(nodeId) }
+      } else {
       // check if we're already subscribed to this node
       const subscriptions = await this.client.getSubscriptions(this.pubsubService)
       if (subscriptions) {
@@ -803,17 +801,12 @@ export class XMPPService {
         })
         // await all unsubscribe promises
         if (unsubscribePromises) {
-          await Promise.all(unsubscribePromises).then((items) => {
-            console.log('unsub results', items)
-          })
+          try {
+            await Promise.all(unsubscribePromises)
+          } catch (error) {
+            console.warn(`Error unsubscribing from PubSub document ${nodeId}:`, error)
+          }
         }
-        // do unsubscribe
-        // get any subscriptions for this node
-        // await this.client.unsubscribeFromNode(this.pubsubService, {
-        //   node: nodeId,
-        //   subid: subscription.subid
-        // })
-        // return { success: false, id: nodeId, error: 'Already subscribed at server' }
       }
 
       // Subscribe to the node
@@ -822,14 +815,16 @@ export class XMPPService {
       // Store the subscription ID for later use when unsubscribing
       if (result && result.subid) {
         this.subscriptionIds.set(nodeId, result.subid)
+        // Register the handler if provided
+        if (handler) {
+          this.pubsubChangeHandlers.push(handler)
+        }
+        return { success: true, id: nodeId, subscriptionId: result?.subid }
+      } else {
+        return { success: false, id: nodeId, error: 'Failed to subscribe:' }
       }
       
-      // Register the handler if provided
-      if (handler) {
-        this.pubsubChangeHandlers.push(handler)
-      }
-
-      return { success: true, id: nodeId, subscriptionId: result?.subid }
+    }
     } catch (error) {
       console.error(`Error subscribing to PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
@@ -969,7 +964,6 @@ export class XMPPService {
 
   // Define the pubsub event handler function
   private pubsubEventHandler = (message: Message) => {
-    console.log('PubSub event received', message)
     if (!message.pubsub) return
     const pubsub = message.pubsub as PubsubEvent
     
@@ -994,14 +988,11 @@ export class XMPPService {
     if (!this.client) return
     
     // Check if this handler is already registered
-    const existingListeners = this.client.listeners('pubsub:published')
-
-    console.log('existing pubSub listeners', existingListeners)
-    
+    const existingListeners = this.client.listeners('pubsub:event')
+  
     // Only add the listener if it's not already present
     if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
-      console.log('registering listener')
-      this.client.on('pubsub:published', this.pubsubEventHandler)
+      this.client.on('pubsub:event', this.pubsubEventHandler)
     }
   }
 
