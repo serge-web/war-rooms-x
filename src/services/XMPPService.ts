@@ -10,6 +10,10 @@ import { NS_JSON_0 } from 'stanza/Namespaces'
  */
 export const ALL_ROOMS = '__ALL_ROOMS__'
 
+// const eventName = 'pubsub:event'
+const publishedName = 'pubsub:published'
+const pubsubEvent = publishedName
+
 /**
  * Service for handling XMPP connections and communications
  */
@@ -79,7 +83,6 @@ export class XMPPService {
                 this.getPubSubService().then(service => {
                   if (service) {
                     this.pubsubService = service
-                    console.log('pubsub service:', service)
                   }
                 })
               }
@@ -988,11 +991,11 @@ export class XMPPService {
     if (!this.client) return
     
     // Check if this handler is already registered
-    const existingListeners = this.client.listeners('pubsub:event')
+    const existingListeners = this.client.listeners(pubsubEvent)
   
     // Only add the listener if it's not already present
     if (!existingListeners.some(listener => listener.toString() === this.pubsubEventHandler.toString())) {
-      this.client.on('pubsub:event', this.pubsubEventHandler)
+      this.client.on(pubsubEvent, this.pubsubEventHandler)
     }
   }
 
