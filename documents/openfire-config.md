@@ -13,5 +13,13 @@ These are the steps to installing and configuring Openfire for this app.
     a. Enable REST
     b. Specify HTTP basic auth
     c. Enable additional logging
+    d. Relax wildcards (adminConsole.access.allow-wildcards-in-excludes: true)[1]
+
+
+
+
+ [1] According to article here: https://discourse.igniterealtime.org/t/when-i-upload-to-4-7-5-the-restapi-always-redirect/92892/2   
+
+
 
     

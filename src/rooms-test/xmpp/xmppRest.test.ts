@@ -16,7 +16,9 @@ describe('XMPP REST API', () => {
     
     // Act
     // const authenticated = await xmppRestService.authenticateWithSecretKey()
-    const authenticated = await xmppRestService.authenticate()
+    const authenticated = await xmppRestService.authenticateWithSecretKey('INSERT_KEY_HERE')
+
+    console.log('Authentication result:', authenticated)
 
     const error = xmppRestService.getLastError()
 

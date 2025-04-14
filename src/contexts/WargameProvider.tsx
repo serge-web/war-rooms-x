@@ -1,6 +1,7 @@
 import { useState, ReactNode, useMemo } from 'react'
 import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
+import { XMPPRestService } from '../services/XMPPRestService'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -8,7 +9,7 @@ interface WargameProviderProps {
 
 export const WargameProvider = ({ children }: WargameProviderProps) => {
   const [xmppClient, setXmppClient] = useState<XMPPService | null | undefined>(undefined) 
-  
+  const [restClient, setRestClient] = useState<XMPPRestService | null | undefined>(undefined)
   const loggedIn = useMemo(() => {
     return xmppClient !== undefined
   }, [xmppClient])
@@ -36,7 +37,9 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   const value = {
     loggedIn,
     xmppClient,
-    setXmppClient: setXMPPClientWrapper
+    setXmppClient: setXMPPClientWrapper,
+    restClient,
+    setRestClient
   }
 
   return (

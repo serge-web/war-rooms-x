@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosInstance } from 'axios'
-import * as dotenv from 'dotenv'
 import { OpenfireConfig } from '../utils/config'
 
 /**
@@ -104,19 +103,23 @@ export class XMPPRestService {
     }
 
     // Load environment variables if not already loaded
-    dotenv.config()
+    // dotenv.config()
 
     // Use provided credentials or load from environment
     const usernameVal = username || process.env.USER_NAME || 'admin'
     const passwordVal = password || process.env.PASSWORD || 'pwd'
     
     try {
+      console.log('about to generate auth string', usernameVal, passwordVal)
       // Basic authentication for OpenFire REST API
       const authString = Buffer.from(`${usernameVal}:${passwordVal}`).toString('base64')
       this.client.defaults.headers.common['Authorization'] = `Basic ${authString}`
       
       // Test authentication by making a simple request
+      console.log('about to make request')
       const response = await this.client.get('/system/properties')
+
+//      console.log('REST response', response)
       
       if (response.status === 200) {
         this.authenticated = true
@@ -165,10 +168,10 @@ export class XMPPRestService {
 
     try {
       // Load environment variables if not already loaded
-      dotenv.config()
+      // dotenv.config()
       
       // Use provided secret key or load from environment
-      const apiKey = secretKey || process.env.REST_API_SECRET_KEY
+      const apiKey = secretKey
       
       if (!apiKey) {
         this.setError('REST API secret key not found in .env file', 'SECRET_KEY_MISSING', 0)
@@ -178,11 +181,10 @@ export class XMPPRestService {
       
       // Set Authorization header with the secret key
       this.client.defaults.headers.common['Authorization'] = apiKey
+      this.client.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
       
-      console.log('AUTH', apiKey, this.client.defaults.headers.common)
-
       // Test authentication by making a simple request
-      const response = await this.client.get('/system/properties')
+      const response = await this.client.get('/groups')
       
       if (response.status === 200) {
         this.authenticated = true
