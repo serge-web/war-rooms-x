@@ -1,5 +1,5 @@
 import React from 'react'
-import { Admin, ListGuesser, Resource } from 'react-admin'
+import { Admin, EditGuesser, ListGuesser, Resource, ShowGuesser } from 'react-admin'
 import { useWargame } from '../../contexts/WargameContext'
 import dataProvider from './dataProvider'
 import CustomLayout from './CustomLayout'
@@ -8,9 +8,9 @@ export const AdminView: React.FC = () => {
   const {restClient} = useWargame()
   return (
   <Admin dataProvider={dataProvider(restClient)} layout={CustomLayout}>
-    <Resource name="groups" list={ListGuesser} />
-    <Resource name="users" list={ListGuesser} />
-    <Resource name="chatrooms" list={ListGuesser} />
+    <Resource name="groups" list={ListGuesser} edit={EditGuesser} />
+    <Resource name="users" list={ListGuesser} show={ShowGuesser} />
+    <Resource name="chatrooms" list={ListGuesser} show={ShowGuesser} />
   </Admin>
   )
 }

@@ -8,8 +8,19 @@ interface RecordType {
 
 // Define mapper functions for each resource type
 const mapGroupResultsToRecord = (result: Group): RecordType => {
+  const members = result.members || []
+  const memberNames = members.map((m) => m.split('@')[0]).join(', ')
+  console.log('member names', members, memberNames)
   return {
     id: result.name,
+    description: result.description,
+    members: memberNames
+  }
+}
+
+const mapRecordToGroup = (result: RecordType): Group => {
+  return {
+    name: result.id,
     description: result.description
   }
 }
@@ -17,6 +28,13 @@ const mapGroupResultsToRecord = (result: Group): RecordType => {
 const mapUserToRecord = (result: User): RecordType => {
   return {
     id: result.username,
+    name: result.name
+  }
+}
+
+const mapRecordToUser = (result: RecordType): User => {
+  return {
+    username: result.id,
     name: result.name
   }
 }
@@ -35,15 +53,29 @@ const mapRoomToRecord = (result: Room): RecordType => {
   }
 }
 
+const mapRecordToRoom = (result: RecordType): Room => {
+  return {
+    roomName: result.id,
+    naturalName: result.name
+  }
+}
+  
+
 // Define a union type for all possible resource data types
 type ResourceData = Group | User | Room
 
 // Define our mappers with an index signature to allow string indexing
 // Using unknown instead of any for better type safety
-const mappers: { [key: string]: (result: ResourceData) => RecordType } = {
+const toRecordMappers: { [key: string]: (result: ResourceData) => RecordType } = {
   'groups': mapGroupResultsToRecord as (result: ResourceData) => RecordType,
   'users': mapUserToRecord as (result: ResourceData) => RecordType,
   'chatrooms': mapRoomToRecord as (result: ResourceData) => RecordType
+}
+
+const toResourceMappers: { [key: string]: (result: RecordType) => ResourceData } = {
+  'groups': mapRecordToGroup as (result: RecordType) => ResourceData,
+  'users': mapRecordToUser as (result: RecordType) => ResourceData,
+  'chatrooms': mapRecordToRoom as (result: RecordType) => ResourceData
 }
 
 const mapResourceToResults = (resource: string): string => {
@@ -69,8 +101,8 @@ export default (client: XMPPRestService): DataProvider => ({
     if (!res) {
       return { data: [], total: 0 }
     }
-    console.log('result', res)
-    const mapper = mappers[resource]
+    console.log('result', resource, res)
+    const mapper = toRecordMappers[resource]
     if (!mapper) {
       return { data: [], total: 0 }
     }
@@ -81,11 +113,12 @@ export default (client: XMPPRestService): DataProvider => ({
   // get a single record by id
   getOne: async (resource: string, params: GetOneParams & QueryFunctionContext): Promise<GetOneResult> => {
     const res = await client.getClient()?.get('/' + resource + '/' + params.id)
-    const mapper = mappers[resource]
+    console.log('get one', resource, params.id, res)
+    const mapper = toRecordMappers[resource]
     if (!mapper) {
       return { data: null }
     }
-    return { data: mapper(res?.data[mapResourceToResults(resource)]) }
+    return { data: mapper(res?.data) }
   }, 
   // get a list of records based on an array of ids
   getMany:  async (resource: string, params: GetManyParams & QueryFunctionContext) => {
@@ -106,7 +139,15 @@ export default (client: XMPPRestService): DataProvider => ({
   }, 
   // update a record based on a patch
   update:     async (resource: string, params: UpdateParams) => {
-    const res = await client.getClient()?.put('/' + resource + '/' + params.id, params.data)
+    // convert RecordType to ResourceData
+    const mapper = toResourceMappers[resource]
+    if (!mapper) {
+      return { data: null }
+    }
+    console.log('about to convert', resource, params.data)
+    const resourceData = mapper(params.data as RecordType)
+    console.log('converted', resourceData)
+    const res = await client.getClient()?.put('/' + resource + '/' + params.id, resourceData)
     return { data: res?.data }
   }, 
   // update a list of records based on an array of ids and a common patch
