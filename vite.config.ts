@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/openfire-rest': {
-        target: 'http://10.211.55.16:9090', // or your OpenFire host
+        target: 'http://10.211.55.16:9090', 
         changeOrigin: true,
         rewrite: path => path.replace(/^\/openfire-rest/, '/plugins/restapi/v1')
       }

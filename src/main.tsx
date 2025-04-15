@@ -37,7 +37,7 @@ import axios from 'axios'
 // client.connect()
 
 const client = axios.create({
-  baseURL: '.openfire-rest',
+  baseURL: '/openfire-rest',
   headers: {
     'Content-Type': 'application/json'
   },
