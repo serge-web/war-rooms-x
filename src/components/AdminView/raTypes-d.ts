@@ -1,9 +1,17 @@
 import { RaRecord } from "react-admin"
 
 /**
+ * Base interface for OpenFire records
+ */
+interface XRecord {
+  // This is a marker interface for OpenFire records
+  readonly _type?: 'openfire-record'
+}
+
+/**
 * Room/Channel representation from OpenFire
 */
-export interface XRoom {
+export interface XRoom extends XRecord {
   roomName: string
   naturalName?: string
   description?: string
@@ -41,7 +49,7 @@ export interface RRoom extends RaRecord {
 /**
  * Group/Force representation from OpenFire
  */
-export interface XGroup {
+export interface XGroup extends XRecord {
   name: string
   description?: string
   members?: string[]
@@ -56,7 +64,7 @@ export interface RGroup extends RaRecord {
 /**
  * User representation from OpenFire
  */
-export interface XUser {
+export interface XUser extends XRecord {
   username: string
   name?: string
   properties?: Record<string, string>
@@ -67,9 +75,6 @@ export interface RUser extends RaRecord {
   name?: string
   properties?: Record<string, string>
 }
-
-
-  
 
 // Define a union type for all possible resource data types
 export type XResourceData = (XGroup | XUser | XRoom)
