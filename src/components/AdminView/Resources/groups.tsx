@@ -3,7 +3,7 @@ import { Create, Datagrid, Edit, List, Show, SimpleForm, TextField, TextInput, R
 export const EditGroup = () => (
   <Edit undoable={false}>
       <SimpleForm>
-          <TextInput source="id" disabled />
+          <TextInput source="id" />
           <TextInput source="description" />
           <ReferenceArrayInput source="members" reference="users">
             <AutocompleteArrayInput optionText="name" />          

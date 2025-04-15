@@ -37,10 +37,20 @@ const mapRecordToRoom = (result: RRoom): XRoom => {
 }
 
 const mapGroupResultsToRecord = (result: XGroup): RGroup => {
+  // if a member is lacking the host, append it
+  const members = result.members || []
+  // TODO: remove hard-coded host name
+  const tidyMembers = members.map((m: string) => {
+    if(m.includes('@')) {
+      return m
+    }
+    return `${m}@ubuntu-linux-2404`
+  })
+  console.log('tidy members', result, tidyMembers)
   return {
     id: result.name,
     description: result.description,
-    members: result.members
+    members: tidyMembers
   }
 }
 
