@@ -1,4 +1,5 @@
-import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, RResourceData, XResourceData } from "./raTypes-d"
+import { RaRecord } from "react-admin"
+import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 
 // Define mapper functions for each resource type
 const mapUserToRecord = (result: XUser): RUser => {
@@ -50,27 +51,39 @@ const mapRecordToGroup = (result: RGroup): XGroup => {
   }
 }
 
-type ResourceHandler = {
+type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
-  toRRecord: (result: XResourceData) => RResourceData
-  toXRecord: (result: RResourceData) => XResourceData
-  forCreate?: (result: XResourceData) => XResourceData
+  toRRecord: (result: X) => R
+  toXRecord: (result: R) => X
+  forCreate?: (result: X) => X
 }
 
-export const mappers: ResourceHandler[] = [
-  { resource: 'groups', toRRecord: mapGroupResultsToRecord, toXRecord: mapRecordToGroup }
+const GroupMapper: ResourceHandler<XGroup, RGroup> = {
+  resource: 'groups',
+  toRRecord: mapGroupResultsToRecord,
+  toXRecord: mapRecordToGroup
+}
+
+const RoomMapper: ResourceHandler<XRoom, RRoom> = {
+  resource: 'chatrooms',
+  toRRecord: mapRoomToRecord,
+  toXRecord: mapRecordToRoom
+}
+
+const UserMapper: ResourceHandler<XUser, RUser> = {
+  resource: 'users',
+  toRRecord: mapUserToRecord,
+  toXRecord: mapRecordToUser
+}
+
+// Use a type that can represent any of our resource handlers
+type AnyResourceHandler = 
+  | ResourceHandler<XGroup, RGroup>
+  | ResourceHandler<XRoom, RRoom>
+  | ResourceHandler<XUser, RUser>
+
+export const mappers: AnyResourceHandler[] = [
+  GroupMapper,
+  RoomMapper,
+  UserMapper
 ]
-
-// Define our mappers with an index signature to allow string indexing
-// Using type assertions to ensure type safety while allowing for resource-specific handling
-export const toRMappers: { [key: string]: (result: XResourceData) => RResourceData } = {
-  'groups': ((result: XResourceData) => mapGroupResultsToRecord(result as XGroup)) as (result: unknown) => RGroup,
-  'users': ((result: XResourceData) => mapUserToRecord(result as XUser)) as (result: unknown) => RUser,
-  'chatrooms': ((result: XResourceData) => mapRoomToRecord(result as XRoom)) as (result: unknown) => RRoom
-}
-
-export const toXMappers: { [key: string]: (result: RResourceData) => XResourceData } = {
-  'groups': ((result: unknown) => mapRecordToGroup(result as RGroup)) as (result: unknown) => XGroup,
-  'users': ((result: unknown) => mapRecordToUser(result as RUser)) as (result: unknown) => XUser,
-  'chatrooms': ((result: unknown) => mapRecordToRoom(result as RRoom)) as (result: unknown) => XRoom
-}

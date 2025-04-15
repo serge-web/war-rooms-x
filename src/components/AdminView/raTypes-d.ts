@@ -3,7 +3,7 @@ import { RaRecord } from "react-admin"
 /**
  * Base interface for OpenFire records
  */
-interface XRecord {
+export interface XRecord {
   // This is a marker interface for OpenFire records
   readonly _type?: 'openfire-record'
 }
@@ -66,16 +66,12 @@ export interface RGroup extends RaRecord {
  */
 export interface XUser extends XRecord {
   username: string
-  name?: string
+  name: string
   properties?: Record<string, string>
 }
 
 export interface RUser extends RaRecord {
   id: string
-  name?: string
+  name: string
   properties?: Record<string, string>
 }
-
-// Define a union type for all possible resource data types
-export type XResourceData = (XGroup | XUser | XRoom)
-export type RResourceData = (RGroup | RUser | RRoom)
