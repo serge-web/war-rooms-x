@@ -8,4 +8,13 @@ export default defineConfig({
     // Polyfill for Node.js globals required by StanzaJS
     global: 'window',
   },
+  server: {
+    proxy: {
+      '/openfire-rest': {
+        target: 'http://10.211.55.16:9090', // or your OpenFire host
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/openfire-rest/, '/plugins/restapi/v1')
+      }
+    }
+  }
 })
