@@ -51,6 +51,18 @@ const mapRecordToGroup = (result: RGroup): XGroup => {
   }
 }
 
+const groupCreate = (result: XGroup): XGroup => {
+  const addOns = {
+    members: [],
+    admins: [],
+    shared: false
+  }
+  return {
+    ...result,
+    ...addOns
+  }
+}
+
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
   toRRecord: (result: X) => R
@@ -61,7 +73,8 @@ type ResourceHandler<X extends XRecord, R extends RaRecord> = {
 const GroupMapper: ResourceHandler<XGroup, RGroup> = {
   resource: 'groups',
   toRRecord: mapGroupResultsToRecord,
-  toXRecord: mapRecordToGroup
+  toXRecord: mapRecordToGroup,
+  forCreate: groupCreate
 }
 
 const RoomMapper: ResourceHandler<XRoom, RRoom> = {
