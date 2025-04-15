@@ -1,4 +1,4 @@
-import { Create, Datagrid, Edit, List, Show, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput } from 'react-admin'
+import { Create, Datagrid, Edit, List, Show, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SimpleShowLayout, ReferenceArrayField } from 'react-admin'
 
 export const EditGroup = () => (
   <Edit undoable={false}>
@@ -14,13 +14,11 @@ export const EditGroup = () => (
 
 export const ShowGroup = () => (
   <Show>
-      <SimpleForm>
-          <TextInput source="id" disabled />
-          <TextInput source="description" />
-          <ReferenceArrayInput disabled source="members" reference="users">
-            <AutocompleteArrayInput optionText="name" />          
-          </ReferenceArrayInput>
-      </SimpleForm>
+      <SimpleShowLayout >
+          <TextField source="id" />
+          <TextField source="description" />
+          <ReferenceArrayField source="members" reference="users"/>
+      </SimpleShowLayout>
   </Show>
 );
 
