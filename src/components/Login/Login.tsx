@@ -4,7 +4,6 @@ import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
-import { OpenfireConfig } from '../../utils/config'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -51,16 +50,12 @@ const Login: React.FC = () => {
   }
 
   const handleRestLogin = async (username: string, password: string) => {
+    // note: we'll prob need the standard config, since our data provider will prob 
+    // need to fall back on xmpp calls for pubsub bits
     console.log('about to init REST', username, password)
     // try to auth over rest
     const RestService = new XMPPRestService()
-    const config: Partial<OpenfireConfig> = {
-      ip,
-      port: 9090,
-      apiPath: '/plugins/restapi/v1',
-      secure: false
-    }
-    RestService.initialize(config as OpenfireConfig)
+    RestService.initialiseProxy('/openfire-rest')
     const res = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
     console.log('rest result', res)
     if (res) {

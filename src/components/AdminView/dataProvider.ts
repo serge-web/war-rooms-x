@@ -133,12 +133,12 @@ export default (client: XMPPRestService): DataProvider => ({
     return { data: res?.data, total: res?.data?.length }
   }, 
   // create a record
-  create:     async (resource: string, params: CreateParams) => {
+  create: async (resource: string, params: CreateParams) => {
     const res = await client.getClient()?.post('/' + resource, params.data)
     return { data: res?.data }
   }, 
   // update a record based on a patch
-  update:     async (resource: string, params: UpdateParams) => {
+  update: async (resource: string, params: UpdateParams) => {
     // convert RecordType to ResourceData
     const mapper = toResourceMappers[resource]
     if (!mapper) {
@@ -146,9 +146,14 @@ export default (client: XMPPRestService): DataProvider => ({
     }
     console.log('about to convert', resource, params.data)
     const resourceData = mapper(params.data as RecordType)
-    console.log('converted', resourceData)
-    const res = await client.getClient()?.put('/' + resource + '/' + params.id, resourceData)
-    return { data: res?.data }
+    const current = await client.getClient()?.get('/' + resource + '/' + params.id)
+    const newResource = { ...current?.data, ...resourceData }
+    console.log('converted', newResource)
+    const res = await client.getClient()?.put('/' + resource + '/' + params.id, newResource)
+    const restateId = {id: params.id, ...newResource}
+    delete (restateId as Partial<Group>).name
+    console.log('updated', res)
+    return { data: params.data as RecordType }
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {

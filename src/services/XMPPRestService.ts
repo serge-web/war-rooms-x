@@ -93,6 +93,23 @@ export class XMPPRestService {
   }
 
   /**
+   * Initialize the REST API client
+   * @param path The proxy path
+   * @returns void
+   */
+  initialiseProxy(path: string): void {
+    this.client = axios.create({
+      baseURL: path,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      // Add timeout to prevent hanging tests
+      timeout: 5000
+    })
+    
+  }
+
+  /**
    * Authenticate with the REST API
    * @param username The username for authentication
    * @param password The password for authentication
