@@ -1,9 +1,9 @@
-import { RaRecord } from 'react-admin'
+import { RaRecord } from "react-admin"
 
 /**
 * Room/Channel representation from OpenFire
 */
-export interface xRoom {
+export interface XRoom {
   roomName: string
   naturalName?: string
   description?: string
@@ -30,16 +30,24 @@ export interface xRoom {
   modificationDate?: string
 }
 
+export interface RRoom extends RaRecord {
+  id: string
+  name: string
+  description?: string
+  members?: string[]
+  memberForces?: string[]
+}
+
 /**
  * Group/Force representation from OpenFire
  */
-export interface xGroup {
+export interface XGroup {
   name: string
   description?: string
   members?: string[]
 }
 
-export interface rGroup extends RaRecord {
+export interface RGroup extends RaRecord {
   id: string
   description?: string
   members?: string[]
@@ -48,11 +56,21 @@ export interface rGroup extends RaRecord {
 /**
  * User representation from OpenFire
  */
-export interface xUser {
+export interface XUser {
   username: string
   name?: string
-  email?: string
+  properties?: Record<string, string>
+}
+
+export interface RUser extends RaRecord {
+  id: string
+  name?: string
   properties?: Record<string, string>
 }
 
 
+  
+
+// Define a union type for all possible resource data types
+export type XResourceData = (XGroup | XUser | XRoom)
+export type RResourceData = (RGroup | RUser | RRoom)
