@@ -1,11 +1,13 @@
-import { Create, Datagrid, Edit, List, Show, SimpleForm, TextField, TextInput } from "react-admin";
+import { Create, Datagrid, Edit, List, Show, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput } from 'react-admin'
 
 export const EditGroup = () => (
   <Edit undoable={false}>
       <SimpleForm>
-          <TextInput source="id" />
+          <TextInput source="id" disabled />
           <TextInput source="description" />
-          <TextInput source="members" />
+          <ReferenceArrayInput source="members" reference="users">
+            <AutocompleteArrayInput optionText="name" />          
+          </ReferenceArrayInput>
       </SimpleForm>
   </Edit>
 );
@@ -13,9 +15,11 @@ export const EditGroup = () => (
 export const ShowGroup = () => (
   <Show>
       <SimpleForm>
-          <TextInput source="id" />
+          <TextInput source="id" disabled />
           <TextInput source="description" />
-          <TextInput source="members" />
+          <ReferenceArrayInput source="members" reference="users">
+            <AutocompleteArrayInput optionText="name" />          
+          </ReferenceArrayInput>
       </SimpleForm>
   </Show>
 );
@@ -26,7 +30,9 @@ export const CreateGroup = () => (
       <SimpleForm>
           <TextInput source="id" />
           <TextInput source="description" />
-          <TextInput source="members" />
+          <ReferenceArrayInput source="members" reference="users">
+            <AutocompleteArrayInput optionText="name" />          
+          </ReferenceArrayInput>
       </SimpleForm>
   </Create>
 );

@@ -48,11 +48,18 @@ export default (client: XMPPRestService): DataProvider => ({
     return { data: mapper.toRRecord(res?.data) }
   }, 
   // get a list of records based on an array of ids
-  getMany:  async (resource: string, params: GetManyParams & QueryFunctionContext) => {
-    const getPromises = params.ids.map(id => client.getClient()?.get('/' + resource + '/' + id))
+  getMany:  async <RecordType extends RaRecord>(resource: string, params: GetManyParams & QueryFunctionContext): Promise<{data: RecordType[]}> => {
+    const mapper = mappers.find(m => m.resource === resource)
+    if (!mapper) {
+      return { data: [] }
+    }
+    const modifiedIds = params.ids.map(id => mapper.modifyId ? mapper.modifyId(id) : id)
+    const getPromises = modifiedIds.map(id => client.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
-    console.log('got many', resource, params, results)
-    return { data: results?.map(r => r?.data[mapResourceToResults(resource)]) }
+    console.log('got many', resource, results, params.ids)
+    const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index])) as RecordType[]
+    console.log('about to return xRecords', asR)
+    return { data: asR }
   }, 
   // get the records referenced to another record, e.g. comments for a post
   getManyReference: async (resource: string, params: GetManyReferenceParams & QueryFunctionContext) => {

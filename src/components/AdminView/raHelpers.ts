@@ -2,9 +2,9 @@ import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 
 // Define mapper functions for each resource type
-const mapUserToRecord = (result: XUser): RUser => {
+const mapUserToRecord = (result: XUser, id?: string): RUser => {
   return {
-    id: result.username,
+    id: id || result.username,
     name: result.name
   }
 }
@@ -65,9 +65,10 @@ const groupCreate = (result: XGroup): XGroup => {
 
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
-  toRRecord: (result: X) => R
+  toRRecord: (result: X, id?: string) => R
   toXRecord: (result: R) => X
   forCreate?: (result: X) => X
+  modifyId?: (id: string) => string
 }
 
 const GroupMapper: ResourceHandler<XGroup, RGroup> = {
@@ -86,7 +87,8 @@ const RoomMapper: ResourceHandler<XRoom, RRoom> = {
 const UserMapper: ResourceHandler<XUser, RUser> = {
   resource: 'users',
   toRRecord: mapUserToRecord,
-  toXRecord: mapRecordToUser
+  toXRecord: mapRecordToUser,
+  modifyId: (id) => { return typeof id === 'string' ? id.split('@')[0] : id }
 }
 
 // Use a type that can represent any of our resource handlers

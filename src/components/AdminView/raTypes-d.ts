@@ -65,8 +65,8 @@ export interface RGroup extends RaRecord {
  * User representation from OpenFire
  */
 export interface XUser extends XRecord {
-  username: string
-  name: string
+  username: string // this is effectively the id
+  name: string // this is the human-readable title
   properties?: Record<string, string>
 }
 
