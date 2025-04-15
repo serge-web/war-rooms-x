@@ -34,7 +34,8 @@ export default (client: XMPPRestService): DataProvider => ({
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
-    const mapped: RaRecord[] = res?.data[resourceTidied].map(mapper.toRRecord)
+    const mapped: RaRecord[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => mapper.toRRecord(r as AllXTypes))
+    console.log('about to return records', mapped)
     return { data: mapped, total: mapped.length }
   },
   // get a single record by id

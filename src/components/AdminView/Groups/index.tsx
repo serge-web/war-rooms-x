@@ -17,7 +17,7 @@ export const ShowGroup = () => (
       <SimpleForm>
           <TextInput source="id" disabled />
           <TextInput source="description" />
-          <ReferenceArrayInput source="members" reference="users">
+          <ReferenceArrayInput disabled source="members" reference="users">
             <AutocompleteArrayInput optionText="name" />          
           </ReferenceArrayInput>
       </SimpleForm>
