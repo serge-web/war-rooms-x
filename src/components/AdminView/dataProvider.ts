@@ -28,25 +28,25 @@ export default (client: XMPPRestService): DataProvider => ({
     if (!res) {
       return { data: [], total: 0 }
     }
-    console.log('got list', resource, params, res)
     const mapper = mappers.find(m => m.resource === resource)
     if (!mapper) {
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
     const mapped: RaRecord[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => mapper.toRRecord(r as AllXTypes))
-    console.log('about to return records', mapped)
+    console.log('got list complete', resource, params, res, mapped)
     return { data: mapped, total: mapped.length }
   },
   // get a single record by id
   getOne: async (resource: string, params: GetOneParams & QueryFunctionContext): Promise<GetOneResult> => {
     const res = await client.getClient()?.get('/' + resource + '/' + params.id)
-    console.log('got one', resource, params, res)
     const mapper = mappers.find(m => m.resource === resource)
     if (!mapper) {
       return { data: null }
     }
-    return { data: mapper.toRRecord(res?.data) }
+    const asR = mapper.toRRecord(res?.data)
+    console.log('got one complete', resource, res, asR)
+    return { data: asR }
   }, 
   // get a list of records based on an array of ids
   getMany:  async <RecordType extends RaRecord>(resource: string, params: GetManyParams & QueryFunctionContext): Promise<{data: RecordType[]}> => {
@@ -57,9 +57,8 @@ export default (client: XMPPRestService): DataProvider => ({
     const modifiedIds = params.ids.map(id => mapper.modifyId ? mapper.modifyId(id) : id)
     const getPromises = modifiedIds.map(id => client.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
-    console.log('got many', resource, results, params.ids)
     const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index])) as RecordType[]
-    console.log('about to return xRecords', asR)
+    console.log('got many complete', resource, results, asR)
     return { data: asR }
   }, 
   // get the records referenced to another record, e.g. comments for a post
@@ -77,10 +76,9 @@ export default (client: XMPPRestService): DataProvider => ({
     }
     const asX = mapper.toXRecord(params.data as AllRTypes)
     const filledIn = mapper.forCreate ? mapper.forCreate(asX as AllXTypes) : asX
-    console.log('about to post', filledIn)
     await client.getClient()?.post('/' + resource, filledIn)
     const asR = mapper.toRRecord(filledIn as AllXTypes)
-    console.log('created', asR)
+    console.log('create complete', resource, params.data, filledIn, asR)
     return { data: asR as RecordType }
   }, 
   // update a record based on a patch
@@ -94,30 +92,29 @@ export default (client: XMPPRestService): DataProvider => ({
     const resourceData = mapper.toXRecord(params.data as AllRTypes)
     const current = await client.getClient()?.get('/' + resource + '/' + params.id)
     const newResource = { ...current?.data, ...resourceData }
-    console.log('converted', params.data, current?.data, newResource)
     await client.getClient()?.put('/' + resource + '/' + params.id, newResource)
     const asR = mapper.toRRecord(newResource as AllXTypes)
-    console.log('converted back', asR)
+    console.log('update complete', resource, params.data, newResource, asR)
     return { data: asR as RecordType }
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {
     const res = await client.getClient()?.put('/' + resource + '/' + params.ids, params.data)
+    console.log('update many complete', resource, params, res)
     return { data: res?.data }
   }, 
   // delete a record by id
-  delete:     async (resource: string, params: DeleteParams) => {
-    console.log('about to delete', resource, params)
+  delete: async (resource: string, params: DeleteParams) => {
     const res = await client.getClient()?.delete('/' + resource + '/' + params.id)
-    console.log('result', res)
+    console.log('delete complete', resource, params, res)
     return { data: res?.data }
   }, 
   // delete a list of records based on an array of ids
   deleteMany: async (resource: string, params: DeleteManyParams) => {
-    console.log('about to delete many', resource, params)
     const deletePromises = params.ids.map(id => client.getClient()?.delete('/' + resource + '/' + id))
     const results = await Promise.all(deletePromises)
-    console.log('bulk delete results', results)
-    return { data: results?.map(r => r?.data) }
+    const asR = results.map(r => r?.data)
+    console.log('delete many complete', resource, params, results, asR)
+    return { data: asR }
   }, 
 })

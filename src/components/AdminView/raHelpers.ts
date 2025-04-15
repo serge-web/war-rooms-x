@@ -63,6 +63,17 @@ const groupCreate = (result: XGroup): XGroup => {
   }
 }
 
+const userCreate = (result: XUser): XUser => {
+  const addOns = {
+    email: 'pending@example.com',
+    password: 'pwd'
+  }
+  return {
+    ...result,
+    ...addOns
+  }
+}
+
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
   toRRecord: (result: X, id?: string) => R
@@ -88,6 +99,7 @@ const UserMapper: ResourceHandler<XUser, RUser> = {
   resource: 'users',
   toRRecord: mapUserToRecord,
   toXRecord: mapRecordToUser,
+  forCreate: userCreate,
   modifyId: (id) => { return typeof id === 'string' ? id.split('@')[0] : id }
 }
 
