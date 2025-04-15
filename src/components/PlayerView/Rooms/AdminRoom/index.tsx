@@ -1,7 +1,7 @@
 import React from 'react'
 import RoomContent from '../RoomContent'
 import './index.css'
-import { RoomType } from '../../../../types/rooms'
+import { RoomType } from '../../../../types/rooms-d'
 import { useRooms } from '../RoomsList/useRooms'
 import { useEffect, useState } from 'react'
 

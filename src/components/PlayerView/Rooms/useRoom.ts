@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms';
+import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms-d';
 import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';

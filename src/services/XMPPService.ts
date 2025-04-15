@@ -1,7 +1,7 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
 import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
-import { GameMessage, User } from '../types/rooms'
+import { GameMessage, User } from '../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 import { NS_JSON_0 } from 'stanza/Namespaces'
 

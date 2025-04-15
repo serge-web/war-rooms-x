@@ -1,7 +1,7 @@
 import React from 'react'
 import './index.css'
 import { Button } from 'antd'
-import { MessageDetails } from '../../../../../types/rooms'
+import { MessageDetails } from '../../../../../types/rooms-d'
 
 const MessageInputForm: React.FC<{
   onSendMessage: (messageType: MessageDetails['messageType'], content: object) => void

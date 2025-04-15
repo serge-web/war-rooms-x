@@ -1,4 +1,5 @@
-
+import { ThemeConfig } from "antd"
+import { ReceivedMessage } from "stanza/protocol"
 
 export interface RoomDetails {
   roomType: 'chat' | 'map'
@@ -47,7 +48,7 @@ export interface MockRoom {
   name: string
   unreadCount: number
   messages: ReceivedMessage[]
-  theme?: ThemConfig
+  theme?: ThemeConfig
 }
 
 export interface UserError {

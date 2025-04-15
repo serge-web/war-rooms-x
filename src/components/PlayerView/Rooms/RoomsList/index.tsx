@@ -4,7 +4,7 @@ import 'flexlayout-react/style/light.css'
 import RoomContent from '../RoomContent'
 import './index.css'
 import { useRooms } from './useRooms'
-import { RoomType } from '../../../../types/rooms'
+import { RoomType } from '../../../../types/rooms-d'
 import { ConfigProvider, ThemeConfig, Typography } from 'antd'
 
 const { Text } = Typography

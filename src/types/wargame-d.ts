@@ -1,3 +1,4 @@
+import { XMPPRestService } from "../services/XMPPRestService"
 import { XMPPService } from "../services/XMPPService"
 
 export interface GameStateType {

@@ -1,6 +1,6 @@
 // Mock data for UserDetails component
 
-import { ForceDetails, GameStateType, UserDetailsType } from "../../../types/wargame"
+import { ForceDetails, GameStateType, UserDetailsType } from "../../../types/wargame-d"
 
 export interface MockForceDetails {
   name: string

@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import { WargameContextType } from '../types/wargame'
+import { WargameContextType } from '../types/wargame-d'
 import { useContext } from 'react'
 
 export const WargameContext = createContext<WargameContextType | undefined>(undefined)

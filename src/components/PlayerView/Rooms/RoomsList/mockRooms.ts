@@ -1,4 +1,4 @@
-import { MockRoom } from "../../../../types/rooms"
+import { MockRoom } from "../../../../types/rooms-d"
 
 export const mockRooms: MockRoom[] = [
   {

@@ -133,11 +133,12 @@ export default (client: XMPPRestService): DataProvider => ({
     return { data: res?.data }
   }, 
   // update a record based on a patch
-  update: async (resource: string, params: UpdateParams) => {
+  update: async <RecordType extends RaRecord>(resource: string, params: UpdateParams): Promise<{data: RecordType}> => {
     // convert RaRecord to ResourceData
     const mapper = toResourceMappers[resource]
     if (!mapper) {
-      return { data: null }
+      // Return the original data instead of null to match the expected return type
+      return { data: params.data as RecordType }
     }
     console.log('about to convert', resource, params.data)
     const resourceData = mapper(params.data as RaRecord)
@@ -148,7 +149,7 @@ export default (client: XMPPRestService): DataProvider => ({
     const restateId = {id: params.id, ...newResource}
     delete (restateId as Partial<Group>).name
     console.log('updated', res)
-    return { data: params.data as RaRecord }
+    return { data: params.data as RecordType }
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {

@@ -7,6 +7,7 @@ import { EditGroup } from './Groups'
 
 export const AdminView: React.FC = () => {
   const {restClient} = useWargame()
+  if (!restClient) return null
   return (
   <Admin dataProvider={dataProvider(restClient)} layout={CustomLayout}>
     <Resource name="groups" list={ListGuesser} edit={EditGroup} />

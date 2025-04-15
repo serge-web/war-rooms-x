@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { mockRooms } from './mockRooms';
-import { MockRoom, RoomType } from '../../../../types/rooms';
+import { MockRoom, RoomType } from '../../../../types/rooms-d';
 import { useWargame } from '../../../../contexts/WargameContext';
 
 export const useRooms = () => {

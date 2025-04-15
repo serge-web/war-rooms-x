@@ -1,4 +1,4 @@
-import { GameStateType } from "../../../types/wargame";
+import { GameStateType } from "../../../types/wargame-d";
 
 export const incrementState = (gameState: GameStateType): GameStateType => {
   return {
