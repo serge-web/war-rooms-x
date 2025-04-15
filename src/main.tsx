@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import axios from 'axios'
 // import * as XMPP from 'stanza'
 
 // console.log('in main')
@@ -36,31 +35,8 @@ import axios from 'axios'
 
 // client.connect()
 
-const client = axios.create({
-  baseURL: '/openfire-rest',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  // Add timeout to prevent hanging tests
-  timeout: 5000
-})
-client.defaults.headers.common['Authorization'] = 'INSERT_KEY_HERE'
-      
-// Test authentication by making a simple request
-const response = await client.get('/groups')
-
-if (response.status === 200) {
-  const content = response.data
-  try {
-    const groups = JSON.parse(content)
-    console.log('Groups:', groups)
-  } catch {
-    console.error('Failed to parse groups response, prob not JSON')
-  }
-  console.log('REST client authenticated')
-} else {
-  console.error('REST client authentication failed')
-}
+// We'll move the API request code to the App component
+// This avoids using top-level await which can cause issues
 
 createRoot(document.getElementById('root')!).render(
   <App />
