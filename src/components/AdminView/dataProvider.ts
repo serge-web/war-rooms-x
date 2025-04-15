@@ -1,13 +1,8 @@
-import { CreateParams, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyParams, UpdateParams } from "react-admin"
+import { CreateParams, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyParams, UpdateParams } from "react-admin"
 import { Group, Room, User, XMPPRestService } from "../../services/XMPPRestService"
 
-interface RecordType {
-  id: string
-  [key: string]: string | undefined
-}
-
 // Define mapper functions for each resource type
-const mapGroupResultsToRecord = (result: Group): RecordType => {
+const mapGroupResultsToRecord = (result: Group): RaRecord => {
   const members = result.members || []
   const memberNames = members.map((m) => m.split('@')[0]).join(', ')
   console.log('member names', members, memberNames)
@@ -18,28 +13,28 @@ const mapGroupResultsToRecord = (result: Group): RecordType => {
   }
 }
 
-const mapRecordToGroup = (result: RecordType): Group => {
+const mapRecordToGroup = (result: RaRecord): Group => {
   return {
-    name: result.id,
+    name: result.id as string,
     description: result.description
   }
 }
 
-const mapUserToRecord = (result: User): RecordType => {
+const mapUserToRecord = (result: User): RaRecord => {
   return {
     id: result.username,
     name: result.name
   }
 }
 
-const mapRecordToUser = (result: RecordType): User => {
+const mapRecordToUser = (result: RaRecord): User => {
   return {
-    username: result.id,
+    username: result.id as string,
     name: result.name
   }
 }
 
-const mapRoomToRecord = (result: Room): RecordType => {
+const mapRoomToRecord = (result: Room): RaRecord => {
   const forceMembers = result.memberGroups || []
   const members = result.members || []
   const owners = result.owners || []
@@ -53,9 +48,9 @@ const mapRoomToRecord = (result: Room): RecordType => {
   }
 }
 
-const mapRecordToRoom = (result: RecordType): Room => {
+const mapRecordToRoom = (result: RaRecord): Room => {
   return {
-    roomName: result.id,
+    roomName: result.id as string,
     naturalName: result.name
   }
 }
@@ -66,16 +61,16 @@ type ResourceData = Group | User | Room
 
 // Define our mappers with an index signature to allow string indexing
 // Using unknown instead of any for better type safety
-const toRecordMappers: { [key: string]: (result: ResourceData) => RecordType } = {
-  'groups': mapGroupResultsToRecord as (result: ResourceData) => RecordType,
-  'users': mapUserToRecord as (result: ResourceData) => RecordType,
-  'chatrooms': mapRoomToRecord as (result: ResourceData) => RecordType
+const toRecordMappers: { [key: string]: (result: ResourceData) => RaRecord } = {
+  'groups': mapGroupResultsToRecord as (result: ResourceData) => RaRecord,
+  'users': mapUserToRecord as (result: ResourceData) => RaRecord,
+  'chatrooms': mapRoomToRecord as (result: ResourceData) => RaRecord
 }
 
-const toResourceMappers: { [key: string]: (result: RecordType) => ResourceData } = {
-  'groups': mapRecordToGroup as (result: RecordType) => ResourceData,
-  'users': mapRecordToUser as (result: RecordType) => ResourceData,
-  'chatrooms': mapRecordToRoom as (result: RecordType) => ResourceData
+const toResourceMappers: { [key: string]: (result: RaRecord) => ResourceData } = {
+  'groups': mapRecordToGroup as (result: RaRecord) => ResourceData,
+  'users': mapRecordToUser as (result: RaRecord) => ResourceData,
+  'chatrooms': mapRecordToRoom as (result: RaRecord) => ResourceData
 }
 
 const mapResourceToResults = (resource: string): string => {
@@ -107,7 +102,7 @@ export default (client: XMPPRestService): DataProvider => ({
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
-    const mapped: RecordType[] = res?.data[resourceTidied].map(mapper)
+    const mapped: RaRecord[] = res?.data[resourceTidied].map(mapper)
     return { data: mapped, total: mapped.length }
   },
   // get a single record by id
@@ -139,13 +134,13 @@ export default (client: XMPPRestService): DataProvider => ({
   }, 
   // update a record based on a patch
   update: async (resource: string, params: UpdateParams) => {
-    // convert RecordType to ResourceData
+    // convert RaRecord to ResourceData
     const mapper = toResourceMappers[resource]
     if (!mapper) {
       return { data: null }
     }
     console.log('about to convert', resource, params.data)
-    const resourceData = mapper(params.data as RecordType)
+    const resourceData = mapper(params.data as RaRecord)
     const current = await client.getClient()?.get('/' + resource + '/' + params.id)
     const newResource = { ...current?.data, ...resourceData }
     console.log('converted', newResource)
@@ -153,7 +148,7 @@ export default (client: XMPPRestService): DataProvider => ({
     const restateId = {id: params.id, ...newResource}
     delete (restateId as Partial<Group>).name
     console.log('updated', res)
-    return { data: params.data as RecordType }
+    return { data: params.data as RaRecord }
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {
