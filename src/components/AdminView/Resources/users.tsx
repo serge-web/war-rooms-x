@@ -1,14 +1,76 @@
 import { Typography } from "antd";
-import { Create, Datagrid, Edit, List, Show, SimpleForm, SimpleShowLayout, TextField, TextInput } from "react-admin";
+import { Create, Datagrid, Edit, List, Show, SimpleForm, SimpleShowLayout, TextField, TextInput, SaveButton, Toolbar, useRecordContext } from "react-admin";
+import { useState } from 'react'
 
-export const ListUser = () => (
-  <List>
-      <Datagrid>
-          <TextField source="id" />
-          <TextField source="name" />
-      </Datagrid>
-  </List>
+interface BoldNameFieldProps {
+  source: string
+  selectedId: string | null
+}
+
+const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
+  const record = useRecordContext()
+  if (!record) return null
+  
+  return (
+    <span style={{ fontWeight: record.id === selectedId ? 'bold' : 'normal' }}>
+      {record[source]}
+    </span>
+  )
+}
+
+export const EditUser = ({ id }: { id?: string }) => (
+  <Edit id={id} undoable={false}>
+    <SimpleForm>
+      <TextInput source="id" />
+      <TextInput source="name" />
+    </SimpleForm>
+  </Edit>
+)
+
+export const CreateUser = ({ embedded = false }: { embedded?: boolean }) => (
+  <Create
+    mutationOptions={{
+      onSuccess: () => {
+        // When embedded is true, don't navigate away
+        return embedded ? false : undefined
+      }
+    }}
+  >
+    <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
+      <TextInput source="id" />
+      <TextInput source="name" />
+      <Typography.Paragraph><strong>Note:</strong>Password for new user will be set to `pwd`</Typography.Paragraph>
+    </SimpleForm>
+  </Create>
 );
+
+export const ListUser = () => {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+
+  return (
+    <div style={{ display: 'flex', width: '100%' }}>
+      <div style={{ flex: '1' }}>
+        <List>
+          <Datagrid
+            rowSx={(record) => record.id === selectedUserId ? { backgroundColor: '#f5f5f5' } : {}}
+            rowClick={(id) => {
+              setSelectedUserId(id === selectedUserId ? null : id as string)
+              return false // Prevent default navigation
+            }}
+          >
+            <TextField source="id" />
+            <BoldNameField source="name" selectedId={selectedUserId} />
+          </Datagrid>
+        </List>
+      </div>
+      <div style={{ flex: '1', marginLeft: '1rem' }}>
+        {selectedUserId ? (
+          <EditUser id={selectedUserId} />
+        ) : <CreateUser embedded={true}/>}
+      </div>
+    </div>
+  )
+};
 
 export const ShowUser = () => (
     <Show>
@@ -18,23 +80,4 @@ export const ShowUser = () => (
         </SimpleShowLayout>
     </Show>
 );
-
-export const CreateUser = () => (
-  <Create>
-      <SimpleForm>
-          <TextInput source="id" />
-          <TextInput source="name" />
-          <Typography.Paragraph><strong>Note:</strong>Password for new user will be set to `pwd`</Typography.Paragraph>
-      </SimpleForm>
-  </Create>
-);
-
-export const EditUser = () => (
-  <Edit>
-    <SimpleForm>
-      <TextInput source="id" />
-      <TextInput source="name" />
-    </SimpleForm>
-  </Edit>
-)
   
