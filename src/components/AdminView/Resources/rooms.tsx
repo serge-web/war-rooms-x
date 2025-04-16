@@ -56,8 +56,6 @@ export const RoomEdit = () => {
         <TextInput source="id" />
         <TextInput source="name" />
         <TextInput source="description" />
-        <TextInput disabled source="owners" />
-        <TextInput disabled source="admins" />
         <NotOwnerDropdown source="members" reference="users" />
         <ReferenceArrayInput source="memberForces" reference="groups">
           <AutocompleteArrayInput optionText="id" />          
