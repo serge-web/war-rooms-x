@@ -5,7 +5,7 @@ import { RGroup, RUser, RRoom, XGroup, XRoom, XUser } from "./raTypes-d"
 
 const mapResourceToResults = (resource: string): string => {
   switch(resource) {
-  case 'chatrooms': return 'chatrooms'
+  case 'chatrooms': return 'chatRooms'
   default: return resource  
   }
 }
@@ -92,7 +92,6 @@ export default (client: XMPPRestService): DataProvider => ({
     const resourceData = mapper.toXRecord(params.data as AllRTypes)
     const current = await client.getClient()?.get('/' + resource + '/' + params.id)
     const newResource = { ...current?.data, ...resourceData }
-    console.log('about to update', resource,'from form', params.data, 'to X', resourceData, 'existing', current?.data, 'new', newResource)
     await client.getClient()?.put('/' + resource + '/' + params.id, newResource)
     const asR = mapper.toRRecord(newResource as AllXTypes)
     console.log('update complete', resource, params.data, newResource, asR)
