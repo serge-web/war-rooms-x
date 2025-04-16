@@ -6,6 +6,34 @@ It includes discovering rooms, retrieving configuration, joining, fetching messa
 
 ---
 
+```mermaid
+flowchart TD
+    Start([Start])
+    Connect[Connect]
+    Auth[Authenticate]
+    Presence[Send Presence]
+    InitMsg[Send Initial Message]
+    ReceiveMsg{Receive Message?}
+    SendContact[Send Contact]
+    SendInitMsg[Send Initial Message]
+    DisplayMsg{Display Message?}
+    SendUnavailable[Send Unavailable Presence]
+    Disconnect[Disconnect]
+    LoopSend{Send Another Message?}
+    End([End])
+
+    Start --> Connect --> Auth --> Presence --> InitMsg --> ReceiveMsg
+
+    ReceiveMsg -->|Yes| DisplayMsg
+    ReceiveMsg -->|No| SendContact --> SendInitMsg --> LoopSend
+
+    DisplayMsg -->|Yes| LoopSend
+    DisplayMsg -->|No| SendUnavailable --> Disconnect --> End
+
+    LoopSend -->|Yes| SendInitMsg
+    LoopSend -->|No| End
+```
+
 ## 🔍 1. Discovering Available Rooms
 
 ```mermaid
@@ -189,5 +217,3 @@ This sends `<presence type='unavailable'/>` to the MUC service.
 - Use `client.getMUCRoomMembers()` to list users, if needed.
 
 ---
-
-Let me know if you want this turned into a UI checklist or full visual chat workflow!
