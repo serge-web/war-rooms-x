@@ -1200,7 +1200,7 @@ export class XMPPService {
 
     try {
       // Get the vCard for the specified user using StanzaJS
-      const fullJid = `${jid}@${this.server}`
+      const fullJid =  jid.includes('@') ? jid : `${jid}@${this.server}`
       console.log('getting vCard for', fullJid)
       const vCardResult = await this.client.getVCard(fullJid) as VCardTemp
 

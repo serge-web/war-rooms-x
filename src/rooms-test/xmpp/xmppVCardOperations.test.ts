@@ -1,3 +1,4 @@
+import { VCardData } from '../../services/types'
 import { XMPPService } from '../../services/XMPPService'
 import { loadOpenfireConfig } from '../../utils/config'
 
@@ -19,7 +20,7 @@ describe('XMPP vCard Operations', () => {
     
     // Get admin and no-perms credentials
     const adminCreds = credentials[0] // Admin user is usually the first credential
-    const noPermsCreds = credentials.find((cred: { username: string, password: string, role?: string }) => cred.username === 'red-co')
+    const noPermsCreds = credentials.find((cred: { username: string, password: string, role?: string }) => cred.username === 'no-perms')
     
     if (!noPermsCreds) {
       throw new Error('No "no-perms" user found in credentials. Test cannot proceed.')
@@ -162,61 +163,63 @@ describe('XMPP vCard Operations', () => {
   //   }
   // })
 
-  // it('should get vCard for no-perms user', async () => {
-  //   // Skip test if vCard service is not available
-  //   try {
-  //     // First set a vCard for the no-perms user to ensure there's something to retrieve
-  //     const noPermsVCardData: VCardData = {
-  //       jid: noPermsJid,
-  //       fullName: 'No Perms User',
-  //       nickname: 'noperms',
-  //       email: 'noperms@example.com',
-  //       organization: 'War Rooms X',
-  //       title: 'Regular User',
-  //       role: 'user'
-  //     }
+  it('should get vCard for no-perms user', async () => {
+    // Skip test if vCard service is not available
+    try {
+      // First set a vCard for the no-perms user to ensure there's something to retrieve
+      const noPermsVCardData: VCardData = {
+        jid: noPermsJid,
+        fullName: 'No Perms User',
+        nickname: 'noperms',
+        email: 'noperms@example.com',
+        organization: 'War Rooms X',
+        title: 'Regular User',
+        role: 'user'
+      }
+
+      console.log('about to get vCard for no-perms user', noPermsJid)
       
-  //     // Set vCard for no-perms user using their own service
-  //     await noPermsXmppService.setVCard(noPermsVCardData)
+      // Set vCard for no-perms user using their own service
+      await noPermsXmppService.setVCard(noPermsVCardData)
       
-  //     // Act - Admin retrieves no-perms user's vCard
-  //     const retrievedVCard = await adminXmppService.getUserVCard(noPermsJid)
+      // Act - Admin retrieves no-perms user's vCard
+      const retrievedVCard = await adminXmppService.getUserVCard(noPermsJid)
       
-  //     // Assert - Verify retrieved vCard matches what we set
-  //     expect(retrievedVCard).not.toBeNull()
-  //     expect(retrievedVCard.jid).toBe(noPermsJid)
-  //     expect(retrievedVCard.fullName).toBe(noPermsVCardData.fullName)
-  //     expect(retrievedVCard.nickname).toBe(noPermsVCardData.nickname)
-  //     expect(retrievedVCard.email).toBe(noPermsVCardData.email)
-  //     expect(retrievedVCard.organization).toBe(noPermsVCardData.organization)
-  //     expect(retrievedVCard.title).toBe(noPermsVCardData.title)
-  //     expect(retrievedVCard.role).toBe(noPermsVCardData.role)
+      // Assert - Verify retrieved vCard matches what we set
+      expect(retrievedVCard).not.toBeNull()
+      expect(retrievedVCard.jid).toBe(noPermsJid)
+      expect(retrievedVCard.fullName).toBe(noPermsVCardData.fullName)
+      expect(retrievedVCard.nickname).toBe(noPermsVCardData.nickname)
+      expect(retrievedVCard.email).toBe(noPermsVCardData.email)
+      expect(retrievedVCard.organization).toBe(noPermsVCardData.organization)
+      expect(retrievedVCard.title).toBe(noPermsVCardData.title)
+      expect(retrievedVCard.role).toBe(noPermsVCardData.role)
       
-  //     // Also test that no-perms user can retrieve their own vCard
-  //     const selfRetrievedVCard = await noPermsXmppService.getCurrentUserVCard()
-  //     expect(selfRetrievedVCard).not.toBeNull()
-  //     expect(selfRetrievedVCard.fullName).toBe(noPermsVCardData.fullName)
+      // Also test that no-perms user can retrieve their own vCard
+      const selfRetrievedVCard = await noPermsXmppService.getCurrentUserVCard()
+      expect(selfRetrievedVCard).not.toBeNull()
+      expect(selfRetrievedVCard.fullName).toBe(noPermsVCardData.fullName)
       
-  //     console.log('No-perms user vCard retrieved successfully by admin and self')
-  //   } catch (error) {
-  //     // If the server doesn't support vCard or it's not configured,
-  //     // we'll get a service-unavailable error
-  //     if (error && typeof error === 'object' && 'error' in error) {
-  //       const xmppError = error as { error: { condition: string } }
+      console.log('No-perms user vCard retrieved successfully by admin and self')
+    } catch (error) {
+      // If the server doesn't support vCard or it's not configured,
+      // we'll get a service-unavailable error
+      if (error && typeof error === 'object' && 'error' in error) {
+        const xmppError = error as { error: { condition: string } }
         
-  //       // Only skip for service-unavailable, fail on internal-server-error
-  //       if (xmppError.error && xmppError.error.condition === 'service-unavailable') {
-  //         console.log('vCard service is not available on this server - skipping test')
-  //         // Mark the test as passed - we successfully detected that vCard is not available
-  //         expect(true).toBe(true)
-  //       } else {
-  //         // For other types of errors, fail the test
-  //         throw error
-  //       }
-  //     } else {
-  //       // For unexpected errors, fail the test
-  //       throw error
-  //     }
-  //   }
-  // })
+        // Only skip for service-unavailable, fail on internal-server-error
+        if (xmppError.error && xmppError.error.condition === 'service-unavailable') {
+          console.log('vCard service is not available on this server - skipping test')
+          // Mark the test as passed - we successfully detected that vCard is not available
+          expect(true).toBe(true)
+        } else {
+          // For other types of errors, fail the test
+          throw error
+        }
+      } else {
+        // For unexpected errors, fail the test
+        throw error
+      }
+    }
+  })
 })
