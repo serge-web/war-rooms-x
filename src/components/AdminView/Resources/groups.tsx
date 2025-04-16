@@ -66,7 +66,7 @@ export const ListGroup = () => {
     <div style={{ display: 'flex', width: '100%' }}>
       <div style={{ flex: '1' }}>
         <List>
-          <Datagrid isRowSelectable={() => false}
+          <Datagrid
             rowSx={(record) => record.id === selectedGroupId ? { backgroundColor: '#f5f5f5' } : {}}
             rowClick={(id) => {
               setSelectedGroupId(id === selectedGroupId ? null : id as string)
