@@ -58,7 +58,7 @@ export default (client: XMPPRestService): DataProvider => ({
     const getPromises = modifiedIds.map(id => client.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
     const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index])) as RecordType[]
-    console.log('got many complete', resource, results, asR)
+    console.log('got many complete', resource, results, asR, params)
     return { data: asR }
   }, 
   // get the records referenced to another record, e.g. comments for a post

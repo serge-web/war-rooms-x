@@ -2,15 +2,23 @@ import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 
 // Static method to ensure members have proper host format
-const formatMemberWithHost = (member: string): string => {
+export const formatMemberWithHost = (member: string): string => {
   // TODO: remove hard-coded host name
   if(member.includes('@')) {
     return member
   }
   return `${member}@ubuntu-linux-2404`
 }
+
+export const trimHost = (member: string): string => {
+  if(member.includes('@')) {
+    return member.split('@')[0]
+  }
+  return member
+}
+
 // Define mapper functions for each resource type
-const userXtoR = (result: XUser, id?: string): RUser => {
+export const userXtoR = (result: XUser, id?: string): RUser => {
   return {
     id: id || result.username,
     name: result.name
@@ -29,8 +37,10 @@ const roomXtoR = (result: XRoom): RRoom => {
     id: result.roomName,
     name: result.naturalName || 'pending',
     description: result.description,
-    members: result.members?.map(formatMemberWithHost) || [],
-    memberForces: result.memberGroups
+    members: result.members?.map(trimHost) || [],
+    memberForces: result.memberGroups,
+    owners: result.owners?.map(trimHost) || [],
+    admins: result.admins?.map(trimHost) || []
   }
 }
 
@@ -39,7 +49,7 @@ const roomRtoX = (result: RRoom): XRoom => {
     roomName: result.id as string,
     naturalName: result.name,
     description: result.description,
-    members: result.members,
+    members: result.members?.map(formatMemberWithHost) || [],
     memberGroups: result.memberForces
   }
 }

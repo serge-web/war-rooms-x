@@ -44,6 +44,8 @@ export interface RRoom extends RaRecord {
   description?: string
   members?: string[]
   memberForces?: string[]
+  owners?: string[]
+  admins?: string[]
 }
 
 /**
