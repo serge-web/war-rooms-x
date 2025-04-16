@@ -1,4 +1,4 @@
-import { Create, Datagrid, Edit, List, Show, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SimpleShowLayout, ReferenceArrayField, SaveButton, Toolbar, useRecordContext } from 'react-admin'
+import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SaveButton, Toolbar, useRecordContext } from 'react-admin'
 import { useState } from 'react'
 
 interface BoldDescriptionFieldProps {
@@ -20,7 +20,7 @@ const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps)
 export const EditGroup = ({ id }: { id?: string }) => (
   <Edit id={id} undoable={false}>
       <SimpleForm>
-          <TextInput source="id" />
+          <TextInput helperText="id values cannot be changed" disabled source="id" />
           <TextInput source="description" />
           <ReferenceArrayInput source="members" reference="users">
             <AutocompleteArrayInput optionText="name" />          
@@ -28,17 +28,6 @@ export const EditGroup = ({ id }: { id?: string }) => (
       </SimpleForm>
   </Edit>
 );
-
-export const ShowGroup = () => (
-  <Show>
-      <SimpleShowLayout >
-          <TextField source="id" />
-          <TextField source="description" />
-          <ReferenceArrayField source="members" reference="users"/>
-      </SimpleShowLayout>
-  </Show>
-);
-
 
 export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
   <Create

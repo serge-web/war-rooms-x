@@ -1,4 +1,4 @@
-import { AutocompleteArrayInput, Create, Datagrid, Edit, List, ReferenceArrayField, ReferenceArrayInput, SaveButton, Show, SimpleForm, SimpleShowLayout, TextField, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
+import { AutocompleteArrayInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextField, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
 import { RUser } from '../raTypes-d';
 import { useState } from 'react';
 
@@ -28,11 +28,11 @@ const NotOwnerDropdown = ({ source, reference }: { source: string; reference: st
   )
 }
 
-export const RoomEdit = ({ id }: { id?: string }) => {
+export const EditRoom = ({ id }: { id?: string }) => {
   return (
     <Edit id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
-        <TextInput source="id" />
+        <TextInput helperText="id values cannot be changed" disabled source="id" />
         <TextInput source="name" />
         <TextInput source="description" />
         <NotOwnerDropdown source="members" reference="users" />
@@ -44,7 +44,7 @@ export const RoomEdit = ({ id }: { id?: string }) => {
   )
 }
 
-export const RoomCreate = ({ embedded = false }: { embedded?: boolean }) => (
+export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
     mutationOptions={{
       onSuccess: () => {
@@ -65,7 +65,7 @@ export const RoomCreate = ({ embedded = false }: { embedded?: boolean }) => (
   </Create>
 )
 
-export const RoomList = () => {
+export const ListRoom = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
 
   return (
@@ -87,23 +87,11 @@ export const RoomList = () => {
       </div>
       <div style={{ flex: '1', marginLeft: '1rem' }}>
         {selectedRoomId ? (
-          <RoomEdit id={selectedRoomId} />
+          <EditRoom id={selectedRoomId} />
         ) : (
-          <RoomCreate embedded={true} />
+          <CreateRoom embedded={true} />
         )}
       </div>
     </div>
   )
 }
-
-export const RoomShow = () => (
-  <Show>
-      <SimpleShowLayout>
-          <TextField source="id" />
-          <TextField source="name" />
-          <TextField source="description" />
-          <ReferenceArrayField source="members" reference="users"/>
-          <ReferenceArrayField source="memberForces" reference="groups"/>
-      </SimpleShowLayout>
-  </Show>
-)

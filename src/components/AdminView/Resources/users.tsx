@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import { Create, Datagrid, Edit, List, Show, SimpleForm, SimpleShowLayout, TextField, TextInput, SaveButton, Toolbar, useRecordContext } from "react-admin";
+import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, SaveButton, Toolbar, useRecordContext } from "react-admin";
 import { useState } from 'react'
 
 interface BoldNameFieldProps {
@@ -21,7 +21,7 @@ const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
 export const EditUser = ({ id }: { id?: string }) => (
   <Edit id={id} undoable={false}>
     <SimpleForm>
-      <TextInput source="id" />
+      <TextInput helperText="id values cannot be changed" disabled source="id" />
       <TextInput source="name" />
     </SimpleForm>
   </Edit>
@@ -72,12 +72,4 @@ export const ListUser = () => {
   )
 };
 
-export const ShowUser = () => (
-    <Show>
-        <SimpleShowLayout>
-            <TextField source="id" />
-            <TextField source="name" />
-        </SimpleShowLayout>
-    </Show>
-);
   
