@@ -4,7 +4,7 @@ This document outlines the sequence of operations an XMPP client using `stanza.i
 
 A lower section covers [subscribing to nodes for real-time updates](#-subscribing-to-xmpp-pubsub-nodes-using-stanzaio).
 
-Another lower section covers [managing PubSub collections](#-xmpp-pubsub-collections).
+Another lower section covers [managing PubSub collections](#xmpp-pubsub-collections).
 
 ---
 
@@ -71,7 +71,7 @@ This depends on the server-side (e.g., OpenFire) configuration.
 
 ---
 
-## 📡 Subscribing to XMPP PubSub Nodes using stanza.io
+# 📡 Subscribing to XMPP PubSub Nodes using stanza.io
 
 This guide shows how to subscribe to updates from XMPP PubSub nodes using the `stanza.io` JavaScript library, receive real-time document updates, and unsubscribe when needed.
 
