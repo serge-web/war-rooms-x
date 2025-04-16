@@ -1,4 +1,4 @@
-
+import { ThemeConfig } from "antd"
 
 export interface RoomDetails {
   roomType: 'chat' | 'map'
@@ -46,8 +46,8 @@ export interface MockRoom {
   id: string
   name: string
   unreadCount: number
-  messages: ReceivedMessage[]
-  theme?: ThemConfig
+  messages: GameMessage[]
+  theme?: ThemeConfig
 }
 
 export interface UserError {
@@ -58,4 +58,25 @@ export interface UserError {
 export interface User {
   jid: string
   name: string
+}
+
+export interface CustomRoomConfig {
+  roomType: string
+}
+
+export interface ChatRoomConfig  extends CustomRoomConfig {
+  roomType: 'chat'
+}
+
+export interface MapRoomConfig extends CustomRoomConfig {
+  roomType: 'map'
+}
+
+export interface Template {
+  content: string
+}
+
+export interface FormRoomConfig extends CustomRoomConfig {
+  roomType: 'form'
+  templates: Template[]
 }

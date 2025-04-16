@@ -35,6 +35,8 @@ import App from './App.tsx'
 
 // client.connect()
 
+// We'll move the API request code to the App component
+// This avoids using top-level await which can cause issues
 
 createRoot(document.getElementById('root')!).render(
   <App />

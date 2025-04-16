@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal } from 'antd'
-import { UserError } from '../../../types/rooms'
+import { UserError } from '../../../types/rooms-d'
 
 interface ErrorModalProps {
   error: UserError | null

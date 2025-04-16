@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { mockGameState } from '../UserDetails/mockData'
 import { useWargame } from '../../../contexts/WargameContext'
-import { GameStateType } from '../../../types/wargame'
+import { GameStateType } from '../../../types/wargame-d'
 import { incrementState } from './incrementState'
 import { usePubSub } from '../../../hooks/usePubSub'
 

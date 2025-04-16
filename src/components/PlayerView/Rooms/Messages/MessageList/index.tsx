@@ -2,7 +2,7 @@ import React from 'react'
 import MessageBubble from '../MessageBubble'
 import { List } from 'antd'
 import './index.css'
-import { GameMessage } from '../../../../../types/rooms'
+import { GameMessage } from '../../../../../types/rooms-d'
 
 interface MessageListProps {
   messages: GameMessage[]

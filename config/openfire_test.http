@@ -1,5 +1,5 @@
-@key = ZQiTmqEIm4t46Zqe
+@key = INSERT_KEY_HERE
 
-GET http://10.211.55.16:9090/plugins/restapi/v1/groups
+GET http://10.211.55.16:9090/plugins/restapi/v1/chatrooms?type=all
 Authorization: {{key}}
 Accept: application/json

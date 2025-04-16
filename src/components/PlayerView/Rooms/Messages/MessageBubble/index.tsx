@@ -1,6 +1,6 @@
 import React from 'react'
 import './index.css'
-import { ChatMessage, GameMessage } from '../../../../../types/rooms'
+import { ChatMessage, GameMessage } from '../../../../../types/rooms-d'
 import { renderObjectContent } from './renderObjectContent'
 
 const renderMessage = (mType: string, jsonObject: object): React.ReactNode => {

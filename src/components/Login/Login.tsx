@@ -3,6 +3,7 @@ import { Button, Form, Input, Card, Flex, Modal } from 'antd'
 import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
+import { XMPPRestService } from '../../services/XMPPRestService'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -13,7 +14,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const { setXmppClient } = useWargame()
+  const { setXmppClient, setRestClient } = useWargame()
 
   const loginRoles = [
     [ip, host, 'admin', 'pwd'],
@@ -30,6 +31,9 @@ const Login: React.FC = () => {
     setXmppClient(null)
   }
 
+  const handleLogin = () => {
+    doLogin(ip,host, username, password)
+  }
 
   const doLogin = async (ip: string, host: string, name: string, pwd: string) => {
     const xmpp = new XMPPService()
@@ -45,9 +49,21 @@ const Login: React.FC = () => {
     }
   }
 
-  const handleLogin = () => {
-    doLogin(ip,host, username, password)
-  }
+  const handleRestLogin = async (username: string, password: string) => {
+    // note: we'll prob need the standard config, since our data provider will prob 
+    // need to fall back on xmpp calls for pubsub bits
+    console.log('about to init REST', username, password)
+    // try to auth over rest
+    const RestService = new XMPPRestService()
+    RestService.initialiseProxy('/openfire-rest')
+    const res = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
+    console.log('rest result', res)
+    if (res) {
+      setRestClient(RestService)
+    } else {
+      setError('REST Auth failed, please check username and password')
+    }
+  }  
 
   return (
     <div className="login-container">
@@ -91,14 +107,20 @@ const Login: React.FC = () => {
                 {name}
               </Button>
             ))}
+              <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+                REST
+              </Button>
           </Flex>
 
           <Flex vertical={false}>
             <Button onClick={handleMock} block>
               Mock
             </Button>
-            <Button type="primary" htmlType="submit" disabled={!loginEnabled} block>
+            <Button type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
               Login
+            </Button>
+            <Button type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
+              Admin
             </Button>
         </Flex>
         </Form>

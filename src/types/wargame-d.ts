@@ -1,3 +1,4 @@
+import { XMPPRestService } from "../services/XMPPRestService"
 import { XMPPService } from "../services/XMPPService"
 
 export interface GameStateType {
@@ -10,6 +11,8 @@ export interface WargameContextType {
   loggedIn: boolean
   xmppClient: XMPPService | null | undefined
   setXmppClient: (value: XMPPService | null | undefined) => void
+  restClient: XMPPRestService | null | undefined
+  setRestClient: (value: XMPPRestService | null | undefined) => void
 }
 
 /**

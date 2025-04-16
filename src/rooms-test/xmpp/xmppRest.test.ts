@@ -13,10 +13,11 @@ describe('XMPP REST API', () => {
   })
 
   it('should authenticate with the REST API using credentials from .env file', async () => {
-    
     // Act
     // const authenticated = await xmppRestService.authenticateWithSecretKey()
-    const authenticated = await xmppRestService.authenticate()
+    const authenticated = await xmppRestService.authenticateWithSecretKey('INSERT_KEY_HERE')
+
+    console.log('Authentication result:', authenticated)
 
     const error = xmppRestService.getLastError()
 
@@ -75,7 +76,7 @@ describe('XMPP REST API', () => {
   describe('Group/Force Management', () => {
     beforeEach(async () => {
       // Authenticate before each test in this group
-      const authenticated = await xmppRestService.authenticate()
+      const authenticated = await xmppRestService.authenticateWithSecretKey('INSERT_KEY_HERE')
       if (!authenticated) {
         const error = xmppRestService.getLastError()
         if (error.code === 'CONNECTION_REFUSED') {
@@ -142,7 +143,7 @@ describe('XMPP REST API', () => {
   describe('User Management', () => {
     beforeEach(async () => {
       // Authenticate before each test in this group
-      const authenticated = await xmppRestService.authenticate()
+      const authenticated = await xmppRestService.authenticateWithSecretKey('INSERT_KEY_HERE')
       if (!authenticated) {
         const error = xmppRestService.getLastError()
         if (error.code === 'CONNECTION_REFUSED') {
@@ -162,6 +163,8 @@ describe('XMPP REST API', () => {
 
       // Act
       const result = await xmppRestService.getUsers()
+
+      console.log('Users:', result.data?.users)
       
       // Assert
       expect(result.success).toBe(true)
@@ -212,7 +215,7 @@ describe('XMPP REST API', () => {
   describe('Room/Channel Management', () => {
     beforeEach(async () => {
       // Authenticate before each test in this group
-      const authenticated = await xmppRestService.authenticate()
+      const authenticated = await xmppRestService.authenticateWithSecretKey('INSERT_KEY_HERE')
       if (!authenticated) {
         const error = xmppRestService.getLastError()
         if (error.code === 'CONNECTION_REFUSED') {
@@ -282,7 +285,7 @@ describe('XMPP REST API', () => {
   describe('User Management - Create and Delete', () => {
     beforeEach(async () => {
       // Authenticate before each test in this group
-      const authenticated = await xmppRestService.authenticate()
+      const authenticated = await xmppRestService.authenticateWithSecretKey('INSERT_KEY_HERE')
       if (!authenticated) {
         const error = xmppRestService.getLastError()
         if (error.code === 'CONNECTION_REFUSED') {
