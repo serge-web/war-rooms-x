@@ -1,4 +1,4 @@
-import { MockRoom } from "../../../../types/rooms-d"
+import { MockRoom, ChatMessage } from "../../../../types/rooms-d"
 
 export const mockRooms: MockRoom[] = [
   {
@@ -6,26 +6,76 @@ export const mockRooms: MockRoom[] = [
     name: 'Command Room',
     unreadCount: 3,
     messages: [
-      { id: 'msg1', sender: 'Commander', content: 'Status report', timestamp: '10:00' },
-      { id: 'msg2', sender: 'currentUser', content: 'All systems operational', timestamp: '10:01' },
-      { id: 'msg3', sender: 'Commander', content: 'Excellent. Any issues to report?', timestamp: '10:03' },
-      { id: 'msg4', sender: 'currentUser', content: 'Negative. All units ready for deployment.', timestamp: '10:05' },
-      { id: 'msg5', sender: 'Intel Officer', content: 'New intelligence coming in from sector 7', timestamp: '10:08' },
-      { id: 'msg6', sender: 'Commander', content: 'Brief us on the details', timestamp: '10:10' },
-      { id: 'msg7', sender: 'Intel Officer', content: 'Enemy forces spotted moving north. Estimated strength: battalion', timestamp: '10:12' },
-      { id: 'msg8', sender: 'currentUser', content: 'Recommending immediate air reconnaissance', timestamp: '10:15' },
-      { id: 'msg9', sender: 'Commander', content: 'Approved. Launch recon drones.', timestamp: '10:17' },
-      { id: 'msg10', sender: 'Logistics', content: 'Supply convoy ETA 30 minutes to forward base', timestamp: '10:20' },
-      { id: 'msg11', sender: 'currentUser', content: 'Acknowledged. Prepare for rapid offload.', timestamp: '10:22' },
-      { id: 'msg12', sender: 'Commander', content: 'Set defensive perimeter before nightfall', timestamp: '10:25' },
-      { id: 'msg13', sender: 'currentUser', content: 'Already in progress. Estimated completion in 2 hours.', timestamp: '10:27' },
-      { id: 'msg14', sender: 'Intel Officer', content: 'Drone footage confirms enemy positions. Sending coordinates.', timestamp: '10:30' },
-      { id: 'msg15', sender: 'Artillery Officer', content: 'Artillery units standing by for coordinates', timestamp: '10:32' },
-      { id: 'msg16', sender: 'Commander', content: 'Hold fire until my command', timestamp: '10:35' },
-      { id: 'msg17', sender: 'Medical Officer', content: 'Field hospital established and operational', timestamp: '10:38' },
-      { id: 'msg18', sender: 'currentUser', content: 'Excellent work. Casualty evacuation routes confirmed.', timestamp: '10:40' },
-      { id: 'msg19', sender: 'Communications Officer', content: 'Secure comms established with HQ', timestamp: '10:42' },
-      { id: 'msg20', sender: 'Commander', content: 'Prepare for mission briefing at 1100 hours', timestamp: '10:45' }
+      { 
+        id: 'msg1', 
+        details: {
+          messageType: 'chat',
+          senderId: 'commander-1',
+          senderName: 'Commander',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T10:00:00Z',
+          channel: 'room1'
+        },
+        content: { value: 'Status report' } as ChatMessage
+      },
+      { 
+        id: 'msg2', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T10:01:00Z',
+          channel: 'room1'
+        },
+        content: { value: 'All systems operational' } as ChatMessage
+      },
+      { 
+        id: 'msg3', 
+        details: {
+          messageType: 'chat',
+          senderId: 'commander-1',
+          senderName: 'Commander',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T10:03:00Z',
+          channel: 'room1'
+        },
+        content: { value: 'Excellent. Any issues to report?' } as ChatMessage
+      },
+      { 
+        id: 'msg4', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T10:05:00Z',
+          channel: 'room1'
+        },
+        content: { value: 'Negative. All units ready for deployment.' } as ChatMessage
+      },
+      { 
+        id: 'msg5', 
+        details: {
+          messageType: 'chat',
+          senderId: 'intel-1',
+          senderName: 'Intel Officer',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T10:08:00Z',
+          channel: 'room1'
+        },
+        content: { value: 'New intelligence coming in from sector 7' } as ChatMessage
+      }
     ]
   },
   {
@@ -33,8 +83,34 @@ export const mockRooms: MockRoom[] = [
     name: 'Intelligence',
     unreadCount: 0,
     messages: [
-      { id: 'msg3', sender: 'Intel Officer', content: 'New intel available', timestamp: '09:45' },
-      { id: 'msg4', sender: 'currentUser', content: 'Reviewing now', timestamp: '09:46' }
+      { 
+        id: 'msg3', 
+        details: {
+          messageType: 'chat',
+          senderId: 'intel-1',
+          senderName: 'Intel Officer',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T09:45:00Z',
+          channel: 'room2'
+        },
+        content: { value: 'New intel available' } as ChatMessage
+      },
+      { 
+        id: 'msg4', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T09:46:00Z',
+          channel: 'room2'
+        },
+        content: { value: 'Reviewing now' } as ChatMessage
+      }
     ]
   },
   {
@@ -42,7 +118,20 @@ export const mockRooms: MockRoom[] = [
     name: 'Operations',
     unreadCount: 5,
     messages: [
-      { id: 'msg5', sender: 'Ops Manager', content: 'Mission briefing at 1100', timestamp: '09:30' }
+      { 
+        id: 'msg5', 
+        details: {
+          messageType: 'chat',
+          senderId: 'ops-1',
+          senderName: 'Ops Manager',
+          senderForce: 'Blue Force',
+          turn: '1',
+          phase: 'Planning',
+          timestamp: '2025-04-16T09:30:00Z',
+          channel: 'room3'
+        },
+        content: { value: 'Mission briefing at 1100' } as ChatMessage
+      }
     ]
   },
   {
@@ -50,26 +139,216 @@ export const mockRooms: MockRoom[] = [
     name: 'Admin',
     unreadCount: 2,
     messages: [
-      { id: 'admin1', sender: 'System', content: 'Wargame initialization complete', timestamp: '08:00' },
-      { id: 'admin2', sender: 'Admin', content: 'Setting up exercise parameters for Operation Swift Response', timestamp: '08:05' },
-      { id: 'admin3', sender: 'System', content: 'Force templates loaded successfully', timestamp: '08:10' },
-      { id: 'admin4', sender: 'Admin', content: 'Assigning roles to participants', timestamp: '08:15' },
-      { id: 'admin5', sender: 'currentUser', content: 'Requesting additional user accounts for observers', timestamp: '08:20' },
-      { id: 'admin6', sender: 'Admin', content: 'Observer accounts created. Credentials distributed via secure channel.', timestamp: '08:25' },
-      { id: 'admin7', sender: 'System', content: 'Map data loaded: Eastern Europe Theater', timestamp: '08:30' },
-      { id: 'admin8', sender: 'Admin', content: 'Scenario timeline adjusted to 72-hour exercise', timestamp: '08:35' },
-      { id: 'admin9', sender: 'currentUser', content: 'Confirming weather conditions set to variable with 30% precipitation chance', timestamp: '08:40' },
-      { id: 'admin10', sender: 'System', content: 'Weather parameters updated successfully', timestamp: '08:45' },
-      { id: 'admin11', sender: 'Admin', content: 'Scheduling system maintenance for 02:00 tomorrow - 30 minute downtime expected', timestamp: '08:50' },
-      { id: 'admin12', sender: 'System', content: 'Communication channels tested and operational', timestamp: '08:55' },
-      { id: 'admin13', sender: 'Admin', content: 'Enabling advanced cyber warfare module for this exercise', timestamp: '09:00' },
-      { id: 'admin14', sender: 'currentUser', content: 'Requesting permission to modify force composition for Blue Team', timestamp: '09:05' },
-      { id: 'admin15', sender: 'Admin', content: 'Permission granted. Please document changes in the exercise log.', timestamp: '09:10' },
-      { id: 'admin16', sender: 'System', content: 'Database backup completed successfully', timestamp: '09:15' },
-      { id: 'admin17', sender: 'Admin', content: 'Setting up after-action review parameters and metrics', timestamp: '09:20' },
-      { id: 'admin18', sender: 'currentUser', content: 'Metrics configuration confirmed. Adding custom evaluation criteria for logistics performance.', timestamp: '09:25' },
-      { id: 'admin19', sender: 'System', content: 'Warning: Participant connection from unauthorized IP address detected', timestamp: '09:30' },
-      { id: 'admin20', sender: 'Admin', content: 'Security alert acknowledged. Implementing additional verification for external connections.', timestamp: '09:35' }
+      { 
+        id: 'admin1', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:00:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Wargame initialization complete' } as ChatMessage
+      },
+      { 
+        id: 'admin2', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:05:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Setting up exercise parameters for Operation Swift Response' } as ChatMessage
+      },
+      { 
+        id: 'admin3', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:10:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Force templates loaded successfully' } as ChatMessage
+      },
+      { 
+        id: 'admin4', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:15:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Assigning roles to participants' } as ChatMessage
+      },
+      { 
+        id: 'admin5', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:20:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Requesting additional user accounts for observers' } as ChatMessage
+      },
+      { 
+        id: 'admin6', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:25:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Observer accounts created. Credentials distributed via secure channel.' } as ChatMessage
+      },
+      { 
+        id: 'admin7', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:30:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Map data loaded: Eastern Europe Theater' } as ChatMessage
+      },
+      { 
+        id: 'admin8', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:35:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Scenario timeline adjusted to 72-hour exercise' } as ChatMessage
+      },
+      { 
+        id: 'admin9', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:40:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Confirming weather conditions set to variable with 30% precipitation chance' } as ChatMessage
+      },
+      { 
+        id: 'admin10', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:45:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Weather parameters updated successfully' } as ChatMessage
+      },
+      { 
+        id: 'admin11', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:50:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Scheduling system maintenance for 02:00 tomorrow - 30 minute downtime expected' } as ChatMessage
+      },
+      { 
+        id: 'admin12', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T08:55:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Communication channels tested and operational' } as ChatMessage
+      },
+      { 
+        id: 'admin13', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:00:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Enabling advanced cyber warfare module for this exercise' } as ChatMessage
+      },
+      { 
+        id: 'admin14', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:05:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Requesting permission to modify force composition for Blue Team' } as ChatMessage
+      },
+      { 
+        id: 'admin15', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:10:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Permission granted. Please document changes in the exercise log.' } as ChatMessage
+      }
     ]
   }
 ]
