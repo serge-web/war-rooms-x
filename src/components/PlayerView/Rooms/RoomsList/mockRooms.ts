@@ -348,6 +348,76 @@ export const mockRooms: MockRoom[] = [
           channel: '__admin'
         },
         content: { value: 'Permission granted. Please document changes in the exercise log.' } as ChatMessage
+      },
+      { 
+        id: 'admin16', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:15:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Database backup completed successfully' } as ChatMessage
+      },
+      { 
+        id: 'admin17', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:20:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Setting up after-action review parameters and metrics' } as ChatMessage
+      },
+      { 
+        id: 'admin18', 
+        details: {
+          messageType: 'chat',
+          senderId: 'current-user',
+          senderName: 'currentUser',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:25:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Metrics configuration confirmed. Adding custom evaluation criteria for logistics performance.' } as ChatMessage
+      },
+      { 
+        id: 'admin19', 
+        details: {
+          messageType: 'chat',
+          senderId: 'system',
+          senderName: 'System',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:30:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Warning: Participant connection from unauthorized IP address detected' } as ChatMessage
+      },
+      { 
+        id: 'admin20', 
+        details: {
+          messageType: 'chat',
+          senderId: 'admin-user',
+          senderName: 'Admin',
+          senderForce: 'Admin',
+          turn: '0',
+          phase: 'Setup',
+          timestamp: '2025-04-16T09:35:00Z',
+          channel: '__admin'
+        },
+        content: { value: 'Security alert acknowledged. Implementing additional verification for external connections.' } as ChatMessage
       }
     ]
   }
