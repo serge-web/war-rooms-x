@@ -60,3 +60,24 @@ export interface User {
   jid: string
   name: string
 }
+
+export interface CustomRoomConfig {
+  roomType: string
+}
+
+export interface ChatRoomConfig  extends CustomRoomConfig {
+  roomType: 'chat'
+}
+
+export interface MapRoomConfig extends CustomRoomConfig {
+  roomType: 'map'
+}
+
+export interface Template {
+  content: string
+}
+
+export interface FormRoomConfig extends CustomRoomConfig {
+  roomType: 'form'
+  templates: Template[]
+}
