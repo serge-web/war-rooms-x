@@ -1,6 +1,14 @@
 import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 
+// Static method to ensure members have proper host format
+const formatMemberWithHost = (member: string): string => {
+  // TODO: remove hard-coded host name
+  if(member.includes('@')) {
+    return member
+  }
+  return `${member}@ubuntu-linux-2404`
+}
 // Define mapper functions for each resource type
 const userXtoR = (result: XUser, id?: string): RUser => {
   return {
@@ -21,7 +29,7 @@ const roomXtoR = (result: XRoom): RRoom => {
     id: result.roomName,
     name: result.naturalName || 'pending',
     description: result.description,
-    members: result.members,
+    members: result.members?.map(formatMemberWithHost) || [],
     memberForces: result.memberGroups
   }
 }
@@ -36,21 +44,15 @@ const roomRtoX = (result: RRoom): XRoom => {
   }
 }
 
+
+
 const groupXtoR = (result: XGroup): RGroup => {
   // if a member is lacking the host, append it
   const members = result.members || []
-  // TODO: remove hard-coded host name
-  const tidyMembers = members.map((m: string) => {
-    if(m.includes('@')) {
-      return m
-    }
-    return `${m}@ubuntu-linux-2404`
-  })
-  console.log('tidy members', result, tidyMembers)
   return {
     id: result.name,
     description: result.description,
-    members: tidyMembers
+    members: members.map(formatMemberWithHost)
   }
 }
 

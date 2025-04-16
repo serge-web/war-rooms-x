@@ -1,4 +1,4 @@
-import { Datagrid, Edit, List, ReferenceArrayField, Show, SimpleForm, SimpleShowLayout, TextField, TextInput } from "react-admin";
+import { AutocompleteArrayInput, Datagrid, Edit, List, ReferenceArrayField, ReferenceArrayInput, Show, SimpleForm, SimpleShowLayout, TextField, TextInput } from "react-admin";
 
 export const RoomList = () => (
   <List>
@@ -25,13 +25,17 @@ export const RoomShow = () => (
 );
 
 export const RoomEdit = () => (
-  <Edit>
+  <Edit optimisticLocking={false}>
       <SimpleForm>
           <TextInput source="id" />
           <TextInput source="name" />
           <TextInput source="description" />
-          <TextInput source="members" />
-          <TextInput source="memberForces" />
+          <ReferenceArrayInput source="members" reference="users">
+            <AutocompleteArrayInput optionText="name" />          
+          </ReferenceArrayInput>
+          <ReferenceArrayInput source="memberForces" reference="groups">
+            <AutocompleteArrayInput optionText="id" />          
+          </ReferenceArrayInput>      
       </SimpleForm>
   </Edit>
 );
