@@ -1,4 +1,5 @@
 import { RaRecord } from "react-admin"
+import { GamePropertiesType, GameStateType } from "../../types/wargame-d"
 
 /**
  * Base interface for OpenFire records
@@ -76,4 +77,14 @@ export interface RUser extends RaRecord {
   id: string
   name: string
   properties?: Record<string, string>
+}
+
+/** utilty class that combines two subject documents */
+export interface XGameState extends XRecord {
+  gameProperties: GamePropertiesType
+  gameState: GameStateType
+}
+
+export interface RGameState extends RaRecord, GamePropertiesType, GameStateType {
+  id: string
 }
