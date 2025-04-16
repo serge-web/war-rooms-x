@@ -1,31 +1,6 @@
 import { XGameState, RGameState } from '../../../components/AdminView/raTypes-d'
-import { GamePropertiesType, GameStateType } from '../../../types/wargame-d'
+import { splitGameState } from '../../../helpers/split-game-state'
 import { PLAN_ADJUDICATE_TURNS } from '../../../types/constants'
-
-// Mock implementation of splitGameState for testing
-const mockSplitGameState = (gameState: RGameState): {
-  gameProperties: GamePropertiesType,
-  gameState: GameStateType
-} => {
-  const gameProperties: GamePropertiesType = {
-    name: gameState.name,
-    startTime: gameState.startTime,
-    stepTime: gameState.stepTime,
-    turnType: gameState.turnType
-  }
-  
-  if (gameState.description) {
-    gameProperties.description = gameState.description
-  }
-  
-  const gameStateObj: GameStateType = {
-    turn: gameState.turn,
-    currentTime: gameState.currentTime,
-    currentPhase: gameState.currentPhase
-  }
-  
-  return { gameProperties, gameState: gameStateObj }
-}
 
 /**
  * Tests for the Wargame Mapper Functions (XtoR)
@@ -161,8 +136,8 @@ describe('Wargame Mapper Functions (XtoR)', () => {
         }
       }
 
-      // Apply the mock splitGameState function
-      const result = mockSplitGameState(mockRGameState)
+      // Apply the splitGameState function
+      const result = splitGameState(mockRGameState)
 
       // Verify the mapping
       expect(result).toEqual(expectedXGameState)
@@ -196,8 +171,8 @@ describe('Wargame Mapper Functions (XtoR)', () => {
         }
       }
 
-      // Apply the mock splitGameState function
-      const result = mockSplitGameState(minimalRGameState)
+      // Apply the splitGameState function
+      const result = splitGameState(minimalRGameState)
 
       // Verify the mapping
       expect(result).toEqual(expectedXGameState)
@@ -233,7 +208,7 @@ describe('Wargame Mapper Functions (XtoR)', () => {
       const rGameState = gameStateXtoR(mockXGameState, 'bidirectional-test')
       
       // Convert back to XGameState
-      const resultXGameState = mockSplitGameState(rGameState)
+      const resultXGameState = splitGameState(rGameState)
 
       // Verify the round-trip conversion
       expect(resultXGameState).toEqual(mockXGameState)
