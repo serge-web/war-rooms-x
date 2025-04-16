@@ -1,5 +1,14 @@
 import { XMPPRestService } from "../services/XMPPRestService"
 import { XMPPService } from "../services/XMPPService"
+import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
+
+export interface GamePropertiesType {
+  name: string
+  description?: string
+  startTime: string
+  stepTime: string
+  turnType: typeof PLAN_ADJUDICATE_TURNS | typeof LINEAR_TURNS
+}
 
 export interface GameStateType {
   turn: string
