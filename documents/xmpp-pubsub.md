@@ -4,6 +4,8 @@ This document outlines the sequence of operations an XMPP client using `stanza.i
 
 A lower section covers [subscribing to nodes for real-time updates](#-subscribing-to-xmpp-pubsub-nodes-using-stanzaio).
 
+Another lower section covers [managing collections](#-managing-xmpp-pubsub-collections-with-stanzaio).
+
 ---
 
 ## 🧭 Overview
@@ -162,3 +164,111 @@ This sends an `unsubscribe` IQ stanza to the PubSub service, ending delivery of 
 - Subscriptions may require approval depending on the **access model** of the node (`open`, `presence`, `authorize`, etc.).
 - To persist subscriptions across sessions, ensure `persistent` subscriptions are supported/configured server-side.
 
+# 🗂️ XMPP PubSub Collections (with stanza.io)
+
+This document explains how to organize, create, and manage **PubSub Collection Nodes** using the XMPP PubSub specification ([XEP-0060](https://xmpp.org/extensions/xep-0060.html)) and interact with them using `stanza.io`.
+
+Collection nodes act like folders or categories. They can contain **leaf nodes** (which store items) and other **collection nodes**, forming a hierarchical structure.
+
+---
+
+## 🧱 What is a Collection Node?
+
+- A **Collection Node** does **not** hold published items directly.
+- It **contains** other nodes: either **leaf** or **collections**.
+- Subscribing to a collection node propagates events from its children (if supported by the server).
+
+---
+
+## 🔧 Creating a Collection Node
+
+To create a collection node with stanza.io, use `client.createNode()` and pass `collection` config.
+
+```js
+client.createNode('pubsub.domain.tld', 'path/to/collection', {
+  configure: true,
+  form: {
+    fields: [
+      { name: 'pubsub#node_type', value: 'collection' }
+    ]
+  }
+});
+```
+
+To make a leaf node a child of a collection node:
+
+```js
+client.createNode('pubsub.domain.tld', 'path/to/collection/my-leaf', {
+  configure: true,
+  form: {
+    fields: [
+      { name: 'pubsub#node_type', value: 'leaf' },
+      { name: 'pubsub#collection', value: 'path/to/collection' }
+    ]
+  }
+});
+```
+
+---
+
+## 🔔 Subscribing to a Collection
+
+Some servers (e.g., OpenFire) support **collection subscriptions**, which means:
+
+```js
+client.subscribeToNode('pubsub.domain.tld', 'path/to/collection');
+```
+
+If the server supports event propagation from child nodes, you will receive notifications from all contained leaf nodes.
+
+---
+
+## ✏️ Updating a Node’s Parent Collection
+
+To move a node into a different collection:
+
+```js
+client.configureNode('pubsub.domain.tld', 'my-node', {
+  fields: [
+    { name: 'pubsub#collection', value: 'new/collection/path' }
+  ]
+});
+```
+
+> This requires `configure` permissions on the node.
+
+---
+
+## ❌ Deleting a Collection Node
+
+To delete a collection node (and optionally its children):
+
+```js
+client.deleteNode('pubsub.domain.tld', 'path/to/collection');
+```
+
+> Not all servers support recursive deletion. You may need to delete children first.
+
+---
+
+## 📘 stanza.io Summary
+
+| Operation | Method |
+|----------|--------|
+| Create Collection | `client.createNode(jid, node, config)` with `node_type=collection` |
+| Create Leaf in Collection | `client.createNode(...)` with `pubsub#collection` field |
+| Subscribe to Collection | `client.subscribeToNode(pubsubJid, collectionPath)` |
+| Move Node | `client.configureNode(...)` with new `pubsub#collection` |
+| Delete Node | `client.deleteNode(pubsubJid, node)` |
+
+---
+
+## ⚠️ Notes
+
+- Node hierarchy is **virtual** — node names are not automatically namespaced like filesystems.
+- Collection subscriptions may require server support (`pubsub#collection` and `deliver_payloads`).
+- Server behavior varies! Always test with your specific server (e.g., OpenFire, Prosody, ejabberd).
+
+---
+
+Let me know if you’d like this turned into a live visual hierarchy using Mermaid or HTML.
