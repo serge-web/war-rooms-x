@@ -164,7 +164,7 @@ This sends an `unsubscribe` IQ stanza to the PubSub service, ending delivery of 
 - Subscriptions may require approval depending on the **access model** of the node (`open`, `presence`, `authorize`, etc.).
 - To persist subscriptions across sessions, ensure `persistent` subscriptions are supported/configured server-side.
 
-# 🗂️ XMPP PubSub Collections
+# XMPP PubSub Collections
 
 This document explains how to organize, create, and manage **PubSub Collection Nodes** using the XMPP PubSub specification ([XEP-0060](https://xmpp.org/extensions/xep-0060.html)) and interact with them using `stanza.io`.
 
