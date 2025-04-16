@@ -2,6 +2,14 @@ import { RGameState } from '../components/AdminView/raTypes-d'
 import { GamePropertiesType, GameStateType } from '../types/wargame-d'
 import { LINEAR_TURNS, PLAN_ADJUDICATE_TURNS } from '../types/constants'
 
+export const combineGameState = (gameProperties: GamePropertiesType, gameState: GameStateType): RGameState => {
+  return {
+    id: new Date().toISOString() + Math.floor(Math.random() * 1000),
+    ...gameProperties,
+    ...gameState
+  }
+}
+
 /**
  * Split an RGameState object into separate GamePropertiesType and GameStateType objects
  * Uses explicit property mapping to determine which properties belong to each type
