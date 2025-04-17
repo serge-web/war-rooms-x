@@ -69,9 +69,6 @@ const Login: React.FC = () => {
   }  
 
   const handleMockRest = async () => {
-    // note: we'll prob need the standard config, since our data provider will prob 
-    // need to fall back on xmpp calls for pubsub bits
-    console.log('about to init MOCK REST')
     const data = mockBackend
     const mockDataProvider = fakeDataProvider(data)
     setRaDataProvider(mockDataProvider)
@@ -113,20 +110,23 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)} 
             />
           </Form.Item>
+          <div>
           <Flex justify='center' vertical={false}>
             { loginRoles.map(([ip, host, name, pwd]) => (
               <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
                 {name}
               </Button>
             ))}
+            </Flex>
+            <Flex justify='center' vertical={false}>
               <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
-                REST
+                Admin
               </Button>
               <Button key={'restLogin'} onClick={() => handleMockRest()}>
-                Mock REST
+                Mock Admin
               </Button>
           </Flex>
-
+          </div>
           <Flex vertical={false}>
             <Button onClick={handleMock} block>
               Mock
