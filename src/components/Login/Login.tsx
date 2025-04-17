@@ -62,6 +62,8 @@ const Login: React.FC = () => {
     const restAuth = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
     const xmppService = new XMPPService()
     const xmppAuth = await xmppService.connect(ip, host, username, password)
+    // wait a second, to allow xmpp to initialize
+    await new Promise(resolve => setTimeout(resolve, 50))
     if (restAuth && xmppAuth) {
       setRaDataProvider(dataProvider(RestService, xmppService))
     } else {
