@@ -34,9 +34,11 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
-    const mapped: RaRecord[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => mapper.toRRecord(r as AllXTypes))
-    console.log('got list complete', resource, params, res, mapped)
-    return { data: mapped, total: mapped.length }
+    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => mapper.toRRecord(r as AllXTypes, undefined, xmppClient, false))
+    // whether a promise or a record was returned, we can resolve it
+    const results = await Promise.all(mapped)
+    console.log('got list complete', resource, params, res, results)
+    return { data: results, total: results.length }
   },
   // get a single record by id
   getOne: async (resource: string, params: GetOneParams & QueryFunctionContext): Promise<GetOneResult> => {
@@ -45,9 +47,10 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     if (!mapper) {
       return { data: null }
     }
-    const asR = mapper.toRRecord(res?.data, params.id, xmppClient)
-    console.log('got one complete', resource, res, asR)
-    return { data: asR }
+    const asR = mapper.toRRecord(res?.data, params.id, xmppClient, true)
+    const result: (RaRecord | Promise<RaRecord>) = await Promise.resolve(asR)
+    console.log('got one complete', resource, res, result)
+    return { data: result }
   }, 
   // get a list of records based on an array of ids
   getMany:  async <RecordType extends RaRecord>(resource: string, params: GetManyParams & QueryFunctionContext): Promise<{data: RecordType[]}> => {
@@ -58,7 +61,7 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     const modifiedIds = params.ids.map(id => mapper.modifyId ? mapper.modifyId(id) : id)
     const getPromises = modifiedIds.map(id => restClient.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
-    const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index])) as RecordType[]
+    const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index], xmppClient, false)) as RecordType[]
     console.log('got many complete', resource, results, asR, params)
     return { data: asR }
   }, 
@@ -75,10 +78,11 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
-    const asX = mapper.toXRecord(params.data as AllRTypes)
+    const asX = mapper.toXRecord(params.data as AllRTypes, params.data.id, xmppClient)
     const filledIn = mapper.forCreate ? mapper.forCreate(asX as AllXTypes) : asX
     await restClient.getClient()?.post('/' + resource, filledIn)
-    const asR = mapper.toRRecord(filledIn as AllXTypes)
+    console.log('about to convert to RaRecord', filledIn, params.data.id)
+    const asR = await mapper.toRRecord(filledIn as AllXTypes, params.data.id, xmppClient, true)
     console.log('create complete', resource, params.data, filledIn, asR)
     return { data: asR as RecordType }
   }, 
@@ -90,13 +94,16 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
-    const resourceData = mapper.toXRecord(params.data as AllRTypes)
+    const resourceData = await mapper.toXRecord(params.data as AllRTypes, params.id, xmppClient)
+    await Promise.resolve(resourceData)
+    console.log('updated resource', resourceData)
     const current = await restClient.getClient()?.get('/' + resource + '/' + params.id)
     const newResource = { ...current?.data, ...resourceData }
     await restClient.getClient()?.put('/' + resource + '/' + params.id, newResource)
-    const asR = mapper.toRRecord(newResource as AllXTypes)
-    console.log('update complete', resource, params.data, newResource, asR)
-    return { data: asR as RecordType }
+    const asR = await mapper.toRRecord(newResource as AllXTypes, params.id, xmppClient, true)
+    const results = await Promise.resolve(asR)
+    console.log('update complete', resource, params.data, newResource, results)
+    return { data: results as RecordType }
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {

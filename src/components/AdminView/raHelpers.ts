@@ -2,7 +2,9 @@ import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType } from "../../types/wargame-d"
-import { PubSubDocument } from "../../services/types"
+import { PubSubDocument, PubSubOptions } from "../../services/types"
+import { DataForm, JSONItem } from "stanza/protocol"
+import { NS_JSON_0 } from "stanza/Namespaces"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -58,26 +60,84 @@ const roomRtoX = (result: RRoom): XRoom => {
 }
 
 
-
-const groupXtoR = async (result: XGroup, _id?: string, xmppClient?: XMPPService): Promise<RGroup> => {
+/**
+ * Convert an XMPP Group to a React Admin Group
+ * @param result The XMPP Group to convert
+ * @param _id 
+ * @param xmppClient 
+ * @param verbose whether to pull in the PubSub config data
+ * @returns 
+ */
+const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XMPPService, verbose: boolean): Promise<RGroup> => {
   // if a member is lacking the host, append it
   const members = result.members || []
   // ok, we have to get the pubsub document for this force
-  const doc = await xmppClient?.getPubSubDocument('force-' + result.name) as PubSubDocument
+  console.log(verbose ? 'about to get doc' : 'not getting doc', result.name, _id)
+  const doc = verbose && (await xmppClient?.getPubSubDocument('force-' + result.name)) as PubSubDocument
   console.log('doc', doc)
-  const forceConfig = doc?.content?.json as ForceConfigType
+  const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
   return {
     id: result.name,
     description: result.description,
     members: members.map(formatMemberWithHost),
-    color: forceConfig?.color,
-    objectives: forceConfig?.objectives
+    color: forceConfig?.color || undefined,
+    objectives: forceConfig?.objectives || undefined
   }
 }
 
-const groupRtoX = (result: RGroup): XGroup => {
+const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService): Promise<XGroup> => {
+  // handle the pubsub document
+  const doc = await xmppClient?.getPubSubDocument('force-' + id)
+  const newDoc: ForceConfigType = {
+    id: id,
+    color: result.color,
+    objectives: result.objectives
+  }
+  const jsonDoc: JSONItem = {
+    itemType: NS_JSON_0,
+    json: newDoc
+  }
+  if (doc) {
+    const res = await xmppClient?.publishJsonToPubSubNode('force-' + id, jsonDoc)
+    if (!res.success) {
+      console.error('problem publishing document', id)
+    }
+  } else {
+    // check for the collection
+    const forces = await xmppClient?.client?.getNodeConfig(xmppClient.pubsubService || '', 'forces')
+    if (!forces) {
+      const collectionForm: DataForm = {
+        type: 'submit',
+        fields: [
+          { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
+          { name: 'pubsub#node_type', value: 'collection' },
+          { name: 'pubsub#access_model', value: 'open' }
+        ]
+      };
+
+      const res = await xmppClient?.client?.createNode(xmppClient.pubsubService || '', 'forces', collectionForm)
+      if (!res || !res.node) {
+        console.error('problem creating forces collection', res)
+      }
+    }
+    // create the document
+    const leafForm: DataForm = {
+      type: 'submit',
+      fields: [
+        { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
+        { name: 'pubsub#node_type', value: 'leaf' },
+        { name: 'pubsub#access_model', value: 'open' },
+        { name: 'pubsub#collection', value: 'forces' }
+      ]
+    };
+
+    const res = await xmppClient?.createPubSubDocument('force-' + id, leafForm as PubSubOptions, jsonDoc)
+    if (!res || !res.success) {
+      console.error('problem creating force document', res)
+    }
+  }
   return {
-    name: result.id as string,
+    name: id,
     description: result.description,
     members: result.members
   }
@@ -108,8 +168,8 @@ const userCreate = (result: XUser): XUser => {
 
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
-  toRRecord: (result: X, id?: string, xmppClient?: XMPPService) => R
-  toXRecord: (result: R) => X
+  toRRecord: (result: X, id: string | undefined, xmppClient: XMPPService, verbose: boolean) => R | Promise<R>
+  toXRecord: (result: R, id: string, xmppClient: XMPPService) => X | Promise<X>
   forCreate?: (result: X) => X
   modifyId?: (id: string) => string
 }

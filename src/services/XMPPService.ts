@@ -18,7 +18,7 @@ const pubsubEvent = publishedName
  * Service for handling XMPP connections and communications
  */
 export class XMPPService {
-  private client: Agent | null = null
+  public client: Agent | null = null
   private connected = false
   private jid = ''
   public bareJid = ''
@@ -643,6 +643,7 @@ export class XMPPService {
       }
       
       // Create the node
+      console.log('about to create node', nodeId, config)
       await this.client.createNode(this.pubsubService, nodeId, config)
       
       // If content is provided, publish it to the node

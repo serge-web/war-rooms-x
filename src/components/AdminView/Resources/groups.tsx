@@ -47,7 +47,7 @@ const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps)
 }
 
 export const EditGroup = ({ id }: { id?: string }) => (
-  <Edit title='> Edit force' id={id} undoable={false}>
+  <Edit title='> Edit force' id={id} undoable={false} mutationMode='pessimistic'>
       <SimpleForm>
           <TextInput helperText="id values cannot be changed" disabled source="id" />
           <TextInput source="description" />
@@ -62,6 +62,7 @@ export const EditGroup = ({ id }: { id?: string }) => (
 
 export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
+    mutationMode='pessimistic'
     title='> Create new force'
     mutationOptions={{
       onSuccess: () => {
