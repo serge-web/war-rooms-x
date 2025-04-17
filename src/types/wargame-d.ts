@@ -43,3 +43,10 @@ export interface ForceType {
   name: string
   description?: string // can a stringified ForceDetails object
 }
+
+/** PubSub document schemas */
+export interface ForceConfigType {
+  id: string
+  objectives?: string
+  color?: string
+}

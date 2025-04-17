@@ -1,5 +1,8 @@
 import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
+import { XMPPService } from "../../services/XMPPService"
+import { ForceConfigType } from "../../types/wargame-d"
+import { PubSubDocument } from "../../services/types"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -56,13 +59,19 @@ const roomRtoX = (result: RRoom): XRoom => {
 
 
 
-const groupXtoR = (result: XGroup): RGroup => {
+const groupXtoR = async (result: XGroup, _id?: string, xmppClient?: XMPPService): Promise<RGroup> => {
   // if a member is lacking the host, append it
   const members = result.members || []
+  // ok, we have to get the pubsub document for this force
+  const doc = await xmppClient?.getPubSubDocument('force-' + result.name) as PubSubDocument
+  console.log('doc', doc)
+  const forceConfig = doc?.content?.json as ForceConfigType
   return {
     id: result.name,
     description: result.description,
-    members: members.map(formatMemberWithHost)
+    members: members.map(formatMemberWithHost),
+    color: forceConfig?.color,
+    objectives: forceConfig?.objectives
   }
 }
 
@@ -99,7 +108,7 @@ const userCreate = (result: XUser): XUser => {
 
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
-  toRRecord: (result: X, id?: string) => R
+  toRRecord: (result: X, id?: string, xmppClient?: XMPPService) => R
   toXRecord: (result: R) => X
   forCreate?: (result: X) => X
   modifyId?: (id: string) => string
