@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react'
 import { Button, Form, Input, Card, Flex, Modal } from 'antd'
 import './Login.css'
+import fakeDataProvider from 'ra-data-fakerest'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
+import { mockBackend } from '../../mockData/mockAdmin'
 import dataProvider from '../AdminView/dataProvider'
 
 const defaultIp = '10.211.55.16'
@@ -66,6 +68,15 @@ const Login: React.FC = () => {
     }
   }  
 
+  const handleMockRest = async () => {
+    // note: we'll prob need the standard config, since our data provider will prob 
+    // need to fall back on xmpp calls for pubsub bits
+    console.log('about to init MOCK REST')
+    const data = mockBackend
+    const mockDataProvider = fakeDataProvider(data)
+    setRaDataProvider(mockDataProvider)
+  }  
+
   return (
     <div className="login-container">
       <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
@@ -110,6 +121,9 @@ const Login: React.FC = () => {
             ))}
               <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
                 REST
+              </Button>
+              <Button key={'restLogin'} onClick={() => handleMockRest()}>
+                Mock REST
               </Button>
           </Flex>
 
