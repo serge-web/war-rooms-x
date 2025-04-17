@@ -19,7 +19,7 @@ const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
 }
 
 export const EditUser = ({ id }: { id?: string }) => (
-  <Edit id={id} undoable={false}>
+  <Edit title='> Edit role' id={id} undoable={false}>
     <SimpleForm>
       <TextInput helperText="id values cannot be changed" disabled source="id" />
       <TextInput source="name" />
@@ -29,6 +29,7 @@ export const EditUser = ({ id }: { id?: string }) => (
 
 export const CreateUser = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
+  title='> Create new role'
     mutationOptions={{
       onSuccess: () => {
         // When embedded is true, don't navigate away

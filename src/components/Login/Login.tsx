@@ -1,9 +1,12 @@
 import React, { useMemo, useState } from 'react'
 import { Button, Form, Input, Card, Flex, Modal } from 'antd'
 import './Login.css'
+import fakeDataProvider from 'ra-data-fakerest'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
+import { mockBackend } from '../../mockData/mockAdmin'
+import dataProvider from '../AdminView/dataProvider'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -14,7 +17,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const { setXmppClient, setRestClient } = useWargame()
+  const { setXmppClient, setRaDataProvider } = useWargame()
 
   const loginRoles = [
     [ip, host, 'admin', 'pwd'],
@@ -59,10 +62,16 @@ const Login: React.FC = () => {
     const res = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
     console.log('rest result', res)
     if (res) {
-      setRestClient(RestService)
+      setRaDataProvider(dataProvider(RestService))
     } else {
       setError('REST Auth failed, please check username and password')
     }
+  }  
+
+  const handleMockRest = async () => {
+    const data = mockBackend
+    const mockDataProvider = fakeDataProvider(data)
+    setRaDataProvider(mockDataProvider)
   }  
 
   return (
@@ -101,17 +110,23 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)} 
             />
           </Form.Item>
+          <div>
           <Flex justify='center' vertical={false}>
             { loginRoles.map(([ip, host, name, pwd]) => (
               <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
                 {name}
               </Button>
             ))}
+            </Flex>
+            <Flex justify='center' vertical={false}>
               <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
-                REST
+                Admin
+              </Button>
+              <Button key={'mockLogin'} onClick={() => handleMockRest()}>
+                Mock Admin
               </Button>
           </Flex>
-
+          </div>
           <Flex vertical={false}>
             <Button onClick={handleMock} block>
               Mock
