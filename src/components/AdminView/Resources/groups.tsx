@@ -18,7 +18,6 @@ const ColorPicker = ({ source, label = 'Color', ...props }: ColorPickerProps) =>
     fieldState: { error },
     isRequired
   } = useInput({ source, ...props })
-  console.log('new color, value:', source, field.value)
   field.value = field.value || '#0000ff'
   return (
     <div style={{ display: 'flex', alignItems: 'center', margin: '0.5rem 0' }}>
