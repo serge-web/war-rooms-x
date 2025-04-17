@@ -59,10 +59,11 @@ const Login: React.FC = () => {
     // try to auth over rest
     const RestService = new XMPPRestService()
     RestService.initialiseProxy('/openfire-rest')
-    const res = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
-    console.log('rest result', res)
-    if (res) {
-      setRaDataProvider(dataProvider(RestService))
+    const restAuth = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
+    const xmppService = new XMPPService()
+    const xmppAuth = await xmppService.connect(ip, host, username, password)
+    if (restAuth && xmppAuth) {
+      setRaDataProvider(dataProvider(RestService, xmppService))
     } else {
       setError('REST Auth failed, please check username and password')
     }
