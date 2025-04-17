@@ -7,6 +7,7 @@ const CustomAppBar = (props: AppBarProps) => {
   const {setRaDataProvider} = useWargame()
   const handleLogout = () => {
     setRaDataProvider(undefined)
+    console.clear()
   }
   return (
     <AppBar {...props}>
