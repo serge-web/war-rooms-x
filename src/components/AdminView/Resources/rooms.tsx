@@ -30,7 +30,7 @@ const NotOwnerDropdown = ({ source, reference }: { source: string; reference: st
 
 export const EditRoom = ({ id }: { id?: string }) => {
   return (
-    <Edit id={id} mutationMode='pessimistic' undoable={false}>
+    <Edit title='> Edit room' id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
         <TextInput helperText="id values cannot be changed" disabled source="id" />
         <TextInput source="name" />
@@ -46,6 +46,7 @@ export const EditRoom = ({ id }: { id?: string }) => {
 
 export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
+    title='> Create new room'
     mutationOptions={{
       onSuccess: () => {
         // When embedded is true, don't navigate away
