@@ -47,6 +47,7 @@ export interface RRoom extends RaRecord {
   memberForces?: string[]
   owners?: string[]
   admins?: string[]
+  public?: boolean // whether anyone can join - others are members only
 }
 
 /**
