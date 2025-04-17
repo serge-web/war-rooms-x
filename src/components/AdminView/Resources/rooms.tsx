@@ -1,4 +1,4 @@
-import { AutocompleteArrayInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextField, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
+import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
 import { RUser } from '../raTypes-d';
 import { useState } from 'react';
 
@@ -30,7 +30,7 @@ const NotOwnerDropdown = ({ source, reference }: { source: string; reference: st
 
 export const EditRoom = ({ id }: { id?: string }) => {
   return (
-    <Edit id={id} mutationMode='pessimistic' undoable={false}>
+    <Edit title='> Edit room' id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
         <TextInput helperText="id values cannot be changed" disabled source="id" />
         <TextInput source="name" />
@@ -38,7 +38,8 @@ export const EditRoom = ({ id }: { id?: string }) => {
         <NotOwnerDropdown source="members" reference="users" />
         <ReferenceArrayInput source="memberForces" reference="groups">
           <AutocompleteArrayInput optionText="id" />          
-        </ReferenceArrayInput>      
+        </ReferenceArrayInput>  
+        <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
       </SimpleForm>
     </Edit>
   )
@@ -46,6 +47,7 @@ export const EditRoom = ({ id }: { id?: string }) => {
 
 export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
+    title='> Create new room'
     mutationOptions={{
       onSuccess: () => {
         // When embedded is true, don't navigate away
@@ -61,6 +63,7 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
       <ReferenceArrayInput source="memberForces" reference="groups">
         <AutocompleteArrayInput optionText="id" />          
       </ReferenceArrayInput>
+      <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
     </SimpleForm>
   </Create>
 )
@@ -79,9 +82,8 @@ export const ListRoom = () => {
               return false // Prevent default navigation
             }}
           >
-            <TextField source="id" />
             <BoldNameField source="name" selectedId={selectedRoomId} />
-            <TextField source="description" />
+            <BooleanField source="public" />
           </Datagrid>
         </List>
       </div>
