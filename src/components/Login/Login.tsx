@@ -122,7 +122,7 @@ const Login: React.FC = () => {
               <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
                 Admin
               </Button>
-              <Button key={'restLogin'} onClick={() => handleMockRest()}>
+              <Button key={'mockLogin'} onClick={() => handleMockRest()}>
                 Mock Admin
               </Button>
           </Flex>
