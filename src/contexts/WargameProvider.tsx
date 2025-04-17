@@ -8,6 +8,7 @@ interface WargameProviderProps {
 }
 
 export const WargameProvider = ({ children }: WargameProviderProps) => {
+  // for this object, `null` is a special value meaning `use mock data`
   const [xmppClient, setXmppClient] = useState<XMPPService | null | undefined>(undefined) 
   const [raDataProvider, setRaDataProvider] = useState<DataProvider | undefined>(undefined)
   const loggedIn = useMemo(() => {
