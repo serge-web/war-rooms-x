@@ -6,15 +6,15 @@ import { useWargame } from './contexts/WargameContext'
 import { WargameProvider } from './contexts/WargameProvider'
 
 function AppContent() {
-  const { loggedIn, restClient } = useWargame()
+  const { loggedIn, raDataProvider } = useWargame()
 
   return (
     <div className="app-container">
       {/* Add TestRestApi component for debugging */}
       {/* <TestRestApi /> */}
-      {(!loggedIn && !restClient) && <Login /> }
+      {(!loggedIn && !raDataProvider) && <Login /> }
       { loggedIn && <PlayerView /> }
-      { restClient && <AdminView />} 
+      { raDataProvider && <AdminView />} 
     </div>
   )
 }

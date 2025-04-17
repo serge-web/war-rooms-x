@@ -1,4 +1,4 @@
-import { XMPPRestService } from "../services/XMPPRestService"
+import { DataProvider } from "react-admin"
 import { XMPPService } from "../services/XMPPService"
 import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
 
@@ -20,8 +20,8 @@ export interface WargameContextType {
   loggedIn: boolean
   xmppClient: XMPPService | null | undefined
   setXmppClient: (value: XMPPService | null | undefined) => void
-  restClient: XMPPRestService | null | undefined
-  setRestClient: (value: XMPPRestService | null | undefined) => void
+  raDataProvider: DataProvider | undefined
+  setRaDataProvider: (value: DataProvider | undefined) => void
 }
 
 /**

@@ -4,6 +4,7 @@ import './Login.css'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
+import dataProvider from '../AdminView/dataProvider'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -14,7 +15,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const { setXmppClient, setRestClient } = useWargame()
+  const { setXmppClient, setRaDataProvider } = useWargame()
 
   const loginRoles = [
     [ip, host, 'admin', 'pwd'],
@@ -59,7 +60,7 @@ const Login: React.FC = () => {
     const res = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
     console.log('rest result', res)
     if (res) {
-      setRestClient(RestService)
+      setRaDataProvider(dataProvider(RestService))
     } else {
       setError('REST Auth failed, please check username and password')
     }
