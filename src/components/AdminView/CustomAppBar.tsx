@@ -4,10 +4,9 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import { useWargame } from '../../contexts/WargameContext'
 
 const CustomAppBar = (props: AppBarProps) => {
-  const {setRestClient} = useWargame()
+  const {setRaDataProvider} = useWargame()
   const handleLogout = () => {
-    console.log('Logout clicked')
-    setRestClient(null)
+    setRaDataProvider(undefined)
   }
   return (
     <AppBar {...props}>
