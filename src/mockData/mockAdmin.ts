@@ -30,7 +30,7 @@ export const mockBackend: MockBackend = {
     {id: 'red-chat', name: 'red chat', description: 'red', memberForces:[redForce.id]},
     {id: 'green-chat', name: 'green chat', description: 'green', memberForces:[greenForce.id]},
     {id: 'umpire-chat', name: 'umpire chat', description: 'umpire', memberForces:[umpires.id]},
-    {id: 'logs-chat', name: 'logs chat', description: 'logs', members: [blueLogs.id, redLogs.id, greenLogs.id]},
+    {id: 'logs-chat', name: 'logs chat', description: 'logs', members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id]},
     {id: '__admin', name: '__admin', description: '__admin', public: true}
   ]
 }

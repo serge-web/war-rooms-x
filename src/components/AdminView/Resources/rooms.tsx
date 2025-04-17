@@ -1,4 +1,4 @@
-import { AutocompleteArrayInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextField, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
+import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
 import { RUser } from '../raTypes-d';
 import { useState } from 'react';
 
@@ -38,7 +38,8 @@ export const EditRoom = ({ id }: { id?: string }) => {
         <NotOwnerDropdown source="members" reference="users" />
         <ReferenceArrayInput source="memberForces" reference="groups">
           <AutocompleteArrayInput optionText="id" />          
-        </ReferenceArrayInput>      
+        </ReferenceArrayInput>  
+        <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
       </SimpleForm>
     </Edit>
   )
@@ -62,6 +63,7 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
       <ReferenceArrayInput source="memberForces" reference="groups">
         <AutocompleteArrayInput optionText="id" />          
       </ReferenceArrayInput>
+      <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
     </SimpleForm>
   </Create>
 )
@@ -80,9 +82,8 @@ export const ListRoom = () => {
               return false // Prevent default navigation
             }}
           >
-            <TextField source="id" />
             <BoldNameField source="name" selectedId={selectedRoomId} />
-            <TextField source="description" />
+            <BooleanField source="public" />
           </Datagrid>
         </List>
       </div>
