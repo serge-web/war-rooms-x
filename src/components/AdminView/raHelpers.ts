@@ -5,7 +5,6 @@ import { ForceConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
 import { JSONItem } from "stanza/protocol"
 import { NS_JSON_0 } from "stanza/Namespaces"
-import { XMPPRestService } from "../../services/XMPPRestService"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -86,10 +85,11 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   }
 }
 
-const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, restClient: XMPPRestService, previousData?: RGroup): Promise<XGroup> => {
+const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, previousData?: RGroup): Promise<XGroup> => {
   // handle the pubsub document
   const doc = await xmppClient?.getPubSubDocument('force-' + id)
   const newDoc: ForceConfigType = {
+    type: 'force-config-type-v1',
     id: id,
     name: result.name,
     color: result.color,
@@ -169,7 +169,7 @@ const userCreate = (result: XUser): XUser => {
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
   toRRecord: (result: X, id: string | undefined, xmppClient: XMPPService, verbose: boolean) => R | Promise<R>
-  toXRecord: (result: R, id: string, xmppClient: XMPPService, restClient: XMPPRestService, previousData?: R) => X | Promise<X>
+  toXRecord: (result: R, id: string, xmppClient: XMPPService, previousData?: R) => X | Promise<X>
   forCreate?: (result: X) => X
   modifyId?: (id: string) => string
 }

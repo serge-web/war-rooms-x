@@ -46,6 +46,7 @@ export interface ForceType {
 
 /** PubSub document schemas */
 export interface ForceConfigType {
+  type: 'force-config-type-v1'
   id: string // force id, taken from XMPP group id
   name: string // human-readable name
   objectives?: string // objectives for this force
@@ -53,6 +54,7 @@ export interface ForceConfigType {
 }
 
 export interface UserConfigType {
+  type: 'user-config-type-v1'
   name: string
   forceId?: string // value lost using transition between forces
 }
