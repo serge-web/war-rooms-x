@@ -62,8 +62,9 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     const getPromises = modifiedIds.map(id => restClient.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
     const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index], xmppClient, false) as RaRecord) as RecordType[]
-    console.log('got many complete', resource, results, asR, params)
-    return { data: asR }
+    const resolved = await Promise.all(asR)
+    console.log('got many complete', resource, results, resolved, params)
+    return { data: resolved }
   }, 
   // get the records referenced to another record, e.g. comments for a post
   getManyReference: async (resource: string, params: GetManyReferenceParams & QueryFunctionContext) => {

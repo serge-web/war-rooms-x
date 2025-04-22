@@ -1,7 +1,7 @@
 import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
-import { ForceConfigType } from "../../types/wargame-d"
+import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
 import { JSONItem } from "stanza/protocol"
 import { NS_JSON_0 } from "stanza/Namespaces"
@@ -23,14 +23,63 @@ export const trimHost = (member: string): string => {
 }
 
 // Define mapper functions for each resource type
-export const userXtoR = (result: XUser, id?: string): RUser => {
+export const userXtoR = async (result: XUser, id?: string, xmppClient?: XMPPService): Promise<RUser> => {
+  // look for user pubsub doc
+  const doc = await xmppClient?.getPubSubDocument('users:' + id)
+  if (doc) {
+    const userConfig = doc.content?.json as UserConfigType
+    console.log('got user doc', userConfig)
+    const res : RUser = {
+      id: id || result.username,
+      name: userConfig.name
+    }
+    return res
+  }
   return {
     id: id || result.username,
     name: result.name
   }
 }
 
-const userRtoX = (result: RUser): XUser => {
+const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Promise<XUser> => {
+  // handle the pubsub document
+  const newDoc: UserConfigType = {
+    type: 'user-config-type-v1',
+    name: result.name
+  }
+  const jsonDoc: JSONItem = {
+    itemType: NS_JSON_0,
+    json: newDoc
+  }
+  const nodeId = 'users:' + id
+  // check if this node exists
+  console.log('about to check for node:', nodeId)
+  if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
+    console.log('node not present, creating')
+    // create the node
+    const res = await xmppClient.createPubSubLeaf(nodeId, 'users', jsonDoc)
+    if (!res) {
+      console.error('problem creating user document', res)
+    }
+  } else {
+    const existingUserNode = await xmppClient.getPubSubDocument(nodeId)
+    const existingUserConfig = existingUserNode?.content?.json as UserConfigType
+    if (existingUserConfig) {
+      const mergedNode = {
+        ...existingUserConfig,
+        name: result.name,
+        type: existingUserConfig.type
+      }
+      const node: JSONItem = {
+        itemType: NS_JSON_0,
+        json: mergedNode
+      }
+      const res = await xmppClient.publishJsonToPubSubNode(nodeId, node)
+      if (!res.success) {
+        console.error('problem publishing document', id)
+      } 
+    }
+  }
   return {
     username: result.id as string,
     name: result.name
@@ -74,7 +123,7 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   // ok, we have to get the pubsub document for this force
   console.log(verbose ? 'about to get doc' : 'not getting doc', result.name, _id)
   const doc = verbose && (await xmppClient?.getPubSubDocument('forces:' + result.name)) as PubSubDocument
-  console.log('doc', doc)
+  console.log('got forces doc', doc)
   const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
   return {
     id: result.name,

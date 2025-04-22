@@ -35,14 +35,23 @@ export const usePlayerDetails = () => {
         })
       } else {
         // get the pubsub doc for this user
-        const doc = await xmppClient.getPubSubDocument('users:' + trimHost(xmppClient.bareJid))
+        const userId = 'users:' + trimHost(xmppClient.bareJid)
+        const doc = await xmppClient.getPubSubDocument(userId)
         if (doc) {
           const userConfig = doc.content?.json as UserConfigType
           if (userConfig) {
-            const force = userConfig.forceId
-            if (force) {
+            // set the initial player details
+            setPlayerDetails({
+              id: trimHost(xmppClient.bareJid),
+              role: userConfig.name || 'unknown',
+              forceName: '',
+              forceObjectives: '',
+              color: undefined
+            })
+            const forceId = userConfig.forceId
+            if (forceId) {
               // get the force document
-              const forceDoc = await xmppClient.getPubSubDocument('forces:' + force)
+              const forceDoc = await xmppClient.getPubSubDocument('forces:' + forceId)
               if (forceDoc) {
                 const forceConfig = forceDoc.content?.json as ForceConfigType
                 if (forceConfig) {
