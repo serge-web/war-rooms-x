@@ -1,4 +1,4 @@
-import { CreateResult, DataProvider, DeleteManyResult, DeleteResult, GetListParams, GetListResult, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateResult } from "react-admin"
+import { CreateParams, CreateResult, DataProvider, DeleteManyResult, DeleteResult, GetListResult, GetManyReferenceResult, GetManyResult, GetOneResult, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
 import { XMPPService } from "../../services/XMPPService"
 import { GameStateType, GamePropertiesType } from "../../types/wargame-d"
 import { RGameState } from "./raTypes-d"
@@ -21,10 +21,9 @@ const DEFAULT_SETUP: GamePropertiesType = {
   turnType: 'Linear'
 }
 
-export const WargameProvider: DataProvider = (xmppClient: XMPPService) => {
+export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
   return {
-    getList: async (): Promise<GetListResult> => {
-      // get the state doc
+    getList: async (): Promise<GetListResult> => {      // get the state doc
       const doc = await xmppClient.getPubSubDocument(STATE_DOC)
       const gameState: GameStateType = doc && doc.content?.json ? doc.content.json : DEFAULT_STATE
       // get the setup doc
@@ -49,9 +48,10 @@ export const WargameProvider: DataProvider = (xmppClient: XMPPService) => {
     getManyReference: async (): Promise<GetManyReferenceResult> => {
       return { data: [] }
     },
-    update: async (resource: RGameState): Promise<UpdateResult> => {
+    update: async (resource: string, params: UpdateParams<RGameState>): Promise<UpdateResult> => {
+      console.log('resource', resource)
       // map from R to X
-      const { gameProperties, gameState } = splitGameState(resource)
+      const { gameProperties, gameState } = splitGameState(params.data as RGameState)
 
       // store documents
       await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
@@ -61,14 +61,14 @@ export const WargameProvider: DataProvider = (xmppClient: XMPPService) => {
     updateMany: async (): Promise<UpdateManyResult> => {
       return { data: [] }
     },
-    create: async (resource: RGameState): Promise<CreateResult> => {
-      // map from R to X
-      const { gameProperties, gameState } = splitGameState(resource)
+    create: async (resource: string, params: CreateParams<RGameState>): Promise<CreateResult> => {
+         // map from R to X
+         const { gameProperties, gameState } = splitGameState(params.data as RGameState)
 
-      // store documents
-      await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
-      await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
-      return { data: resource }
+         // store documents
+         await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
+         await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
+         return { data: resource }
     },
     delete: async (): Promise<DeleteResult> => {
       return { data: null }
@@ -79,4 +79,4 @@ export const WargameProvider: DataProvider = (xmppClient: XMPPService) => {
   }
 }
 
-export default WargameProvider
+export default WargameDataProvider

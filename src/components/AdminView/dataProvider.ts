@@ -1,7 +1,7 @@
 import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyParams, UpdateParams } from "react-admin"
 import { XMPPRestService } from "../../services/XMPPRestService"
-import { mappers } from "./raHelpers"
-import { RGroup, RUser, RRoom, XGroup, XRoom, XUser } from "./raTypes-d"
+import { AnyResourceHandler, mappers } from "./raHelpers"
+import { RGroup, RUser, RRoom, XGroup, XRoom, XUser, RGameState, XGameState } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 
 const mapResourceToResults = (resource: string): string => {
@@ -18,23 +18,34 @@ const customRoute = (resource :string): string => {
   }
 }
 
-type AllRTypes = RGroup & RUser & RRoom
-type AllXTypes = XGroup & XUser & XRoom
+type AllRTypes = RGroup & RUser & RRoom & RGameState
+type AllXTypes = XGroup & XUser & XRoom & XGameState
 
+const customMapper = (mappers: AnyResourceHandler[], resource: string,xmppClient: XMPPService): null | DataProvider => {
+  const mapper = mappers.find(m => m.resource === resource)
+  if (!mapper || mapper.provider === undefined) {
+    return null
+  }
+  return mapper.provider(xmppClient)
+}
 
 export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvider => ({
   // get a list of records based on sort, filter, and pagination
   getList:  async  (resource: string, params: GetListParams & QueryFunctionContext): Promise<GetListResult> => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.getList(resource, params)
+    }
     const res = await restClient.getClient()?.get('/' + customRoute(resource))
     if (!res) {
       return { data: [], total: 0 }
     }
     const mapper = mappers.find(m => m.resource === resource)
-    if (!mapper) {
+    if (!mapper || !mapper.toRRecord) {
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
-    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => mapper.toRRecord(r as AllXTypes, undefined, xmppClient, false))
+    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => (mapper.toRRecord && mapper.toRRecord(r as AllXTypes, undefined, xmppClient, false)) || null)
     // whether a promise or a record was returned, we can resolve it
     const results = await Promise.all(mapped)
     console.log('got list complete', resource, params, res, results)
@@ -42,9 +53,13 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   },
   // get a single record by id
   getOne: async (resource: string, params: GetOneParams & QueryFunctionContext): Promise<GetOneResult> => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.getOne(resource, params)
+    }
     const res = await restClient.getClient()?.get('/' + resource + '/' + params.id)
     const mapper = mappers.find(m => m.resource === resource)
-    if (!mapper) {
+    if (!mapper || !mapper.toRRecord) {
       return { data: null }
     }
     const asR = mapper.toRRecord(res?.data, params.id, xmppClient, true)
@@ -54,28 +69,40 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   }, 
   // get a list of records based on an array of ids
   getMany:  async <RecordType extends RaRecord>(resource: string, params: GetManyParams & QueryFunctionContext): Promise<{data: RecordType[]}> => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.getMany(resource, params)
+    }
     const mapper = mappers.find(m => m.resource === resource)
-    if (!mapper) {
+    if (!mapper || !mapper.toRRecord) {
       return { data: [] }
     }
     const modifiedIds = params.ids.map(id => mapper.modifyId ? mapper.modifyId(id) : id)
     const getPromises = modifiedIds.map(id => restClient.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
-    const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index], xmppClient, false) as RaRecord) as RecordType[]
+    const asR = results.map((r, index) => (mapper.toRRecord && mapper.toRRecord(r?.data, params.ids[index], xmppClient, false)) as unknown as RecordType)
     const resolved = await Promise.all(asR)
     console.log('got many complete', resource, results, resolved, params)
     return { data: resolved }
   }, 
   // get the records referenced to another record, e.g. comments for a post
   getManyReference: async (resource: string, params: GetManyReferenceParams & QueryFunctionContext) => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.getManyReference(resource, params)
+    }
     // Use proper filtering by target field
     const res = await restClient.getClient()?.get(`/${resource}?${params.target}=${params.id}`)
     return { data: res?.data, total: res?.data?.length }
   }, 
   // create a record
   create: async <RecordType extends RaRecord>(resource: string, params: CreateParams): Promise<CreateResult<RecordType>> => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.create(resource, params)
+    }
     const mapper = mappers.find(m => m.resource === resource)
-    if (!mapper) {
+    if (!mapper || !mapper.toXRecord || !mapper.toRRecord) {
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
@@ -90,10 +117,14 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   }, 
   // update a record based on a patch
   update: async <RecordType extends RaRecord>(resource: string, params: UpdateParams): Promise<{data: RecordType}> => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.update(resource, params)
+    }
     console.log('handling update', resource, params)
     // convert RaRecord to ResourceData
     const mapper = mappers.find(m => m.resource === resource)
-    if (!mapper) {
+    if (!mapper || !mapper.toXRecord || !mapper.toRRecord) {
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
@@ -110,18 +141,30 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.updateMany(resource, params)
+    }
     const res = await restClient.getClient()?.put('/' + resource + '/' + params.ids, params.data)
     console.log('update many complete', resource, params, res)
     return { data: res?.data }
   }, 
   // delete a record by id
   delete: async (resource: string, params: DeleteParams) => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.delete(resource, params)
+    }
     const res = await restClient.getClient()?.delete('/' + resource + '/' + params.id)
     console.log('delete complete', resource, params, res)
     return { data: res?.data }
   }, 
   // delete a list of records based on an array of ids
   deleteMany: async (resource: string, params: DeleteManyParams) => {
+    const custom = customMapper(mappers, resource, xmppClient)
+    if (custom) {
+      return custom.deleteMany(resource, params)
+    }
     const deletePromises = params.ids.map(id => restClient.getClient()?.delete('/' + resource + '/' + id))
     const results = await Promise.all(deletePromises)
     const asR = results.map(r => r?.data)
