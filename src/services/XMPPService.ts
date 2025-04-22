@@ -691,15 +691,14 @@ export class XMPPService {
             { name: 'pubsub#collection', value: 'forces' }
           ]
         };
+
+        const res = await this.client.createNode(this.pubsubService, nodeId, leafForm)
+        if (!res || !res.node) {
+          console.error('problem creating leaf document', res)
+        }
     
         if (collection) {
           leafForm.fields?.push({ name: 'pubsub#collection', value: collection })
-        }
-
-        const res = await this.client.createNode(this.pubsubService, nodeId, leafForm)
-  
-        if (!res || !res.node) {
-          console.error('problem creating collection', nodeId, res)
         }
 
         // now store item, if present
@@ -712,7 +711,7 @@ export class XMPPService {
 
         return { success: true, id: nodeId }
       } catch (error) {
-        console.error(`Error creating PubSub collection ${nodeId}:`, error)
+        console.error(`Error creating PubSub leaf ${nodeId}:`, error)
         return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }  
       }
     }
@@ -764,7 +763,7 @@ export class XMPPService {
       if (!this.pubsubService) {
         throw new Error('PubSub service not available')
       }
-      
+
       // Publish the JSON content to the node
       const result = await this.client.publish(this.pubsubService, nodeId, content)
       
@@ -1139,8 +1138,9 @@ export class XMPPService {
     if (!this.client || !this.connected) {
       throw new Error('Not connected')
     }
+    const userDocName = 'users:' + bareJid
     // do we have pubsub document with this jid?
-    const doc = await this.getPubSubDocument(bareJid)
+    const doc = await this.getPubSubDocument(userDocName)
     if (!doc) {
       // generate doc
       const userDoc: Partial<UserConfigType> = {
@@ -1161,12 +1161,12 @@ export class XMPPService {
           console.error('problem creating users collection', res)
         }
       }
-      await this.createPubSubLeaf(bareJid, 'users', jsonDoc)
+      await this.createPubSubLeaf(userDocName, 'users', jsonDoc)
     } else {
       const json = doc.content as JSONItem
       const userDoc = json.json as UserConfigType
       userDoc.forceId = forceId
-      await this.publishJsonToPubSubNode(bareJid, json)
+      await this.publishJsonToPubSubNode(userDocName, json)
     }
   }
 

@@ -73,7 +73,7 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   const members = result.members || []
   // ok, we have to get the pubsub document for this force
   console.log(verbose ? 'about to get doc' : 'not getting doc', result.name, _id)
-  const doc = verbose && (await xmppClient?.getPubSubDocument('force-' + result.name)) as PubSubDocument
+  const doc = verbose && (await xmppClient?.getPubSubDocument('forces:' + result.name)) as PubSubDocument
   console.log('doc', doc)
   const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
   return {
@@ -87,7 +87,6 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
 
 const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, previousData?: RGroup): Promise<XGroup> => {
   // handle the pubsub document
-  const doc = await xmppClient?.getPubSubDocument('force-' + id)
   const newDoc: ForceConfigType = {
     type: 'force-config-type-v1',
     id: id,
@@ -99,25 +98,27 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, pr
     itemType: NS_JSON_0,
     json: newDoc
   }
-  if (doc) {
-    const res = await xmppClient?.publishJsonToPubSubNode('force-' + id, jsonDoc)
-    if (!res.success) {
-      console.error('problem publishing document', id)
-    }
-  } else {
-    // check for the collection
-    const forces = await xmppClient.checkPubSubNodeExists('forces')
-    if (!forces) {
+  const nodeId = 'forces:' + id
+  // check if this node exists
+  if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
+    console.log('force node does not exist: ', nodeId)
+    // check if the collection exists
+    if (!await xmppClient.checkPubSubNodeExists('forces')) {
+      // create the collection
       const res = await xmppClient.createPubSubCollection('forces')
       if (!res || !res.id) {
         console.error('problem creating forces collection', res)
       }
     }
-    // create the document
-    const res = await xmppClient?.createPubSubLeaf('force-' + id, 'forces', jsonDoc)
-    if (!res || !res.success) {
+    // create the node
+    const res = await xmppClient.createPubSubLeaf(nodeId, 'forces', jsonDoc)
+    if (!res.success) {
       console.error('problem creating force document', res)
     }
+  }
+  const res = await xmppClient?.publishJsonToPubSubNode(nodeId, jsonDoc)
+  if (!res.success) {
+    console.error('problem publishing document', id)
   }
   // note: we also need to update player vCards - to indicate which force they are in
   // first, check if the list of members has changed.
