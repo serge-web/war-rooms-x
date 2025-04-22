@@ -1,5 +1,5 @@
-import { Datagrid, DateField, DateTimeInput, List, RadioButtonGroupInput, SelectInput, TextField } from 'react-admin';
-import { DateInput, Edit, SimpleForm, TextInput } from 'react-admin';
+import { Datagrid, DateField, DateTimeInput, List, RadioButtonGroupInput, TextField } from 'react-admin';
+import { Edit, SimpleForm, TextInput } from 'react-admin';
 import { Card, CardHeader, CardContent, Stack } from '@mui/material';
 import { RGameState } from '../raTypes-d';
 import { useMemo } from 'react';
@@ -50,7 +50,7 @@ export const WargameEdit = () => {
   const turnModels = ["Linear", "Plan/Adjudicate"]
   
   return (
-    <Edit>
+    <Edit mutationMode='pessimistic'>
         <SimpleForm>
           <Stack direction="row">
           <Card>
@@ -62,7 +62,7 @@ export const WargameEdit = () => {
                 <Stack direction="row">
                   <DateTimeInput required helperText="The start date and time" source="startTime" />
                   <TextInput required helperText="The step interval" source="stepTime" />
-                  <SelectInput required helperText="The turn model" source="turnType" choices={turnModels} />
+                  <RadioButtonGroupInput required helperText="The turn model" source="turnType" choices={turnModels} />
                 </Stack>
               </CardContent>
             </Card>
@@ -70,7 +70,7 @@ export const WargameEdit = () => {
             <CardHeader title="Current State" />
             <CardContent>Current state of the game</CardContent>
             <CardContent>
-              <DateInput required helperText="The current date and time" source="currentTime" />
+              <DateTimeInput required helperText="The current date and time" source="currentTime" />
               <Stack direction="row" spacing={2}>
                 <TextInput required helperText="The current turn" source="turn" />
                 <CurrentPhaseInput  />

@@ -48,8 +48,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
     getManyReference: async (): Promise<GetManyReferenceResult> => {
       return { data: [] }
     },
-    update: async (resource: string, params: UpdateParams<RGameState>): Promise<UpdateResult> => {
-      console.log('resource', resource, params.data)
+    update: async (_resource: string, params: UpdateParams<RGameState>): Promise<UpdateResult> => {
       // map from R to X
       const { gameProperties, gameState } = splitGameState(params.data as RGameState)
 
@@ -61,14 +60,14 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
     updateMany: async (): Promise<UpdateManyResult> => {
       return { data: [] }
     },
-    create: async (resource: string, params: CreateParams<RGameState>): Promise<CreateResult> => {
-         // map from R to X
-         const { gameProperties, gameState } = splitGameState(params.data as RGameState)
+    create: async (_resource: string, params: CreateParams<RGameState>): Promise<CreateResult> => {
+      // map from R to X
+      const { gameProperties, gameState } = splitGameState(params.data as RGameState)
 
-         // store documents
-         await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
-         await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
-         return { data: params.data }
+      // store documents
+      await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
+      await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
+      return { data: params.data }
     },
     delete: async (): Promise<DeleteResult> => {
       return { data: null }
