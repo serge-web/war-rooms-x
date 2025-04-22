@@ -50,7 +50,7 @@ export const EditGroup = ({ id }: { id?: string }) => (
   <Edit title='> Edit force' id={id} undoable={false} mutationMode='pessimistic'>
       <SimpleForm>
           <TextInput helperText="id values cannot be changed" disabled source="id" />
-          <TextInput source="description" />
+          <TextInput source="name" />
           <TextInput source="objectives" multiline />
           <ColorPicker source='color' label='Color' />
           <ReferenceArrayInput source="members" reference="users">
@@ -73,7 +73,7 @@ export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
   >
       <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
           <TextInput source="id" />
-          <TextInput source="description" />
+          <TextInput source="name" />
           <TextInput source="objectives" multiline />
           <ColorPicker source='color' label='Color' />
           <ReferenceArrayInput source="members" reference="users">

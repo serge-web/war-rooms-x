@@ -1,4 +1,4 @@
-import { CreateParams, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyParams, UpdateParams } from "react-admin"
+import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyParams, UpdateParams } from "react-admin"
 import { XMPPRestService } from "../../services/XMPPRestService"
 import { mappers } from "./raHelpers"
 import { RGroup, RUser, RRoom, XGroup, XRoom, XUser } from "./raTypes-d"
@@ -61,7 +61,7 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     const modifiedIds = params.ids.map(id => mapper.modifyId ? mapper.modifyId(id) : id)
     const getPromises = modifiedIds.map(id => restClient.getClient()?.get('/' + resource + '/' + id))
     const results = await Promise.all(getPromises)
-    const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index], xmppClient, false)) as RecordType[]
+    const asR = results.map((r, index) => mapper.toRRecord(r?.data, params.ids[index], xmppClient, false) as RaRecord) as RecordType[]
     console.log('got many complete', resource, results, asR, params)
     return { data: asR }
   }, 
@@ -72,7 +72,7 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     return { data: res?.data, total: res?.data?.length }
   }, 
   // create a record
-  create: async <RecordType extends RaRecord>(resource: string, params: CreateParams): Promise<{data: RecordType}> => {
+  create: async <RecordType extends RaRecord>(resource: string, params: CreateParams): Promise<CreateResult<RecordType>> => {
     const mapper = mappers.find(m => m.resource === resource)
     if (!mapper) {
       // Return the original data instead of null to match the expected return type
@@ -84,7 +84,8 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     console.log('about to convert to RaRecord', filledIn, params.data.id)
     const asR = await mapper.toRRecord(filledIn as AllXTypes, params.data.id, xmppClient, true)
     console.log('create complete', resource, params.data, filledIn, asR)
-    return { data: asR as RecordType }
+    const result = await Promise.resolve(asR) as AllRTypes
+    return { data: result as unknown as RecordType }
   }, 
   // update a record based on a patch
   update: async <RecordType extends RaRecord>(resource: string, params: UpdateParams): Promise<{data: RecordType}> => {
@@ -103,7 +104,7 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
     const asR = await mapper.toRRecord(newResource as AllXTypes, params.id, xmppClient, true)
     const results = await Promise.resolve(asR)
     console.log('update complete', resource, params.data, newResource, results)
-    return { data: results as RecordType }
+    return { data: results as unknown as RecordType }
   }, 
   // update a list of records based on an array of ids and a common patch
   updateMany: async (resource: string, params: UpdateManyParams) => {

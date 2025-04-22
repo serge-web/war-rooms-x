@@ -46,7 +46,8 @@ export interface ForceType {
 
 /** PubSub document schemas */
 export interface ForceConfigType {
-  id: string
-  objectives?: string
-  color?: string
+  id: string // force id, taken from XMPP group id
+  name: string // human-readable name
+  objectives?: string // objectives for this force
+  color?: string // color for this force
 }

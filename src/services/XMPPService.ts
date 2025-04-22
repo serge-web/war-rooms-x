@@ -18,7 +18,7 @@ const pubsubEvent = publishedName
  * Service for handling XMPP connections and communications
  */
 export class XMPPService {
-  public client: Agent | null = null
+  private client: Agent | null = null
   private connected = false
   private jid = ''
   public bareJid = ''
@@ -760,15 +760,6 @@ export class XMPPService {
   }
 
   /**
-   * Alias for deletePubSubDocument - Delete a PubSub node
-   * @param nodeId The ID of the node to delete
-   * @returns Promise resolving to PubSubDocumentResult
-   */
-  async deletePubSubNode(nodeId: string): Promise<PubSubDocumentResult> {
-    return this.deletePubSubDocument(nodeId)
-  }
-
-  /**
    * Subscribe to a PubSub document (node) and register a change handler
    * @param nodeId The ID of the node to subscribe to
    * @param handler Optional handler function to call when the document changes
@@ -1055,6 +1046,36 @@ export class XMPPService {
       return { success: false, id: childNodeId, error: error instanceof Error ? error.message : String(error) }
     }
   }
+  /**
+   * Check if the pubsub node exists
+   * @param nodeId The ID of the node 
+   * @returns Promise resolving to boolean
+   */
+  async checkPubSubNodeExists(nodeId: string): Promise<boolean> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+
+    try {
+      if (!this.pubsubService) {
+        throw new Error('PubSub service not available')
+      }
+      
+      // Get the node configuration using StanzaJS
+      const result = await this.client.getNodeConfig(this.pubsubService, nodeId)
+      return result !== null
+    } catch (error) {
+        // check for item not found
+        const sError = error as { error: { condition: string } }
+        if(sError && sError.error?.condition === 'item-not-found') {
+          return false
+        } else {
+          console.error(`Error checking PubSub node exists ${nodeId}:`, error)
+          throw error
+        }        
+    }
+  }
+        
 
   /**
    * Get the configuration of a PubSub node
@@ -1098,15 +1119,6 @@ export class XMPPService {
       console.error(`Error getting PubSub node config for ${nodeId}:`, error)
       throw error
     }
-  }
-  
-  /**
-   * Alias for getPubSubNodeConfig - Get the configuration of a PubSub node
-   * @param nodeId The ID of the node to get configuration for
-   * @returns Promise resolving to PubSubOptions containing the node configuration
-   */
-  async getNodeConfig(nodeId: string): Promise<PubSubOptions> {
-    return this.getPubSubNodeConfig(nodeId)
   }
 
   /**

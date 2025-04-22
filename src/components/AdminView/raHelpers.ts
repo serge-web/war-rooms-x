@@ -78,10 +78,10 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
   return {
     id: result.name,
-    description: result.description,
+    name: forceConfig?.name || result.name,
+    objectives: forceConfig?.objectives || undefined,
     members: members.map(formatMemberWithHost),
-    color: forceConfig?.color || undefined,
-    objectives: forceConfig?.objectives || undefined
+    color: forceConfig?.color || undefined
   }
 }
 
@@ -90,6 +90,7 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService): P
   const doc = await xmppClient?.getPubSubDocument('force-' + id)
   const newDoc: ForceConfigType = {
     id: id,
+    name: result.name,
     color: result.color,
     objectives: result.objectives
   }
@@ -104,7 +105,7 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService): P
     }
   } else {
     // check for the collection
-    const forces = await xmppClient?.client?.getNodeConfig(xmppClient.pubsubService || '', 'forces')
+    const forces = await xmppClient.checkPubSubNodeExists('forces')
     if (!forces) {
       const collectionForm: DataForm = {
         type: 'submit',
@@ -115,8 +116,8 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService): P
         ]
       };
 
-      const res = await xmppClient?.client?.createNode(xmppClient.pubsubService || '', 'forces', collectionForm)
-      if (!res || !res.node) {
+      const res = await xmppClient.createPubSubDocument('forces', collectionForm as PubSubOptions)
+      if (!res || !res.id) {
         console.error('problem creating forces collection', res)
       }
     }
