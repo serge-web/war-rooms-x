@@ -49,14 +49,14 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       return { data: [] }
     },
     update: async (resource: string, params: UpdateParams<RGameState>): Promise<UpdateResult> => {
-      console.log('resource', resource)
+      console.log('resource', resource, params.data)
       // map from R to X
       const { gameProperties, gameState } = splitGameState(params.data as RGameState)
 
       // store documents
       await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
       await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
-      return { data: resource }
+      return { data: params.data }
     },
     updateMany: async (): Promise<UpdateManyResult> => {
       return { data: [] }
@@ -68,7 +68,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
          // store documents
          await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
          await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
-         return { data: resource }
+         return { data: params.data }
     },
     delete: async (): Promise<DeleteResult> => {
       return { data: null }
