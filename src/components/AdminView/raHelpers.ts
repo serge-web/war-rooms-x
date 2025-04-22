@@ -1,10 +1,11 @@
-import { RaRecord } from "react-admin"
-import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
+import { DataProvider, RaRecord } from "react-admin"
+import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameState } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
 import { JSONItem } from "stanza/protocol"
 import { NS_JSON_0 } from "stanza/Namespaces"
+import WargameDataProvider from "./wargameDataProvider"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -46,17 +47,13 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
     type: 'user-config-type-v1',
     name: result.name
   }
-  const jsonDoc: JSONItem = {
-    itemType: NS_JSON_0,
-    json: newDoc
-  }
   const nodeId = 'users:' + id
   // check if this node exists
   console.log('about to check for node:', nodeId)
   if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
     console.log('node not present, creating')
     // create the node
-    const res = await xmppClient.createPubSubLeaf(nodeId, 'users', jsonDoc)
+    const res = await xmppClient.publishPubSubLeaf(nodeId, 'users', newDoc)
     if (!res) {
       console.error('problem creating user document', res)
     }
@@ -69,11 +66,7 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
         name: result.name,
         type: existingUserConfig.type
       }
-      const node: JSONItem = {
-        itemType: NS_JSON_0,
-        json: mergedNode
-      }
-      const res = await xmppClient.publishJsonToPubSubNode(nodeId, node)
+      const res = await xmppClient.publishPubSubLeaf(nodeId, 'users', mergedNode)
       if (!res.success) {
         console.error('problem publishing document', id)
       } 
@@ -145,24 +138,7 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, pr
     json: newDoc
   }
   const nodeId = 'forces:' + id
-  // check if this node exists
-  if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
-    console.log('force node does not exist: ', nodeId)
-    // check if the collection exists
-    if (!await xmppClient.checkPubSubNodeExists('forces')) {
-      // create the collection
-      const res = await xmppClient.createPubSubCollection('forces')
-      if (!res || !res.id) {
-        console.error('problem creating forces collection', res)
-      }
-    }
-    // create the node
-    const res = await xmppClient.createPubSubLeaf(nodeId, 'forces', jsonDoc)
-    if (!res.success) {
-      console.error('problem creating force document', res)
-    }
-  }
-  const res = await xmppClient?.publishJsonToPubSubNode(nodeId, jsonDoc)
+  const res = await xmppClient?.publishPubSubLeaf(nodeId, 'forces', jsonDoc)
   if (!res.success) {
     console.error('problem publishing document', id)
   }
@@ -215,10 +191,11 @@ const userCreate = (result: XUser): XUser => {
 
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
-  toRRecord: (result: X, id: string | undefined, xmppClient: XMPPService, verbose: boolean) => R | Promise<R>
-  toXRecord: (result: R, id: string, xmppClient: XMPPService, previousData?: R) => X | Promise<X>
+  toRRecord?: (result: X, id: string | undefined, xmppClient: XMPPService, verbose: boolean) => R | Promise<R>
+  toXRecord?: (result: R, id: string, xmppClient: XMPPService, previousData?: R) => X | Promise<X>
   forCreate?: (result: X) => X
   modifyId?: (id: string) => string
+  provider?: (xmppClient: XMPPService) => DataProvider
 }
 
 const GroupMapper: ResourceHandler<XGroup, RGroup> = {
@@ -242,14 +219,21 @@ const UserMapper: ResourceHandler<XUser, RUser> = {
   modifyId: (id) => { return typeof id === 'string' ? id.split('@')[0] : id }
 }
 
+const WargameMapper: ResourceHandler<XGameState, RGameState> = {
+  resource: 'wargame',
+  provider: (xmppClient: XMPPService) => WargameDataProvider(xmppClient)
+}
+
 // Use a type that can represent any of our resource handlers
-type AnyResourceHandler = 
+export type AnyResourceHandler = 
   | ResourceHandler<XGroup, RGroup>
   | ResourceHandler<XRoom, RRoom>
   | ResourceHandler<XUser, RUser>
+  | ResourceHandler<XGameState, RGameState>
 
 export const mappers: AnyResourceHandler[] = [
   GroupMapper,
   RoomMapper,
-  UserMapper
+  UserMapper,
+  WargameMapper
 ]

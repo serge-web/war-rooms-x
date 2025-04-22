@@ -665,13 +665,13 @@ export class XMPPService {
   }
 
     /**
-   * Create a new PubSub document (node)
+   * Publish a new PubSub document (node), creating it if necessary
    * @param nodeId The ID for the new node
    * @param config Configuration options for the node
    * @param content Optional initial content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-    async createPubSubLeaf(nodeId: string, collection: string | undefined,content?: JSONItem ): Promise<PubSubDocumentResult> {
+    async publishPubSubLeaf(nodeId: string, collection: string | undefined,content?: object ): Promise<PubSubDocumentResult> {
       if (!this.client || !this.connected) {
         return { success: false, id: nodeId, error: 'Not connected' }
       }
@@ -680,30 +680,46 @@ export class XMPPService {
         if (!this.pubsubService) {
           throw new Error('PubSub service not available')
         }
-        
-        // create the document
-        const leafForm: DataForm = {
-          type: 'submit',
-          fields: [
+
+        // check if the leaf exists
+        if (!await this.checkPubSubNodeExists(nodeId)) {
+          console.log('node not present, creating', nodeId)
+          // create the document
+          const leafForm: DataForm = {
+            type: 'submit',
+            fields: [
             { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
             { name: 'pubsub#node_type', value: 'leaf' },
             { name: 'pubsub#access_model', value: 'open' },
-            { name: 'pubsub#collection', value: 'forces' }
-          ]
-        };
+            ]
+          };
 
-        const res = await this.client.createNode(this.pubsubService, nodeId, leafForm)
-        if (!res || !res.node) {
-          console.error('problem creating leaf document', res)
+          if (collection) {
+              // check if the collection exists
+            if (!await this.checkPubSubNodeExists(collection)) {
+              // create the collection
+              const res = await this.createPubSubCollection(collection)
+              if (!res || !res.id) {
+                console.error('problem creating collection', collection, res)
+              }
+            }
+
+            leafForm.fields?.push({ name: 'pubsub#collection', value: collection })
+          }
+
+          const res = await this.client.createNode(this.pubsubService, nodeId, leafForm)
+          if (!res || !res.node) {
+            console.error('problem creating leaf document', res)
+          }
         }
     
-        if (collection) {
-          leafForm.fields?.push({ name: 'pubsub#collection', value: collection })
-        }
-
         // now store item, if present
         if (content) {
-          const pushResults = await this.client.publish(this.pubsubService, nodeId, content)
+          const jsonDoc: JSONItem = {
+            itemType: NS_JSON_0,
+            json: content
+          }
+          const pushResults = await this.client.publish(this.pubsubService, nodeId, jsonDoc)
           if (!pushResults || !pushResults.id) {
             console.error('problem publishing leaf content', nodeId, pushResults)
           }
@@ -1161,7 +1177,7 @@ export class XMPPService {
           console.error('problem creating users collection', res)
         }
       }
-      await this.createPubSubLeaf(userDocName, 'users', jsonDoc)
+      await this.publishPubSubLeaf(userDocName, 'users', jsonDoc)
     } else {
       const json = doc.content as JSONItem
       const userDoc = json.json as UserConfigType
