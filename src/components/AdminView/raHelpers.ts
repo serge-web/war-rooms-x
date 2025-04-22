@@ -28,7 +28,6 @@ export const userXtoR = async (result: XUser, id?: string, xmppClient?: XMPPServ
   const doc = await xmppClient?.getPubSubDocument('users:' + id)
   if (doc) {
     const userConfig = doc.content?.json as UserConfigType
-    console.log('got user doc', userConfig)
     const res : RUser = {
       id: id || result.username,
       name: userConfig.name
@@ -121,9 +120,7 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   // if a member is lacking the host, append it
   const members = result.members || []
   // ok, we have to get the pubsub document for this force
-  console.log(verbose ? 'about to get doc' : 'not getting doc', result.name, _id)
   const doc = verbose && (await xmppClient?.getPubSubDocument('forces:' + result.name)) as PubSubDocument
-  console.log('got forces doc', doc)
   const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
   return {
     id: result.name,
