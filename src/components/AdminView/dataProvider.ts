@@ -78,7 +78,7 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
-    const asX = mapper.toXRecord(params.data as AllRTypes, params.data.id, xmppClient)
+    const asX = mapper.toXRecord(params.data as AllRTypes, params.data.id, xmppClient, restClient)
     const filledIn = mapper.forCreate ? mapper.forCreate(asX as AllXTypes) : asX
     await restClient.getClient()?.post('/' + resource, filledIn)
     console.log('about to convert to RaRecord', filledIn, params.data.id)
@@ -89,13 +89,14 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   }, 
   // update a record based on a patch
   update: async <RecordType extends RaRecord>(resource: string, params: UpdateParams): Promise<{data: RecordType}> => {
+    console.log('handling update', resource, params)
     // convert RaRecord to ResourceData
     const mapper = mappers.find(m => m.resource === resource)
     if (!mapper) {
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
-    const resourceData = await mapper.toXRecord(params.data as AllRTypes, params.id, xmppClient)
+    const resourceData = await mapper.toXRecord(params.data as AllRTypes, params.id, xmppClient, restClient, params.previousData as AllRTypes)
     await Promise.resolve(resourceData)
     console.log('updated resource', resourceData)
     const current = await restClient.getClient()?.get('/' + resource + '/' + params.id)

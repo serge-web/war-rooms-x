@@ -51,3 +51,8 @@ export interface ForceConfigType {
   objectives?: string // objectives for this force
   color?: string // color for this force
 }
+
+export interface UserConfigType {
+  name: string
+  forceId?: string // value lost using transition between forces
+}

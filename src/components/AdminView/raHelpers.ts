@@ -2,9 +2,10 @@ import { RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType } from "../../types/wargame-d"
-import { PubSubDocument, PubSubOptions } from "../../services/types"
-import { DataForm, JSONItem } from "stanza/protocol"
+import { PubSubDocument } from "../../services/types"
+import { JSONItem } from "stanza/protocol"
 import { NS_JSON_0 } from "stanza/Namespaces"
+import { XMPPRestService } from "../../services/XMPPRestService"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -85,7 +86,7 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   }
 }
 
-const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService): Promise<XGroup> => {
+const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, restClient: XMPPRestService, previousData?: RGroup): Promise<XGroup> => {
   // handle the pubsub document
   const doc = await xmppClient?.getPubSubDocument('force-' + id)
   const newDoc: ForceConfigType = {
@@ -107,36 +108,34 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService): P
     // check for the collection
     const forces = await xmppClient.checkPubSubNodeExists('forces')
     if (!forces) {
-      const collectionForm: DataForm = {
-        type: 'submit',
-        fields: [
-          { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
-          { name: 'pubsub#node_type', value: 'collection' },
-          { name: 'pubsub#access_model', value: 'open' }
-        ]
-      };
-
-      const res = await xmppClient.createPubSubDocument('forces', collectionForm as PubSubOptions)
+      const res = await xmppClient.createPubSubCollection('forces')
       if (!res || !res.id) {
         console.error('problem creating forces collection', res)
       }
     }
     // create the document
-    const leafForm: DataForm = {
-      type: 'submit',
-      fields: [
-        { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
-        { name: 'pubsub#node_type', value: 'leaf' },
-        { name: 'pubsub#access_model', value: 'open' },
-        { name: 'pubsub#collection', value: 'forces' }
-      ]
-    };
-
-    const res = await xmppClient?.createPubSubDocument('force-' + id, leafForm as PubSubOptions, jsonDoc)
+    const res = await xmppClient?.createPubSubLeaf('force-' + id, 'forces', jsonDoc)
     if (!res || !res.success) {
       console.error('problem creating force document', res)
     }
   }
+  // note: we also need to update player vCards - to indicate which force they are in
+  // first, check if the list of members has changed.
+  const members = result.members || []
+  const previousMembers = previousData?.members || []
+  // check for removed members
+  const removedMembers = previousMembers.filter(member => !members.includes(member))
+  const removePromises = removedMembers.map(member => {
+    return xmppClient.updateUserForceId(trimHost(member), undefined)
+  })
+  await Promise.all(removePromises)
+  // check for added members
+  const addedMembers = members.filter(member => !previousMembers.includes(member))
+  const addPromises = addedMembers.map(member => {
+    return xmppClient.updateUserForceId(trimHost(member), id)
+  })
+  await Promise.all(addPromises)
+  // clear the vCard organisation for removed members
   return {
     name: id,
     description: result.description,
@@ -170,7 +169,7 @@ const userCreate = (result: XUser): XUser => {
 type ResourceHandler<X extends XRecord, R extends RaRecord> = {
   resource: string
   toRRecord: (result: X, id: string | undefined, xmppClient: XMPPService, verbose: boolean) => R | Promise<R>
-  toXRecord: (result: R, id: string, xmppClient: XMPPService) => X | Promise<X>
+  toXRecord: (result: R, id: string, xmppClient: XMPPService, restClient: XMPPRestService, previousData?: R) => X | Promise<X>
   forCreate?: (result: X) => X
   modifyId?: (id: string) => string
 }
