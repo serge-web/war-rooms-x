@@ -61,8 +61,10 @@ export interface XGroup extends XRecord {
 
 export interface RGroup extends RaRecord {
   id: string
-  description?: string
+  name: string
+  objectives?: string
   members?: string[]
+  color?: string
 }
 
 /**

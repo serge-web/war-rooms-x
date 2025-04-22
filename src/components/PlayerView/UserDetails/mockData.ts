@@ -1,14 +1,16 @@
 // Mock data for UserDetails component
 
-import { ForceDetails, GameStateType, UserDetailsType } from "../../../types/wargame-d"
+import { ForceConfigType, GameStateType, UserDetailsType } from "../../../types/wargame-d"
 
 export interface MockForceDetails {
   name: string
   color: string
 }
 
-export const mockForceData: ForceDetails = {
-  fullName: 'Blue Force',
+export const mockForceData: ForceConfigType = {
+  type: 'force-config-type-v1',
+  id: '1',
+  name: 'Blue Force',
   color: '#1677ff'
 }
 

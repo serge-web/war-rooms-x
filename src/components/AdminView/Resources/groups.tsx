@@ -1,9 +1,38 @@
-import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SaveButton, Toolbar, useRecordContext } from 'react-admin'
+import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SaveButton, Toolbar, useRecordContext, useInput } from 'react-admin'
 import { useState } from 'react'
 
 interface BoldDescriptionFieldProps {
   source: string
   selectedId: string | null
+}
+
+// Reusable ColorPicker component for react-admin forms
+interface ColorPickerProps {
+  source: string
+  label?: string
+  [key: string]: unknown
+}
+const ColorPicker = ({ source, label = 'Color', ...props }: ColorPickerProps) => {
+  const {
+    field,
+    fieldState: { error },
+    isRequired
+  } = useInput({ source, ...props })
+  field.value = field.value || '#0000ff'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', margin: '0.5rem 0' }}>
+      <label htmlFor={source} style={{ marginRight: '0.5rem' }}>
+        {label}{isRequired ? ' *' : ''}
+      </label>
+      <input
+        id={source}
+        type='color'
+        {...field}
+        style={{ width: 32, height: 32, border: 'none', background: 'none', padding: 0 }}
+      />
+      {error && <span style={{ color: 'red', marginLeft: 8 }}>{error.message}</span>}
+    </div>
+  )
 }
 
 const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps) => {
@@ -18,10 +47,12 @@ const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps)
 }
 
 export const EditGroup = ({ id }: { id?: string }) => (
-  <Edit title='> Edit force' id={id} undoable={false}>
+  <Edit title='> Edit force' id={id} undoable={false} mutationMode='pessimistic'>
       <SimpleForm>
           <TextInput helperText="id values cannot be changed" disabled source="id" />
-          <TextInput source="description" />
+          <TextInput source="name" />
+          <TextInput source="objectives" multiline />
+          <ColorPicker source='color' label='Color' />
           <ReferenceArrayInput source="members" reference="users">
             <AutocompleteArrayInput optionText="name" />          
           </ReferenceArrayInput>
@@ -31,6 +62,7 @@ export const EditGroup = ({ id }: { id?: string }) => (
 
 export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
+    mutationMode='pessimistic'
     title='> Create new force'
     mutationOptions={{
       onSuccess: () => {
@@ -40,8 +72,10 @@ export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
     }}
   >
       <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-          <TextInput source="id" />
-          <TextInput source="description" />
+          <TextInput required source="id" />
+          <TextInput required source="name" />
+          <TextInput source="objectives" multiline />
+          <ColorPicker required source='color' label='Color' />
           <ReferenceArrayInput source="members" reference="users">
             <AutocompleteArrayInput optionText="name" />          
           </ReferenceArrayInput>

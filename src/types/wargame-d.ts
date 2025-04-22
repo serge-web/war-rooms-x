@@ -43,3 +43,18 @@ export interface ForceType {
   name: string
   description?: string // can a stringified ForceDetails object
 }
+
+/** PubSub document schemas */
+export interface ForceConfigType {
+  type: 'force-config-type-v1'
+  id: string // force id, taken from XMPP group id
+  name: string // human-readable name
+  objectives?: string // objectives for this force
+  color?: string // color for this force
+}
+
+export interface UserConfigType {
+  type: 'user-config-type-v1'
+  name: string
+  forceId?: string // value lost using transition between forces
+}

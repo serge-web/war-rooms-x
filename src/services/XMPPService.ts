@@ -1,9 +1,10 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { AccountManagement, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
+import { AccountManagement, DataForm, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
 import { GameMessage, User } from '../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 import { NS_JSON_0 } from 'stanza/Namespaces'
+import { UserConfigType } from '../types/wargame-d'
 
 /**
  * Special constant for registering handlers that listen to messages from all rooms
@@ -218,7 +219,7 @@ export class XMPPService {
    */
   async supportsMUC(): Promise<boolean> {
     if (!this.server) return false
-    
+
     // First try direct feature detection
     const directSupport = await this.serverSupportsFeature('http://jabber.org/protocol/muc')
     if (directSupport) return true
@@ -632,7 +633,7 @@ export class XMPPService {
    * @param content Optional initial content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async createPubSubDocument(nodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+  async createPubSubCollection(nodeId: string): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -642,27 +643,78 @@ export class XMPPService {
         throw new Error('PubSub service not available')
       }
       
-      // Create the node
-      await this.client.createNode(this.pubsubService, nodeId, config)
-      
-      // If content is provided, publish it to the node
-      if (content) {
-        // For StanzaJS, we need to provide a proper XML payload
-        // The third parameter is for item attributes, and fourth is the payload
-        await this.client.publish(this.pubsubService, nodeId, content)
+      const collectionForm: DataForm = {
+        type: 'submit',
+        fields: [
+          { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
+          { name: 'pubsub#node_type', value: 'collection' },
+          { name: 'pubsub#access_model', value: 'open' }
+        ]
+      };
+
+      const res = await this.client.createNode(this.pubsubService, nodeId, collectionForm)
+
+      if (!res || !res.node) {
+        console.error('problem creating collection', nodeId, res)
       }
-      
       return { success: true, id: nodeId }
     } catch (error) {
-      if ((error as {error: {condition: string}}).error?.condition === 'conflict') {
-        // don't worry ,it's already there
+      console.error(`Error creating PubSub collection ${nodeId}:`, error)
+      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }  
+    }
+  }
+
+    /**
+   * Create a new PubSub document (node)
+   * @param nodeId The ID for the new node
+   * @param config Configuration options for the node
+   * @param content Optional initial content for the node
+   * @returns Promise resolving to PubSubDocumentResult
+   */
+    async createPubSubLeaf(nodeId: string, collection: string | undefined,content?: JSONItem ): Promise<PubSubDocumentResult> {
+      if (!this.client || !this.connected) {
+        return { success: false, id: nodeId, error: 'Not connected' }
+      }
+  
+      try {
+        if (!this.pubsubService) {
+          throw new Error('PubSub service not available')
+        }
+        
+        // create the document
+        const leafForm: DataForm = {
+          type: 'submit',
+          fields: [
+            { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
+            { name: 'pubsub#node_type', value: 'leaf' },
+            { name: 'pubsub#access_model', value: 'open' },
+            { name: 'pubsub#collection', value: 'forces' }
+          ]
+        };
+
+        const res = await this.client.createNode(this.pubsubService, nodeId, leafForm)
+        if (!res || !res.node) {
+          console.error('problem creating leaf document', res)
+        }
+    
+        if (collection) {
+          leafForm.fields?.push({ name: 'pubsub#collection', value: collection })
+        }
+
+        // now store item, if present
+        if (content) {
+          const pushResults = await this.client.publish(this.pubsubService, nodeId, content)
+          if (!pushResults || !pushResults.id) {
+            console.error('problem publishing leaf content', nodeId, pushResults)
+          }
+        }
+
         return { success: true, id: nodeId }
-      } else {
-        console.error(`Error creating PubSub document ${nodeId}:`, error)
+      } catch (error) {
+        console.error(`Error creating PubSub leaf ${nodeId}:`, error)
         return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }  
       }
     }
-  }
 
   /**
    * Update a PubSub document (publish to a node)
@@ -711,7 +763,7 @@ export class XMPPService {
       if (!this.pubsubService) {
         throw new Error('PubSub service not available')
       }
-      
+
       // Publish the JSON content to the node
       const result = await this.client.publish(this.pubsubService, nodeId, content)
       
@@ -756,15 +808,6 @@ export class XMPPService {
       console.error(`Error deleting PubSub document ${nodeId}:`, error)
       return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
     }
-  }
-
-  /**
-   * Alias for deletePubSubDocument - Delete a PubSub node
-   * @param nodeId The ID of the node to delete
-   * @returns Promise resolving to PubSubDocumentResult
-   */
-  async deletePubSubNode(nodeId: string): Promise<PubSubDocumentResult> {
-    return this.deletePubSubDocument(nodeId)
   }
 
   /**
@@ -1017,16 +1060,13 @@ export class XMPPService {
   }
 
   /**
-   * Create a child node within a collection node
-   * @param parentNodeId The ID of the parent collection node
-   * @param childNodeId The ID for the new child node
-   * @param config Configuration options for the child node
-   * @param content Optional initial content for the child node
-   * @returns Promise resolving to PubSubDocumentResult
+   * Check if the pubsub node exists
+   * @param nodeId The ID of the node 
+   * @returns Promise resolving to boolean
    */
-  async createPubSubChildNode(parentNodeId: string, childNodeId: string, config: PubSubOptions, content?: JSONItem): Promise<PubSubDocumentResult> {
+  async checkPubSubNodeExists(nodeId: string): Promise<boolean> {
     if (!this.client || !this.connected) {
-      return { success: false, id: childNodeId, error: 'Not connected' }
+      throw new Error('Not connected')
     }
 
     try {
@@ -1034,26 +1074,21 @@ export class XMPPService {
         throw new Error('PubSub service not available')
       }
       
-      // Create the child node with collection association
-      const childConfig = {
-        ...config,
-        collection: parentNodeId
-      }
-      
-      // Create the node with parent association
-      await this.client.createNode(this.pubsubService, childNodeId, childConfig)
-      
-      // If content is provided, publish it to the node
-      if (content) {
-        await this.client.publish(this.pubsubService, childNodeId, content)
-      }
-      
-      return { success: true, id: childNodeId }
+      // Get the node configuration using StanzaJS
+      const result = await this.client.getNodeConfig(this.pubsubService, nodeId)
+      return result !== null
     } catch (error) {
-      console.error(`Error creating PubSub child node ${childNodeId} in collection ${parentNodeId}:`, error)
-      return { success: false, id: childNodeId, error: error instanceof Error ? error.message : String(error) }
+        // check for item not found
+        const sError = error as { error: { condition: string } }
+        if(sError && sError.error?.condition === 'item-not-found') {
+          return false
+        } else {
+          console.error(`Error checking PubSub node exists ${nodeId}:`, error)
+          throw error
+        }        
     }
   }
+        
 
   /**
    * Get the configuration of a PubSub node
@@ -1098,14 +1133,41 @@ export class XMPPService {
       throw error
     }
   }
-  
-  /**
-   * Alias for getPubSubNodeConfig - Get the configuration of a PubSub node
-   * @param nodeId The ID of the node to get configuration for
-   * @returns Promise resolving to PubSubOptions containing the node configuration
-   */
-  async getNodeConfig(nodeId: string): Promise<PubSubOptions> {
-    return this.getPubSubNodeConfig(nodeId)
+
+  async updateUserForceId(bareJid: string, forceId: string | undefined): Promise<void> {
+    if (!this.client || !this.connected) {
+      throw new Error('Not connected')
+    }
+    const userDocName = 'users:' + bareJid
+    // do we have pubsub document with this jid?
+    const doc = await this.getPubSubDocument(userDocName)
+    if (!doc) {
+      // generate doc
+      const userDoc: Partial<UserConfigType> = {
+        name: bareJid
+      }
+      if (forceId) {
+        userDoc.forceId = forceId
+      }
+      const jsonDoc: JSONItem = {
+        itemType: NS_JSON_0,
+        json: userDoc
+      }
+      // do we have users collection?
+      const users = await this.checkPubSubNodeExists('users')
+      if (!users) {
+        const res = await this.createPubSubCollection('users')
+        if (!res || !res.id) {
+          console.error('problem creating users collection', res)
+        }
+      }
+      await this.createPubSubLeaf(userDocName, 'users', jsonDoc)
+    } else {
+      const json = doc.content as JSONItem
+      const userDoc = json.json as UserConfigType
+      userDoc.forceId = forceId
+      await this.publishJsonToPubSubNode(userDocName, json)
+    }
   }
 
   /**

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { mockForceData, mockUserDetails } from '../UserDetails/mockData';
 import { useWargame } from '../../../contexts/WargameContext';
+import { ForceConfigType, UserConfigType } from '../../../types/wargame-d';
+import { trimHost } from '../../AdminView/raHelpers';
 
 export interface GamePlayerDetails {
   id: string
   role: string
   forceName: string
+  forceObjectives?: string
   color?: string
 }
 
@@ -26,41 +29,43 @@ export const usePlayerDetails = () => {
         setPlayerDetails({
           id: player.name || 'unknown',
           role: player.username,
-          forceName: force.fullName,
+          forceName: force.name,
+          forceObjectives: force.objectives,
           color: force.color
         })
       } else {
-        // get the AccountInfo from the xmpp client
-        try {
-          const vCard = await xmppClient.getCurrentUserVCard()
-          const bareJid = vCard.jid.split('/')[0]
-          try {
-            if (vCard.organization) {
-              const force = JSON.parse(vCard.organization)
-              setPlayerDetails({
-                id: bareJid,
-                role: vCard.fullName|| 'unknown',
-                forceName: force.fullName,
-                color: force.color
-              })
-            }
-          } catch (err) {
-            if (err instanceof Error && !err.message.includes('is not valid JSON')) {
-              console.log('problem extracting force from organisation:', err)
-            }
+        // get the pubsub doc for this user
+        const userId = 'users:' + trimHost(xmppClient.bareJid)
+        const doc = await xmppClient.getPubSubDocument(userId)
+        if (doc) {
+          const userConfig = doc.content?.json as UserConfigType
+          if (userConfig) {
+            // set the initial player details
             setPlayerDetails({
-              id: vCard.role || bareJid,
-              role: vCard.role || 'unknown',
-              forceName: 'unknown'
+              id: trimHost(xmppClient.bareJid),
+              role: userConfig.name || 'unknown',
+              forceName: '',
+              forceObjectives: '',
+              color: undefined
             })
+            const forceId = userConfig.forceId
+            if (forceId) {
+              // get the force document
+              const forceDoc = await xmppClient.getPubSubDocument('forces:' + forceId)
+              if (forceDoc) {
+                const forceConfig = forceDoc.content?.json as ForceConfigType
+                if (forceConfig) {
+                  setPlayerDetails({
+                    id: trimHost(xmppClient.bareJid),
+                    role: userConfig.name || 'unknown',
+                    forceName: forceConfig.name,
+                    forceObjectives: forceConfig.objectives,
+                    color: forceConfig.color
+                  })
+                }
+              }
+            }
           }
-        } catch (err) {
-          console.log('problem getting vCard:', err)
-          setPlayerDetails({
-            id: xmppClient.bareJid,
-            role: xmppClient.bareJid,
-            forceName: 'unknown'
-          })
         }
       }
     }
