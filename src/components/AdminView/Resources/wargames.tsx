@@ -1,4 +1,4 @@
-import { Datagrid, DateField, DateTimeInput, List, RadioButtonGroupInput, TextField, useRecordContext } from 'react-admin'
+import { Datagrid, DateField, DateTimeInput, List, RadioButtonGroupInput, TextField } from 'react-admin'
 import { Edit, SimpleForm, TextInput, useNotify } from 'react-admin'
 import { Card, CardHeader, CardContent, Stack, Button } from '@mui/material'
 import { RGameState } from '../raTypes-d'
@@ -51,17 +51,22 @@ export const WargameEdit = () => {
   // sort out the turn phase choices
   const turnModels = ['Linear', 'Plan/Adjudicate']
   const [themeDialogOpen, setThemeDialogOpen] = useState(false)
-  const record = useRecordContext<RGameState>()
+  const [theme, setTheme] = useState<ThemeConfig>({})
   const notify = useNotify()
   
   const handleOpenThemeEditor = () => {
+    const formField = document.querySelector('input[name="theme"]') as HTMLInputElement
+    if (formField) {
+      const themeText = formField.value || '{}'
+      setTheme(JSON.parse(themeText))
+    }
     setThemeDialogOpen(true)
   }
   
   const handleCloseThemeEditor = () => {
     setThemeDialogOpen(false)
   }
-  
+
   const handleSaveTheme = (newTheme: ThemeConfig) => {
     // Update the form value for the theme field
     // This will be saved when the form is submitted
@@ -70,6 +75,8 @@ export const WargameEdit = () => {
       formField.value = JSON.stringify(newTheme)
       // Dispatch an input event to trigger form validation
       formField.dispatchEvent(new Event('input', { bubbles: true }))
+      // set the form to dirty
+      formField.dispatchEvent(new Event('change', { bubbles: true }))
       notify('Theme updated successfully', { type: 'success' })
     } else {
       notify('Could not update theme field', { type: 'warning' })
@@ -120,7 +127,7 @@ export const WargameEdit = () => {
           <ThemeEditor
             open={themeDialogOpen}
             onClose={handleCloseThemeEditor}
-            initialTheme={record?.theme}
+            initialTheme={theme}
             onSave={handleSaveTheme}
           />
         </SimpleForm>
