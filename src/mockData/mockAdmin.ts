@@ -26,7 +26,8 @@ const wargame: RGameState ={
   turnType: 'Linear',
   turn: '1',
   currentTime: new Date().toISOString(),
-  currentPhase: 'phase'
+  currentPhase: 'phase',
+  theme: {}
 }
 export const mockBackend: MockBackend = {
   wargames: [wargame],

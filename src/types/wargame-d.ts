@@ -15,7 +15,7 @@ export interface GamePropertiesType {
   startTime: string
   stepTime: string
   turnType: typeof PLAN_ADJUDICATE_TURNS | typeof LINEAR_TURNS
-  theme?: ThemeConfig
+  theme: ThemeConfig
 }
 
 export interface GameStateType {
