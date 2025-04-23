@@ -333,15 +333,17 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                       </MenuItem>
                     ))}
                   </Select>
-                    <Tooltip title="Reset to default">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleResetToken('fontFamily')}
-                        sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, ml: 1 }}
-                      >
-                        <RestartAltIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {isTokenModified('fontFamily') && (
+                      <Tooltip title="Reset to default">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleResetToken('fontFamily')}
+                          sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, ml: 1 }}
+                        >
+                          <RestartAltIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 </FormControl>
                 <FormControl sx={{ width: 120 }}>
@@ -354,20 +356,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 8, max: 24, step: 1 }}
                     slotProps={{
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('fontSize')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="fontSize" onReset={handleResetToken} isModified={isTokenModified('fontSize')} />
                       }
                     }}
                   />
@@ -382,20 +371,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 1, max: 3, step: 0.1 }}
                     slotProps={{
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('lineHeight')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="lineHeight" onReset={handleResetToken} isModified={isTokenModified('lineHeight')} />
                       }
                     }}
                   />
@@ -410,20 +386,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 400, max: 900, step: 100 }}
                     slotProps={{
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('fontWeightStrong')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="fontWeightStrong" onReset={handleResetToken} isModified={isTokenModified('fontWeightStrong')} />
                       }
                     }}
                   />
@@ -442,20 +405,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 0, max: 24, step: 1 }}
                     slotProps={{
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('borderRadius')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="borderRadius" onReset={handleResetToken} isModified={isTokenModified('borderRadius')} />
                       }
                     }}
                   />
@@ -469,20 +419,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 24, max: 48, step: 1 }}
                     slotProps={{
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('controlHeight')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="controlHeight" onReset={handleResetToken} isModified={isTokenModified('controlHeight')} />
                       }
                     }}
                   />
@@ -496,20 +433,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 1, max: 5, step: 1 }}
                     slotProps={{
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('lineWidth')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="lineWidth" onReset={handleResetToken} isModified={isTokenModified('lineWidth')} />
                       }
                     }}
                   />
