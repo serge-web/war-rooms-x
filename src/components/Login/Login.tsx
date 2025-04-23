@@ -131,13 +131,13 @@ const Login: React.FC = () => {
           </Flex>
           </div>
           <Flex vertical={false}>
-            <Button onClick={handleMock} block>
+            <Button className="mock-button" onClick={handleMock} block>
               Mock
             </Button>
-            <Button type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
+            <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
               Login
             </Button>
-            <Button type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
+            <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
               Admin
             </Button>
         </Flex>
