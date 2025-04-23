@@ -20,5 +20,9 @@ test.describe('Welcome page functionality', () => {
     // open the wargames item
     await page.getByRole('menuitem', { name: 'Wargames' }).click();
 
+    await page.getByText('Wargame', { exact: true }).click();
+
+    await expect(page.getByText('Configuration', { exact: true })).toBeVisible();
+
   })
 })
