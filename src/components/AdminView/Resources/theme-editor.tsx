@@ -50,14 +50,29 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
   // Initialize with default Ant Design tokens
   const [themeConfig, setThemeConfig] = useState<ThemeConfig>({
     token: {
+      // Colors
       colorPrimary: '#1890ff',
       colorSuccess: '#52c41a',
       colorWarning: '#faad14',
       colorError: '#f5222d',
       colorInfo: '#1890ff',
+      colorLink: '#1890ff',
+      colorBgBase: '#ffffff',
+      colorTextBase: '#000000',
+      colorBorder: '#d9d9d9',
+      colorTextSecondary: '#666666',
+      
+      // Typography
       fontFamily: 'Roboto, sans-serif',
       fontSize: 14,
+      lineHeight: 1.5715,
+      fontWeightStrong: 600,
+      
+      // Spacing and sizing
       borderRadius: 6,
+      controlHeight: 32,
+      lineWidth: 1,
+      
       ...(initialTheme?.token || {})
     }
   })
@@ -67,14 +82,29 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
     if (open) {
       setThemeConfig({
         token: {
+          // Colors
           colorPrimary: '#1890ff',
           colorSuccess: '#52c41a',
           colorWarning: '#faad14',
           colorError: '#f5222d',
           colorInfo: '#1890ff',
+          colorLink: '#1890ff',
+          colorBgBase: '#ffffff',
+          colorTextBase: '#000000',
+          colorBorder: '#d9d9d9',
+          colorTextSecondary: '#666666',
+          
+          // Typography
           fontFamily: 'Roboto, sans-serif',
           fontSize: 14,
+          lineHeight: 1.5715,
+          fontWeightStrong: 600,
+          
+          // Spacing and sizing
           borderRadius: 6,
+          controlHeight: 32,
+          lineWidth: 1,
+          
           ...(initialTheme?.token || {})
         }
       })
@@ -106,7 +136,8 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
           <Grid item xs={12} md={6}>
             <Box sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>Ant Design Theme Settings</Typography>
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Brand Colors</Typography>
+              <Stack direction="row" spacing={2}>
                 <FormControl sx={{ flex: 1 }}>
                   <TextField
                     label="Primary Color"
@@ -144,8 +175,64 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                   />
                 </FormControl>
               </Stack>
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                <FormControl sx={{ minWidth: 200 }}>
+              
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Base Colors</Typography>
+              <Stack direction="row" spacing={2}>
+                <FormControl sx={{ flex: 1 }}>
+                  <TextField
+                    label="Background Base"
+                    type="color"
+                    value={themeConfig.token?.colorBgBase || '#ffffff'}
+                    onChange={(e) => handleTokenChange('colorBgBase', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </FormControl>
+                <FormControl sx={{ flex: 1 }}>
+                  <TextField
+                    label="Text Base"
+                    type="color"
+                    value={themeConfig.token?.colorTextBase || '#000000'}
+                    onChange={(e) => handleTokenChange('colorTextBase', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </FormControl>
+                <FormControl sx={{ flex: 1 }}>
+                  <TextField
+                    label="Border Color"
+                    type="color"
+                    value={themeConfig.token?.colorBorder || '#d9d9d9'}
+                    onChange={(e) => handleTokenChange('colorBorder', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </FormControl>
+                <FormControl sx={{ flex: 1 }}>
+                  <TextField
+                    label="Link Color"
+                    type="color"
+                    value={themeConfig.token?.colorLink || '#1890ff'}
+                    onChange={(e) => handleTokenChange('colorLink', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </FormControl>
+              </Stack>
+              
+              <Stack direction="row" spacing={2}>
+                <FormControl sx={{ flex: 1 }}>
+                  <TextField
+                    label="Secondary Text"
+                    type="color"
+                    value={themeConfig.token?.colorTextSecondary || '#666666'}
+                    onChange={(e) => handleTokenChange('colorTextSecondary', e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </FormControl>
+                <FormControl sx={{ flex: 3 }}>
+                  {/* Placeholder to maintain grid alignment */}
+                </FormControl>
+              </Stack>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Typography</Typography>
+              <Stack direction="row" spacing={2}>
+                <FormControl sx={{ width: 180 }}>
                   <InputLabel id="font-family-label">Font Family</InputLabel>
                   <Select
                     labelId="font-family-label"
@@ -170,10 +257,31 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     inputProps={{ min: 8, max: 24, step: 1 }}
                   />
                 </FormControl>
+                <FormControl sx={{ width: 120 }}>
+                  <TextField
+                    label="Line Height"
+                    type="number"
+                    style={{marginTop: 0}}
+                    value={themeConfig.token?.lineHeight || 1.5715}
+                    onChange={(e) => handleTokenChange('lineHeight', parseFloat(e.target.value))}
+                    inputProps={{ min: 1, max: 3, step: 0.1 }}
+                  />
+                </FormControl>
+                <FormControl sx={{ width: 120 }}>
+                  <TextField
+                    label="Font Weight"
+                    type="number"
+                    style={{marginTop: 0}}
+                    value={themeConfig.token?.fontWeightStrong || 600}
+                    onChange={(e) => handleTokenChange('fontWeightStrong', parseInt(e.target.value, 10))}
+                    inputProps={{ min: 400, max: 900, step: 100 }}
+                  />
+                </FormControl>
               </Stack>
 
               
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Spacing & Sizing</Typography>
+              <Stack direction="row" spacing={2}>
                 <FormControl sx={{ width: 150 }}>
                   <TextField
                     label="Border Radius (px)"
@@ -181,6 +289,24 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     value={themeConfig.token?.borderRadius || 6}
                     onChange={(e) => handleTokenChange('borderRadius', parseInt(e.target.value, 10))}
                     inputProps={{ min: 0, max: 24, step: 1 }}
+                  />
+                </FormControl>
+                <FormControl sx={{ width: 150 }}>
+                  <TextField
+                    label="Control Height (px)"
+                    type="number"
+                    value={themeConfig.token?.controlHeight || 32}
+                    onChange={(e) => handleTokenChange('controlHeight', parseInt(e.target.value, 10))}
+                    inputProps={{ min: 24, max: 48, step: 1 }}
+                  />
+                </FormControl>
+                <FormControl sx={{ width: 150 }}>
+                  <TextField
+                    label="Line Width (px)"
+                    type="number"
+                    value={themeConfig.token?.lineWidth || 1}
+                    onChange={(e) => handleTokenChange('lineWidth', parseInt(e.target.value, 10))}
+                    inputProps={{ min: 1, max: 5, step: 1 }}
                   />
                 </FormControl>
               </Stack>
