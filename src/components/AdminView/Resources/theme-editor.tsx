@@ -118,54 +118,46 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
           <Grid item xs={12} md={6}>
             <Box sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>Ant Design Theme Settings</Typography>
-              <Stack direction="row">
-                <FormControl fullWidth margin="normal">
+              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <FormControl sx={{ flex: 1 }}>
                   <TextField
                     label="Primary Color"
                     type="color"
                     value={themeConfig.token?.colorPrimary || '#1890ff'}
                     onChange={(e) => handleTokenChange('colorPrimary', e.target.value)}
-                    fullWidth
-                    margin="normal"
                     InputLabelProps={{ shrink: true }}
                   />
                 </FormControl>
-                <FormControl fullWidth margin="normal">
+                <FormControl sx={{ flex: 1 }}>
                   <TextField
                     label="Success Color"
                     type="color"
                     value={themeConfig.token?.colorSuccess || '#52c41a'}
                     onChange={(e) => handleTokenChange('colorSuccess', e.target.value)}
-                    fullWidth
-                    margin="normal"
                     InputLabelProps={{ shrink: true }}
                   />
                 </FormControl>
-                <FormControl fullWidth margin="normal">
+                <FormControl sx={{ flex: 1 }}>
                   <TextField
                     label="Warning Color"
                     type="color"
                     value={themeConfig.token?.colorWarning || '#faad14'}
                     onChange={(e) => handleTokenChange('colorWarning', e.target.value)}
-                    fullWidth
-                    margin="normal"
                     InputLabelProps={{ shrink: true }}
                   />
                 </FormControl>
-                <FormControl fullWidth margin="normal">
+                <FormControl sx={{ flex: 1 }}>
                   <TextField
                     label="Error Color"
                     type="color"
                     value={themeConfig.token?.colorError || '#f5222d'}
                     onChange={(e) => handleTokenChange('colorError', e.target.value)}
-                    fullWidth
-                    margin="normal"
                     InputLabelProps={{ shrink: true }}
                   />
                 </FormControl>
               </Stack>
-              <Stack direction="row">
-                <FormControl margin="normal">
+              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel id="font-family-label">Font Family</InputLabel>
                   <Select
                     labelId="font-family-label"
@@ -180,44 +172,45 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     ))}
                   </Select>
                 </FormControl>
-                <FormControl margin="normal">
+                <FormControl sx={{ width: 120 }}>
                   <TextField
                     label="Font Size (px)"
                     type="number"
+                    style={{marginTop: 0}}
                     value={themeConfig.token?.fontSize || 14}
                     onChange={(e) => handleTokenChange('fontSize', parseInt(e.target.value, 10))}
-                    fullWidth
-                    margin="normal"
                     inputProps={{ min: 8, max: 24, step: 1 }}
                   />
                 </FormControl>
               </Stack>
 
               
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Border Radius (px)"
-                  type="number"
-                  value={themeConfig.token?.borderRadius || 6}
-                  onChange={(e) => handleTokenChange('borderRadius', parseInt(e.target.value, 10))}
-                  fullWidth
-                  margin="normal"
-                  inputProps={{ min: 0, max: 24, step: 1 }}
-                />
-              </FormControl>
+              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <FormControl sx={{ width: 150 }}>
+                  <TextField
+                    label="Border Radius (px)"
+                    type="number"
+                    value={themeConfig.token?.borderRadius || 6}
+                    onChange={(e) => handleTokenChange('borderRadius', parseInt(e.target.value, 10))}
+                    inputProps={{ min: 0, max: 24, step: 1 }}
+                  />
+                </FormControl>
+              </Stack>
               
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="algorithm-label">Theme Mode</InputLabel>
-                <Select
-                  labelId="algorithm-label"
-                  value={themeConfig.algorithm === darkAlgorithm ? 'dark' : 'light'}
-                  onChange={(e) => handleAlgorithmChange(e.target.value === 'dark')}
-                  label="Theme Mode"
-                >
-                  <MenuItem value="light">Light</MenuItem>
-                  <MenuItem value="dark">Dark</MenuItem>
-                </Select>
-              </FormControl>
+              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <FormControl sx={{ width: 150 }}>
+                  <InputLabel id="algorithm-label">Theme Mode</InputLabel>
+                  <Select
+                    labelId="algorithm-label"
+                    value={themeConfig.algorithm === darkAlgorithm ? 'dark' : 'light'}
+                    onChange={(e) => handleAlgorithmChange(e.target.value === 'dark')}
+                    label="Theme Mode"
+                  >
+                    <MenuItem value="light">Light</MenuItem>
+                    <MenuItem value="dark">Dark</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
             </Box>
           </Grid>
           
