@@ -4,7 +4,7 @@ import { Card, CardHeader, CardContent, Stack, Button } from '@mui/material'
 import { RGameState } from '../raTypes-d'
 import { useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
-import { ThemeEditor } from './wargames-theme'
+import { ThemeEditor } from './theme-editor'
 import { ThemeConfig } from '../../../types/wargame-d'
 
 export const WargameList = () => (
