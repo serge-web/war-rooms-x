@@ -18,7 +18,7 @@ export const AdminView: React.FC = () => {
   if (!raDataProvider) return null
   return (
   <Admin dataProvider={raDataProvider} layout={CustomLayout} dashboard={Dashboard}>
-    <Resource name="wargame" list={WargameList} edit={WargameEdit} icon={MilitaryTechIcon} options={{label: 'Wargame'}}  />
+    <Resource name="wargames" list={WargameList} edit={WargameEdit} icon={MilitaryTechIcon} options={{label: 'Wargames'}}  />
     <Resource name="groups" list={ListGroup} icon={GroupIcon} options={{label: 'Forces'}}  />
     <Resource name="users" list={ListUser} icon={PersonIcon} options={{label: 'Roles'}} />
     <Resource name="chatrooms" list={ListRoom} icon={ChatIcon} options={{label: 'Rooms'}} />

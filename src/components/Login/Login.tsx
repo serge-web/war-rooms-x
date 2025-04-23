@@ -122,10 +122,10 @@ const Login: React.FC = () => {
             ))}
             </Flex>
             <Flex justify='center' vertical={false}>
-              <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+              <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
                 Admin
               </Button>
-              <Button key={'mockLogin'} onClick={() => handleMockRest()}>
+              <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
                 Mock Admin
               </Button>
           </Flex>

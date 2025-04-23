@@ -220,7 +220,7 @@ const UserMapper: ResourceHandler<XUser, RUser> = {
 }
 
 const WargameMapper: ResourceHandler<XGameState, RGameState> = {
-  resource: 'wargame',
+  resource: 'wargames',
   provider: (xmppClient: XMPPService) => WargameDataProvider(xmppClient)
 }
 
