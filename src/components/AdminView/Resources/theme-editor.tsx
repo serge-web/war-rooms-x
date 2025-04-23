@@ -109,11 +109,16 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
   }
   
   const handleResetToken = (tokenName: string) => {
+    // Reset to initialTheme value if provided, otherwise use defaultTokenValues
+    const resetValue = initialTheme?.token && tokenName in initialTheme.token
+      ? initialTheme.token[tokenName as keyof typeof initialTheme.token]
+      : defaultTokenValues[tokenName as keyof typeof defaultTokenValues]
+    
     setThemeConfig(prev => ({
       ...prev,
       token: {
         ...prev.token,
-        [tokenName]: defaultTokenValues[tokenName as keyof typeof defaultTokenValues]
+        [tokenName]: resetValue
       }
     }))
   }
