@@ -1,13 +1,7 @@
 import { DataProvider } from "react-admin"
 import { XMPPService } from "../services/XMPPService"
 import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
-
-export interface ThemeConfig {
-  primaryColor?: string
-  secondaryColor?: string
-  fontFamily?: string
-  fontSize?: number
-}
+import { ThemeConfig } from "antd"
 
 export interface GamePropertiesType {
   name: string

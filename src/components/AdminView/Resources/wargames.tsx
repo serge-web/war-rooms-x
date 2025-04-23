@@ -6,7 +6,7 @@ import { RGameState } from '../raTypes-d'
 import { useMemo, useState, useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
 import { ThemeEditor } from './theme-editor'
-import { ThemeConfig } from '../../../types/wargame-d'
+import { ThemeConfig } from 'antd'
 
 export const WargameList = () => (
     <List>
@@ -116,7 +116,7 @@ export const WargameEdit = () => {
                 <ThemeUpdater theme={theme} />
                 <TextInput 
                   source="theme" 
-                  style={{ display: 'none' }} 
+                  style={{ display: 'block' }} 
                   format={(value) => JSON.stringify(value)} 
                   parse={(value) => value ? JSON.parse(value) : undefined} 
                 />
