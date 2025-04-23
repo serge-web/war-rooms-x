@@ -16,11 +16,8 @@ import {
   Stack,
 } from '@mui/material'
 import { useNotify } from 'react-admin'
-import { theme as antTheme, ConfigProvider, Button, Space, Card as AntCard, Typography as AntTypography, Divider } from 'antd'
+import { ConfigProvider, Button, Space, Card as AntCard, Typography as AntTypography, Divider } from 'antd'
 import type { ThemeConfig } from 'antd/es/config-provider/context'
-
-// Default algorithm from Ant Design
-const { defaultAlgorithm, darkAlgorithm } = antTheme
 
 // Common font families
 const fontFamilies = [
@@ -62,8 +59,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
       fontSize: 14,
       borderRadius: 6,
       ...(initialTheme?.token || {})
-    },
-    algorithm: defaultAlgorithm
+    }
   })
 
   // Reset theme when initialTheme changes or dialog opens
@@ -80,8 +76,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
           fontSize: 14,
           borderRadius: 6,
           ...(initialTheme?.token || {})
-        },
-        algorithm: initialTheme?.algorithm || defaultAlgorithm
+        }
       })
     }
   }, [initialTheme, open])
@@ -93,13 +88,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
         ...prev.token,
         [tokenName]: value
       }
-    }))
-  }
-  
-  const handleAlgorithmChange = (isDark: boolean) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      algorithm: isDark ? darkAlgorithm : defaultAlgorithm
     }))
   }
 
@@ -194,21 +182,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     onChange={(e) => handleTokenChange('borderRadius', parseInt(e.target.value, 10))}
                     inputProps={{ min: 0, max: 24, step: 1 }}
                   />
-                </FormControl>
-              </Stack>
-              
-              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                <FormControl sx={{ width: 150 }}>
-                  <InputLabel id="algorithm-label">Theme Mode</InputLabel>
-                  <Select
-                    labelId="algorithm-label"
-                    value={themeConfig.algorithm === darkAlgorithm ? 'dark' : 'light'}
-                    onChange={(e) => handleAlgorithmChange(e.target.value === 'dark')}
-                    label="Theme Mode"
-                  >
-                    <MenuItem value="light">Light</MenuItem>
-                    <MenuItem value="dark">Dark</MenuItem>
-                  </Select>
                 </FormControl>
               </Stack>
             </Box>
