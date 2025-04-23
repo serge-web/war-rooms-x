@@ -2,7 +2,7 @@ import { CreateParams, CreateResult, DataProvider, DeleteManyResult, DeleteResul
 import { XMPPService } from "../../services/XMPPService"
 import { GameStateType, GamePropertiesType } from "../../types/wargame-d"
 import { RGameState } from "./raTypes-d"
-import { splitGameState } from "../../helpers/split-game-state"
+import { splitGameState, mergeGameState } from "../../helpers/split-game-state"
 
 const STATE_DOC = 'game-state'
 const SETUP_DOC = 'game-setup'
@@ -19,7 +19,8 @@ const DEFAULT_SETUP: GamePropertiesType = {
   startTime: new Date().toISOString(),
   stepTime: '1',
   turnType: 'Linear',
-  theme: {}
+  playerTheme: undefined,
+  adminTheme: undefined
 }
 
 export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
@@ -30,7 +31,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       // get the setup doc
       const setupDoc = await xmppClient.getPubSubDocument(SETUP_DOC)
       const setup: GamePropertiesType = setupDoc && setupDoc.content?.json ? setupDoc.content.json : DEFAULT_SETUP
-      const merged: RGameState = { id:'0', ...gameState, ...setup }
+      const merged: RGameState = mergeGameState(setup, gameState)
       return { data: [merged], total: 1 }
     },
     getOne: async (): Promise<GetOneResult> => {
@@ -40,7 +41,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       // get the setup doc
       const setupDoc = await xmppClient.getPubSubDocument(SETUP_DOC)
       const setup: GamePropertiesType = setupDoc && setupDoc.content?.json ? setupDoc.content.json : DEFAULT_SETUP
-      const merged: RGameState = { id:'0', ...gameState, ...setup }
+      const merged: RGameState = mergeGameState(setup, gameState)
       return { data: merged }
     },
     getMany: async (): Promise<GetManyResult> => {
