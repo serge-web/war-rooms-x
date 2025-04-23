@@ -72,20 +72,23 @@ const fontFamilies = [
 interface ResetAdornmentProps {
   tokenName: string
   onReset: (tokenName: string) => void
+  isModified: boolean
 }
 
-const ResetAdornment = ({ tokenName, onReset }: ResetAdornmentProps) => (
+const ResetAdornment = ({ tokenName, onReset, isModified }: ResetAdornmentProps) => (
   <InputAdornment position="end">
-    <Tooltip title="Reset to default">
-      <IconButton
-        size="small"
-        onClick={() => onReset(tokenName)}
-        edge="end"
-        sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-      >
-        <RestartAltIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
+    {isModified && (
+      <Tooltip title="Reset to default">
+        <IconButton
+          size="small"
+          onClick={() => onReset(tokenName)}
+          edge="end"
+          sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+        >
+          <RestartAltIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    )}
   </InputAdornment>
 )
 
@@ -106,6 +109,19 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
       ...(initialTheme?.token || {})
     }
   })
+  
+  // Function to check if a token value has been modified from its default or initial value
+  const isTokenModified = (tokenName: string) => {
+    const currentValue = themeConfig.token?.[tokenName as keyof typeof themeConfig.token]
+    const initialValue = initialTheme?.token?.[tokenName as keyof typeof defaultTokenValues]
+    const defaultValue = defaultTokenValues[tokenName as keyof typeof defaultTokenValues]
+    
+    // If there's an initial value, compare with that, otherwise compare with default
+    const baseValue = initialValue !== undefined ? initialValue : defaultValue
+    
+    // Return true if the current value is different from the base value
+    return currentValue !== baseValue
+  }
 
   // Reset theme when initialTheme changes or dialog opens
   useEffect(() => {
@@ -170,20 +186,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorPrimary')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorPrimary" onReset={handleResetToken} isModified={isTokenModified('colorPrimary')} />
                       }
                     }}
                   />
@@ -197,20 +200,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorSuccess')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorSuccess" onReset={handleResetToken} isModified={isTokenModified('colorSuccess')} />
                       }
                     }}
                   />
@@ -224,7 +214,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorWarning" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorWarning" onReset={handleResetToken} isModified={isTokenModified('colorWarning')} />
                       }
                     }}
                   />
@@ -238,7 +228,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorError" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorError" onReset={handleResetToken} isModified={isTokenModified('colorError')} />
                       }
                     }}
                   />
@@ -256,7 +246,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorBgBase" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorBgBase" onReset={handleResetToken} isModified={isTokenModified('colorBgBase')} />
                       }
                     }}
                   />
@@ -270,7 +260,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorTextBase" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorTextBase" onReset={handleResetToken} isModified={isTokenModified('colorTextBase')} />
                       }
                     }}
                   />
@@ -284,7 +274,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorBorder" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorBorder" onReset={handleResetToken} isModified={isTokenModified('colorBorder')} />
                       }
                     }}
                   />
@@ -298,7 +288,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorLink" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorLink" onReset={handleResetToken} isModified={isTokenModified('colorLink')} />
                       }
                     }}
                   />
@@ -315,7 +305,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: <ResetAdornment tokenName="colorTextSecondary" onReset={handleResetToken} />
+                        endAdornment: <ResetAdornment tokenName="colorTextSecondary" onReset={handleResetToken} isModified={isTokenModified('colorTextSecondary')} />
                       }
                     }}
                   />
