@@ -17,6 +17,7 @@ import {
   IconButton,
   Tooltip,
   InputAdornment,
+  SelectChangeEvent,
 } from '@mui/material'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { useNotify } from 'react-admin'
@@ -139,23 +140,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Primary Color"
                     type="color"
                     value={themeConfig.token?.colorPrimary || defaultTokenValues.colorPrimary}
-                    onChange={(e) => handleTokenChange('colorPrimary', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorPrimary')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorPrimary', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorPrimary')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -164,23 +167,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Success Color"
                     type="color"
                     value={themeConfig.token?.colorSuccess || defaultTokenValues.colorSuccess}
-                    onChange={(e) => handleTokenChange('colorSuccess', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorSuccess')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorSuccess', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorSuccess')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -189,23 +194,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Warning Color"
                     type="color"
                     value={themeConfig.token?.colorWarning || defaultTokenValues.colorWarning}
-                    onChange={(e) => handleTokenChange('colorWarning', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorWarning')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorWarning', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorWarning')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -214,23 +221,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Error Color"
                     type="color"
                     value={themeConfig.token?.colorError || defaultTokenValues.colorError}
-                    onChange={(e) => handleTokenChange('colorError', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorError')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorError', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorError')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -243,23 +252,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Background Base"
                     type="color"
                     value={themeConfig.token?.colorBgBase || defaultTokenValues.colorBgBase}
-                    onChange={(e) => handleTokenChange('colorBgBase', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorBgBase')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorBgBase', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorBgBase')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -268,23 +279,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Text Base"
                     type="color"
                     value={themeConfig.token?.colorTextBase || defaultTokenValues.colorTextBase}
-                    onChange={(e) => handleTokenChange('colorTextBase', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorTextBase')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorTextBase', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorTextBase')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -293,23 +306,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Border Color"
                     type="color"
                     value={themeConfig.token?.colorBorder || defaultTokenValues.colorBorder}
-                    onChange={(e) => handleTokenChange('colorBorder', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorBorder')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorBorder', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorBorder')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -318,23 +333,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Link Color"
                     type="color"
                     value={themeConfig.token?.colorLink || defaultTokenValues.colorLink}
-                    onChange={(e) => handleTokenChange('colorLink', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorLink')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorLink', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorLink')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -346,23 +363,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Secondary Text"
                     type="color"
                     value={themeConfig.token?.colorTextSecondary || defaultTokenValues.colorTextSecondary}
-                    onChange={(e) => handleTokenChange('colorTextSecondary', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('colorTextSecondary')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('colorTextSecondary', e.target.value)}
+                    slotProps={{
+                      inputLabel: { shrink: true },
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('colorTextSecondary')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -374,25 +393,14 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
               <Stack direction="row" spacing={2}>
                 <FormControl sx={{ width: 180 }}>
                   <InputLabel id="font-family-label">Font Family</InputLabel>
-                  <Select
-                    labelId="font-family-label"
-                    value={themeConfig.token?.fontFamily || defaultTokenValues.fontFamily}
-                    onChange={(e) => handleTokenChange('fontFamily', e.target.value)}
-                    label="Font Family"
-                    endAdornment={
-                      <InputAdornment position="end">
-                        <Tooltip title="Reset to default">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleResetToken('fontFamily')}
-                            edge="end"
-                            sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, mr: 2 }}
-                          >
-                            <RestartAltIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    }
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Select
+                      labelId="font-family-label"
+                      value={themeConfig.token?.fontFamily || defaultTokenValues.fontFamily}
+                      onChange={(e: SelectChangeEvent) => handleTokenChange('fontFamily', e.target.value)}
+                      label="Font Family"
+                      sx={{ flex: 1 }}
+                    
                   >
                     {fontFamilies.map((font) => (
                       <MenuItem key={font} value={font}>
@@ -400,6 +408,16 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                       </MenuItem>
                     ))}
                   </Select>
+                    <Tooltip title="Reset to default">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleResetToken('fontFamily')}
+                        sx={{ opacity: 0.5, '&:hover': { opacity: 1 }, ml: 1 }}
+                      >
+                        <RestartAltIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </FormControl>
                 <FormControl sx={{ width: 120 }}>
                   <TextField
@@ -407,23 +425,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     type="number"
                     style={{marginTop: 0}}
                     value={themeConfig.token?.fontSize || defaultTokenValues.fontSize}
-                    onChange={(e) => handleTokenChange('fontSize', parseInt(e.target.value, 10))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('fontSize', parseInt(e.target.value, 10))}
                     inputProps={{ min: 8, max: 24, step: 1 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('fontSize')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('fontSize')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -433,23 +453,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     type="number"
                     style={{marginTop: 0}}
                     value={themeConfig.token?.lineHeight || defaultTokenValues.lineHeight}
-                    onChange={(e) => handleTokenChange('lineHeight', parseFloat(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('lineHeight', parseFloat(e.target.value))}
                     inputProps={{ min: 1, max: 3, step: 0.1 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('lineHeight')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('lineHeight')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -459,23 +481,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     type="number"
                     style={{marginTop: 0}}
                     value={themeConfig.token?.fontWeightStrong || defaultTokenValues.fontWeightStrong}
-                    onChange={(e) => handleTokenChange('fontWeightStrong', parseInt(e.target.value, 10))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('fontWeightStrong', parseInt(e.target.value, 10))}
                     inputProps={{ min: 400, max: 900, step: 100 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('fontWeightStrong')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('fontWeightStrong')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -489,23 +513,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Border Radius (px)"
                     type="number"
                     value={themeConfig.token?.borderRadius || defaultTokenValues.borderRadius}
-                    onChange={(e) => handleTokenChange('borderRadius', parseInt(e.target.value, 10))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('borderRadius', parseInt(e.target.value, 10))}
                     inputProps={{ min: 0, max: 24, step: 1 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('borderRadius')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('borderRadius')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -514,23 +540,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Control Height (px)"
                     type="number"
                     value={themeConfig.token?.controlHeight || defaultTokenValues.controlHeight}
-                    onChange={(e) => handleTokenChange('controlHeight', parseInt(e.target.value, 10))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('controlHeight', parseInt(e.target.value, 10))}
                     inputProps={{ min: 24, max: 48, step: 1 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('controlHeight')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('controlHeight')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
@@ -539,23 +567,25 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     label="Line Width (px)"
                     type="number"
                     value={themeConfig.token?.lineWidth || defaultTokenValues.lineWidth}
-                    onChange={(e) => handleTokenChange('lineWidth', parseInt(e.target.value, 10))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTokenChange('lineWidth', parseInt(e.target.value, 10))}
                     inputProps={{ min: 1, max: 5, step: 1 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Reset to default">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleResetToken('lineWidth')}
-                              edge="end"
-                              sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                            >
-                              <RestartAltIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <Tooltip title="Reset to default">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleResetToken('lineWidth')}
+                                edge="end"
+                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+                              >
+                                <RestartAltIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        )
+                      }
                     }}
                   />
                 </FormControl>
