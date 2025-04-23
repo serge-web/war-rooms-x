@@ -2,12 +2,20 @@ import { DataProvider } from "react-admin"
 import { XMPPService } from "../services/XMPPService"
 import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
 
+export interface ThemeConfig {
+  primaryColor?: string
+  secondaryColor?: string
+  fontFamily?: string
+  fontSize?: number
+}
+
 export interface GamePropertiesType {
   name: string
   description?: string
   startTime: string
   stepTime: string
   turnType: typeof PLAN_ADJUDICATE_TURNS | typeof LINEAR_TURNS
+  theme?: ThemeConfig
 }
 
 export interface GameStateType {
