@@ -97,9 +97,10 @@ interface ThemeEditorProps {
   onClose: () => void
   initialTheme?: ThemeConfig
   onSave: (theme: ThemeConfig) => void
+  title?: string
 }
 
-export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditorProps) => {
+export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit Theme' }: ThemeEditorProps) => {
   const notify = useNotify()
   
   // Initialize with default Ant Design tokens
@@ -168,7 +169,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Edit Wargame Theme</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Grid container spacing={3}>
           {/* Left panel: Form controls */}

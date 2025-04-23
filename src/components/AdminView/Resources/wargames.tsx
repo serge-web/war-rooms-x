@@ -51,40 +51,76 @@ const CurrentPhaseInput = () => {
 export const WargameEdit = () => {
   // sort out the turn phase choices
   const turnModels = ['Linear', 'Plan/Adjudicate']
-  const [themeDialogOpen, setThemeDialogOpen] = useState(false)
-  const [theme, setTheme] = useState<ThemeConfig>({})
+  
+  // Theme state management
+  const [playerThemeDialogOpen, setPlayerThemeDialogOpen] = useState(false)
+  const [adminThemeDialogOpen, setAdminThemeDialogOpen] = useState(false)
+  const [playerTheme, setPlayerTheme] = useState<ThemeConfig>({})
+  const [adminTheme, setAdminTheme] = useState<ThemeConfig>({})
   const notify = useNotify()
   
-  const handleOpenThemeEditor = () => {
-    const formField = document.querySelector('input[name="theme"]') as HTMLInputElement
+  const handleOpenPlayerThemeEditor = () => {
+    const formField = document.querySelector('input[name="playerTheme"]') as HTMLInputElement
     if (formField) {
       const themeText = formField.value || '{}'
-      setTheme(JSON.parse(themeText))
+      setPlayerTheme(JSON.parse(themeText))
     }
-    setThemeDialogOpen(true)
+    setPlayerThemeDialogOpen(true)
   }
   
-  const handleCloseThemeEditor = () => {
-    setThemeDialogOpen(false)
+  const handleClosePlayerThemeEditor = () => {
+    setPlayerThemeDialogOpen(false)
+  }
+  
+  const handleOpenAdminThemeEditor = () => {
+    const formField = document.querySelector('input[name="adminTheme"]') as HTMLInputElement
+    if (formField) {
+      const themeText = formField.value || '{}'
+      setAdminTheme(JSON.parse(themeText))
+    }
+    setAdminThemeDialogOpen(true)
+  }
+  
+  const handleCloseAdminThemeEditor = () => {
+    setAdminThemeDialogOpen(false)
   }
 
-  const handleSaveTheme = (newTheme: ThemeConfig) => {
-    // We'll use the FormDataConsumer to update the theme field
+  const handleSavePlayerTheme = (newTheme: ThemeConfig) => {
+    // We'll use the FormDataConsumer to update the playerTheme field
     // The actual update happens in the component render
-    setTheme(newTheme)
-    notify('Theme updated successfully', { type: 'success' })
+    setPlayerTheme(newTheme)
+    notify('Player theme updated successfully', { type: 'success' })
+  }
+  
+  const handleSaveAdminTheme = (newTheme: ThemeConfig) => {
+    // We'll use the FormDataConsumer to update the adminTheme field
+    // The actual update happens in the component render
+    setAdminTheme(newTheme)
+    notify('Admin theme updated successfully', { type: 'success' })
   }
   
   // Component to handle theme updates
-  const ThemeUpdater = ({ theme }: { theme: ThemeConfig }) => {
+  const ThemeUpdater = ({ 
+    playerTheme, 
+    adminTheme 
+  }: { 
+    playerTheme: ThemeConfig, 
+    adminTheme: ThemeConfig 
+  }) => {
     const { setValue } = useFormContext()
     
-    // Update the form value when theme changes
+    // Update the form values when themes change
     useEffect(() => {
-      if (theme) {
-        setValue('theme', theme, { shouldDirty: true })
+      if (playerTheme) {
+        setValue('playerTheme', playerTheme, { shouldDirty: true })
       }
-    }, [theme, setValue])
+    }, [playerTheme, setValue])
+    
+    useEffect(() => {
+      if (adminTheme) {
+        setValue('adminTheme', adminTheme, { shouldDirty: true })
+      }
+    }, [adminTheme, setValue])
     
     return null
   }
@@ -104,19 +140,34 @@ export const WargameEdit = () => {
                   <TextInput required helperText="The step interval" source="stepTime" />
                   <RadioButtonGroupInput required helperText="The turn model 2" source="turnType" choices={turnModels} />
                 </Stack>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  onClick={handleOpenThemeEditor}
-                  sx={{ mt: 2 }}
-                >
-                  Edit Theme
-                </Button>
-                {/* Hidden field for theme data */}
-                <ThemeUpdater theme={theme} />
+                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleOpenPlayerThemeEditor}
+                  >
+                    Edit Player Theme
+                  </Button>
+                  <Button 
+                    variant="contained" 
+                    color="secondary" 
+                    onClick={handleOpenAdminThemeEditor}
+                  >
+                    Edit Admin Theme
+                  </Button>
+                </Stack>
+                
+                {/* Hidden fields for theme data */}
+                <ThemeUpdater playerTheme={playerTheme} adminTheme={adminTheme} />
                 <TextInput 
-                  source="theme" 
-                  style={{ display: 'block' }} 
+                  source="playerTheme" 
+                  style={{ display: 'none' }} 
+                  format={(value) => JSON.stringify(value)} 
+                  parse={(value) => value ? JSON.parse(value) : undefined} 
+                />
+                <TextInput 
+                  source="adminTheme" 
+                  style={{ display: 'none' }} 
                   format={(value) => JSON.stringify(value)} 
                   parse={(value) => value ? JSON.parse(value) : undefined} 
                 />
@@ -135,12 +186,20 @@ export const WargameEdit = () => {
             </Card>    
           </Stack>
           
-          {/* Theme Editor Dialog */}
+          {/* Theme Editor Dialogs */}
           <ThemeEditor
-            open={themeDialogOpen}
-            onClose={handleCloseThemeEditor}
-            initialTheme={theme}
-            onSave={handleSaveTheme}
+            open={playerThemeDialogOpen}
+            onClose={handleClosePlayerThemeEditor}
+            initialTheme={playerTheme}
+            onSave={handleSavePlayerTheme}
+            title="Edit Player Theme"
+          />
+          <ThemeEditor
+            open={adminThemeDialogOpen}
+            onClose={handleCloseAdminThemeEditor}
+            initialTheme={adminTheme}
+            onSave={handleSaveAdminTheme}
+            title="Edit Admin Theme"
           />
         </SimpleForm>
     </Edit>
