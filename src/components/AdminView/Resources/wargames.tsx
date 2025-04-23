@@ -1,8 +1,9 @@
 import { Datagrid, DateField, DateTimeInput, List, RadioButtonGroupInput, TextField } from 'react-admin'
 import { Edit, SimpleForm, TextInput, useNotify } from 'react-admin'
+import { useFormContext } from 'react-hook-form'
 import { Card, CardHeader, CardContent, Stack, Button } from '@mui/material'
 import { RGameState } from '../raTypes-d'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
 import { ThemeEditor } from './theme-editor'
 import { ThemeConfig } from '../../../types/wargame-d'
@@ -68,21 +69,26 @@ export const WargameEdit = () => {
   }
 
   const handleSaveTheme = (newTheme: ThemeConfig) => {
-    // Update the form value for the theme field
-    // This will be saved when the form is submitted
-    const formField = document.querySelector('input[name="theme"]') as HTMLInputElement
-    if (formField) {
-      formField.value = JSON.stringify(newTheme)
-      // Dispatch an input event to trigger form validation
-      formField.dispatchEvent(new Event('input', { bubbles: true }))
-      // set the form to dirty
-      formField.dispatchEvent(new Event('change', { bubbles: true }))
-      notify('Theme updated successfully', { type: 'success' })
-    } else {
-      notify('Could not update theme field', { type: 'warning' })
-    }
+    // We'll use the FormDataConsumer to update the theme field
+    // The actual update happens in the component render
+    setTheme(newTheme)
+    notify('Theme updated successfully', { type: 'success' })
   }
   
+  // Component to handle theme updates
+  const ThemeUpdater = ({ theme }: { theme: ThemeConfig }) => {
+    const { setValue } = useFormContext()
+    
+    // Update the form value when theme changes
+    useEffect(() => {
+      if (theme) {
+        setValue('theme', theme, { shouldDirty: true })
+      }
+    }, [theme, setValue])
+    
+    return null
+  }
+
   return (
     <Edit mutationMode='pessimistic'>
         <SimpleForm>
@@ -107,7 +113,13 @@ export const WargameEdit = () => {
                   Edit Theme
                 </Button>
                 {/* Hidden field for theme data */}
-                <TextInput source="theme" style={{ display: 'block' }} format={(value) => JSON.stringify(value)} parse={(value) => value ? JSON.parse(value) : undefined} />
+                <ThemeUpdater theme={theme} />
+                <TextInput 
+                  source="theme" 
+                  style={{ display: 'none' }} 
+                  format={(value) => JSON.stringify(value)} 
+                  parse={(value) => value ? JSON.parse(value) : undefined} 
+                />
               </CardContent>
             </Card>
             <Card>
