@@ -122,22 +122,22 @@ const Login: React.FC = () => {
             ))}
             </Flex>
             <Flex justify='center' vertical={false}>
-              <Button key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+              <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
                 Admin
               </Button>
-              <Button key={'mockLogin'} onClick={() => handleMockRest()}>
+              <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
                 Mock Admin
               </Button>
           </Flex>
           </div>
           <Flex vertical={false}>
-            <Button onClick={handleMock} block>
+            <Button className="mock-button" onClick={handleMock} block>
               Mock
             </Button>
-            <Button type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
+            <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
               Login
             </Button>
-            <Button type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
+            <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
               Admin
             </Button>
         </Flex>

@@ -5,7 +5,7 @@ import { Title } from 'react-admin';
 
 export const Dashboard = () => (
     <Card>
-        <Title title="War Rooms - Maintainer pages" />
+        <Title className="maintainer-welcome-title" title="War Rooms - Maintainer pages" />
         <CardContent>Welcome to the maintainer pages for war-rooms.</CardContent>
         <CardContent>Here is how data is organised:<br/><img src='/war-rooms-structure.png' alt='War Rooms Structure' className='max-w-full h-auto' /></CardContent>
         <CardContent>Use the links on the left to maintain each type of data.</CardContent>
