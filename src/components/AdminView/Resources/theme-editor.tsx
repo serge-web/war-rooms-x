@@ -68,6 +68,27 @@ const fontFamilies = [
   'Raleway, sans-serif',
 ]
 
+// Custom component for reset button adornment
+interface ResetAdornmentProps {
+  tokenName: string
+  onReset: (tokenName: string) => void
+}
+
+const ResetAdornment = ({ tokenName, onReset }: ResetAdornmentProps) => (
+  <InputAdornment position="end">
+    <Tooltip title="Reset to default">
+      <IconButton
+        size="small"
+        onClick={() => onReset(tokenName)}
+        edge="end"
+        sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+      >
+        <RestartAltIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+  </InputAdornment>
+)
+
 interface ThemeEditorProps {
   open: boolean
   onClose: () => void
@@ -203,20 +224,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorWarning')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorWarning" onReset={handleResetToken} />
                       }
                     }}
                   />
@@ -230,20 +238,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorError')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorError" onReset={handleResetToken} />
                       }
                     }}
                   />
@@ -261,20 +256,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorBgBase')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorBgBase" onReset={handleResetToken} />
                       }
                     }}
                   />
@@ -288,20 +270,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorTextBase')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorTextBase" onReset={handleResetToken} />
                       }
                     }}
                   />
@@ -315,20 +284,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorBorder')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorBorder" onReset={handleResetToken} />
                       }
                     }}
                   />
@@ -342,20 +298,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorLink')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorLink" onReset={handleResetToken} />
                       }
                     }}
                   />
@@ -372,20 +315,7 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave }: ThemeEditor
                     slotProps={{
                       inputLabel: { shrink: true },
                       input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip title="Reset to default">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleResetToken('colorTextSecondary')}
-                                edge="end"
-                                sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                              >
-                                <RestartAltIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </InputAdornment>
-                        )
+                        endAdornment: <ResetAdornment tokenName="colorTextSecondary" onReset={handleResetToken} />
                       }
                     }}
                   />
