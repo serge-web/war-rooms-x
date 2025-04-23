@@ -21,7 +21,7 @@ import {
 } from '@mui/material'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { useNotify } from 'react-admin'
-import { ConfigProvider, Button, Space, Card as AntCard, Typography as AntTypography, Divider } from 'antd'
+import { ConfigProvider, Button, Space, Card as AntCard, Typography as AntTypography } from 'antd'
 import type { ThemeConfig } from 'antd/es/config-provider/context'
 
 // Default token values
@@ -175,7 +175,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
           {/* Left panel: Form controls */}
           <Grid item xs={12} md={6}>
             <Box sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>Ant Design Theme Settings</Typography>
               <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Brand Colors</Typography>
               <Stack direction="row" spacing={2}>
                 <FormControl sx={{ flex: 1 }}>
@@ -294,9 +293,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
                     }}
                   />
                 </FormControl>
-              </Stack>
-              
-              <Stack direction="row" spacing={2}>
                 <FormControl sx={{ flex: 1 }}>
                   <TextField
                     label="Secondary Text"
@@ -310,9 +306,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
                       }
                     }}
                   />
-                </FormControl>
-                <FormControl sx={{ flex: 3 }}>
-                  {/* Placeholder to maintain grid alignment */}
                 </FormControl>
               </Stack>
               <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Typography</Typography>
@@ -447,7 +440,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
           <Grid item xs={12} md={6}>
             <Box sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>Preview</Typography>
-              
               <Box sx={{ 
                 backgroundColor: '#f5f5f5', 
                 p: 2, 
@@ -456,9 +448,6 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
               }}>
                 <ConfigProvider theme={themeConfig}>
                   <div style={{ padding: '16px', backgroundColor: 'var(--ant-background-container)' }}>
-                    <AntTypography.Title level={4}>Ant Design Components Preview</AntTypography.Title>
-                    <Divider />                    
-                    
                     <Space direction="vertical" style={{ width: '100%' }}>
                       <AntCard title="Primary Card" style={{ marginBottom: '16px' }}>
                         <p>This is a standard card with default styling.</p>
