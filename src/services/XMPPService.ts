@@ -843,11 +843,13 @@ export class XMPPService {
       }
       
       // check we aren't already subscribed to this node
-      if (this.subscriptionIds.has(nodeId)) {
-        return { success: true, id: nodeId, subscriptionId: this.subscriptionIds.get(nodeId) }
+      const subIdForThisNode = this.subscriptionIds.get(nodeId)
+      if (subIdForThisNode) {
+        return { success: true, id: nodeId, subscriptionId: subIdForThisNode }
       } else {
       // check if we're already subscribed to this node
       const subscriptions = await this.client.getSubscriptions(this.pubsubService)
+      console.log('existing subs', subscriptions)
       if (subscriptions) {
         const mySubs = subscriptions.items?.filter((item) => {
           return (item.node === nodeId) && (item.jid === this.bareJid)
@@ -875,6 +877,7 @@ export class XMPPService {
       // Store the subscription ID for later use when unsubscribing
       if (result && result.subid) {
         this.subscriptionIds.set(nodeId, result.subid)
+        console.log('sub to', nodeId, result.subid)
         // Register the handler if provided
         if (handler) {
           this.pubsubChangeHandlers.push(handler)

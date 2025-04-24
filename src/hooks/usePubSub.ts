@@ -40,6 +40,8 @@ export const usePubSub = <T extends object>(nodeId: string) => {
     // Subscribe to the PubSub document and get its current content
     const subAndGet = async () => {
       if (xmppClient.pubsubService) {
+        // insert really short delay, to prevent parallel subscriptions
+        await new Promise(resolve => setTimeout(resolve, 100))
         const results = await xmppClient.subscribeToPubSubDocument(nodeId, docHandler)
         if (!results.success) {
           if (results.error?.includes('Already subscribed')) {
