@@ -91,8 +91,6 @@ const Login: React.FC = () => {
     setRaDataProvider(mockDataProvider)
   }  
 
-  console.log('ip', ip, 'host', host)
-
   return (
     <div className="login-container">
       <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
