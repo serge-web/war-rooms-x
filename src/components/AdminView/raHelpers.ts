@@ -3,8 +3,6 @@ import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameS
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
-import { JSONItem } from "stanza/protocol"
-import { NS_JSON_0 } from "stanza/Namespaces"
 import WargameDataProvider from "./wargameDataProvider"
 
 // Static method to ensure members have proper host format
@@ -49,9 +47,7 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
   }
   const nodeId = 'users:' + id
   // check if this node exists
-  console.log('about to check for node:', nodeId)
   if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
-    console.log('node not present, creating')
     // create the node
     const res = await xmppClient.publishPubSubLeaf(nodeId, 'users', newDoc)
     if (!res) {
@@ -115,13 +111,14 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   // ok, we have to get the pubsub document for this force
   const doc = verbose && (await xmppClient?.getPubSubDocument('forces:' + result.name)) as PubSubDocument
   const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
-  return {
+  const res: RGroup = {
     id: result.name,
     name: forceConfig?.name || result.name,
     objectives: forceConfig?.objectives || undefined,
     members: members.map(formatMemberWithHost),
     color: forceConfig?.color || undefined
   }
+  return res
 }
 
 const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, previousData?: RGroup): Promise<XGroup> => {
@@ -133,12 +130,8 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, pr
     color: result.color,
     objectives: result.objectives
   }
-  const jsonDoc: JSONItem = {
-    itemType: NS_JSON_0,
-    json: newDoc
-  }
   const nodeId = 'forces:' + id
-  const res = await xmppClient?.publishPubSubLeaf(nodeId, 'forces', jsonDoc)
+  const res = await xmppClient?.publishPubSubLeaf(nodeId, 'forces', newDoc)
   if (!res.success) {
     console.error('problem publishing document', id)
   }
