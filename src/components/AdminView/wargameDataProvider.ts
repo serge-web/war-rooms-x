@@ -53,7 +53,6 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
     update: async (_resource: string, params: UpdateParams<RGameState>): Promise<UpdateResult> => {
       // map from R to X
       const { gameProperties, gameState } = splitGameState(params.data as RGameState)
-      console.log('game values', gameProperties, gameState)
       // store documents
       await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
       await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)
