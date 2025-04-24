@@ -10,7 +10,7 @@ import { useGameProperties } from '../GameState/useGameSetup'
 const { Sider, Content } = Layout
 
 const PlayerView: React.FC = () => {
-  const { name, description, playerTheme, adminTheme } = useGameProperties()
+  const { playerTheme, adminTheme } = useGameProperties()
   const gameStateStyle: React.CSSProperties = {
     height: 120,
     backgroundColor: '#ccc',
@@ -58,7 +58,7 @@ const PlayerView: React.FC = () => {
         <ConfigProvider theme={adminTheme}>
           <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Header style={gameStateStyle}>
-              <GameState name={name} description={description} />
+              <GameState/>
             </Header>
             <Content style={adminMessagesStyle}>
               <AdminRoom />
