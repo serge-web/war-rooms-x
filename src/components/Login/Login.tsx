@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex, Modal, Switch, Badge, Tag } from 'antd'
+import { Button, Form, Input, Card, Flex, Modal, Switch, Tag } from 'antd'
 import './Login.css'
 import fakeDataProvider from 'ra-data-fakerest'
 import { useWargame } from '../../contexts/WargameContext'
