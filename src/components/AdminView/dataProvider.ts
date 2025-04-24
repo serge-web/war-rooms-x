@@ -106,10 +106,9 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       // Return the original data instead of null to match the expected return type
       return { data: params.data as RecordType }
     }
-    const asX = mapper.toXRecord(params.data as AllRTypes, params.data.id, xmppClient)
+    const asX = await mapper.toXRecord(params.data as AllRTypes, params.data.id, xmppClient)
     const filledIn = mapper.forCreate ? mapper.forCreate(asX as AllXTypes) : asX
     await restClient.getClient()?.post('/' + resource, filledIn)
-    console.log('about to convert to RaRecord', filledIn, params.data.id)
     const asR = await mapper.toRRecord(filledIn as AllXTypes, params.data.id, xmppClient, true)
     console.log('create complete', resource, params.data, filledIn, asR)
     const result = await Promise.resolve(asR) as AllRTypes
