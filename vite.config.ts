@@ -7,6 +7,7 @@ export default defineConfig({
   define: {
     // Polyfill for Node.js globals required by StanzaJS
     global: 'window',
+    'process.env': {},
   },
   server: {
     proxy: {
