@@ -1,6 +1,6 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { AccountManagement, DataForm, DiscoInfoResult, DiscoItem, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
+import { AccountManagement, DataForm, DiscoInfoResult, DiscoItem, IQ, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
 import { GameMessage, User } from '../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 import { NS_JSON_0 } from 'stanza/Namespaces'
@@ -904,7 +904,7 @@ export class XMPPService {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
-
+    
     try {
       if (!this.pubsubService) {
         throw new Error('PubSub service not available')
@@ -1005,14 +1005,39 @@ export class XMPPService {
       // TODO: using paging to only retrieve the last item from the node
       
       // Get the items from the node
-      const result = await this.client.getItems(this.pubsubService, nodeId)
+      const existingSub = this.subscriptionIds.get(nodeId)
 
-      if (result.items && result.items.length > 0) {
-        const item = result.items[0] as PubSubDocument
-        return item
+      // do we already have a subscription?
+      if (existingSub) {
+        // we need to use a special stanza, which provides the subscription id.
+        const iq = {
+          type: 'get',
+          to: this.pubsubService,
+          pubsub: {
+            items: {
+                node: nodeId,
+                subscription: existingSub
+            }
+          }
+        } as IQ
+        const items = await this.client.sendIQ(iq)
+        if (items?.pubsub?.fetch?.items && items.pubsub.fetch.items.length > 0) {
+          const item = items.pubsub.fetch.items[0] as PubSubDocument
+          return item
+        }
+        return null
+    }
+      else {
+        const result = await this.client.getItems(this.pubsubService, nodeId)
+
+        if (result.items && result.items.length > 0) {
+          const item = result.items[0] as PubSubDocument
+          return item
+        }
+        
+        return null
+  
       }
-      
-      return null
     } catch (error) {
       // check for item not found
       const sError = error as { error: { condition: string } }
