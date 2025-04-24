@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { fileURLToPath } from 'url'
+import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,9 +12,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      fs: fileURLToPath(new URL('./src/shims/empty.js', import.meta.url)),
-      net: fileURLToPath(new URL('./src/shims/empty.js', import.meta.url)),
-      tls: fileURLToPath(new URL('./src/shims/empty.js', import.meta.url)),
+      fs: path.resolve(__dirname, 'src/shims/empty.js'),
+      net: path.resolve(__dirname, 'src/shims/empty.js'),
+      tls: path.resolve(__dirname, 'src/shims/empty.js'),
     }
   },
   server: {
