@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { fileURLToPath } from 'url'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,6 +9,13 @@ export default defineConfig({
     // Polyfill for Node.js globals required by StanzaJS
     global: 'window',
     'process.env': {},
+  },
+  resolve: {
+    alias: {
+      fs: fileURLToPath(new URL('./src/shims/empty.js', import.meta.url)),
+      net: fileURLToPath(new URL('./src/shims/empty.js', import.meta.url)),
+      tls: fileURLToPath(new URL('./src/shims/empty.js', import.meta.url)),
+    }
   },
   server: {
     proxy: {
