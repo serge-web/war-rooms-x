@@ -23,6 +23,7 @@
     "axios": "^1.8.4",
     "deep-object-diff": "^1.1.9",
     "dotenv": "^16.4.7",
+    "events": "^3.3.0",
     "flexlayout-react": "^0.8.9",
     "prettier": "^3.2.5",
     "ra-data-fakerest": "^5.7.2",
