@@ -8,8 +8,8 @@ import { XMPPRestService } from '../../services/XMPPRestService'
 import { mockBackend } from '../../mockData/mockAdmin'
 import dataProvider from '../AdminView/dataProvider'
 
-const defaultIp = '10.211.55.16'
-const defaultHost = 'ubuntu-linux-2404'
+const defaultIp = '134.209.31.87'
+const defaultHost = 'war-rooms-x'
 
 const Login: React.FC = () => {
   const [ip, setIp] = useState(defaultIp)
@@ -61,6 +61,7 @@ const Login: React.FC = () => {
     RestService.initialiseProxy('/openfire-rest')
     const restAuth = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
     const xmppService = new XMPPService()
+    console.log('connecting to', ip, host, username, password)
     const xmppAuth = await xmppService.connect(ip, host, username, password)
     // wait a second, to allow xmpp to initialize
     await new Promise(resolve => setTimeout(resolve, 50))
