@@ -13,7 +13,6 @@ const defaultHost = 'ubuntu-linux-2404'
 const remoteIp = '134.209.31.87'
 const remoteHost = 'war-rooms-x'
 
-
 const Login: React.FC = () => {
   const [ip, setIp] = useState(defaultIp)
   const [host, setHost] = useState(defaultHost)
@@ -75,6 +74,7 @@ const Login: React.FC = () => {
     RestService.initialiseProxy('/openfire-rest')
     const restAuth = await RestService.authenticateWithSecretKey('INSERT_KEY_HERE')
     const xmppService = new XMPPService()
+    console.log('connecting to', ip, host, username, password)
     const xmppAuth = await xmppService.connect(ip, host, username, password)
     // wait a second, to allow xmpp to initialize
     await new Promise(resolve => setTimeout(resolve, 50))
