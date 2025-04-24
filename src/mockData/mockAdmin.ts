@@ -19,14 +19,15 @@ const redForce: RGroup = {id: 'red', name: 'Red', description: 'Red Force', memb
 const greenForce: RGroup = {id: 'green', name: 'Green', description: 'Green Force', members: [greenCo.id, greenLogs.id]}
 const umpires: RGroup = {id: 'umpire', name: 'Umpire', description: 'Umpire Force', members: [admin.id]}
 const wargame: RGameState ={
-  id: 'wargame',
+  id: '1',
   name: 'Wargame',
   startTime: new Date().toISOString(),
   stepTime: '1H30M',
   turnType: 'Linear',
   turn: '1',
   currentTime: new Date().toISOString(),
-  currentPhase: 'phase'
+  currentPhase: 'phase',
+  theme: {}
 }
 export const mockBackend: MockBackend = {
   wargames: [wargame],

@@ -2,7 +2,7 @@ import { CreateParams, CreateResult, DataProvider, DeleteManyResult, DeleteResul
 import { XMPPService } from "../../services/XMPPService"
 import { GameStateType, GamePropertiesType } from "../../types/wargame-d"
 import { RGameState } from "./raTypes-d"
-import { splitGameState } from "../../helpers/split-game-state"
+import { splitGameState, mergeGameState } from "../../helpers/split-game-state"
 
 const STATE_DOC = 'game-state'
 const SETUP_DOC = 'game-setup'
@@ -18,7 +18,9 @@ const DEFAULT_SETUP: GamePropertiesType = {
   description: '',
   startTime: new Date().toISOString(),
   stepTime: '1',
-  turnType: 'Linear'
+  turnType: 'Linear',
+  playerTheme: undefined,
+  adminTheme: undefined
 }
 
 export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
@@ -29,7 +31,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       // get the setup doc
       const setupDoc = await xmppClient.getPubSubDocument(SETUP_DOC)
       const setup: GamePropertiesType = setupDoc && setupDoc.content?.json ? setupDoc.content.json : DEFAULT_SETUP
-      const merged: RGameState = { id:'0', ...gameState, ...setup }
+      const merged: RGameState = mergeGameState(setup, gameState)
       return { data: [merged], total: 1 }
     },
     getOne: async (): Promise<GetOneResult> => {
@@ -39,7 +41,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       // get the setup doc
       const setupDoc = await xmppClient.getPubSubDocument(SETUP_DOC)
       const setup: GamePropertiesType = setupDoc && setupDoc.content?.json ? setupDoc.content.json : DEFAULT_SETUP
-      const merged: RGameState = { id:'0', ...gameState, ...setup }
+      const merged: RGameState = mergeGameState(setup, gameState)
       return { data: merged }
     },
     getMany: async (): Promise<GetManyResult> => {
@@ -51,7 +53,7 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
     update: async (_resource: string, params: UpdateParams<RGameState>): Promise<UpdateResult> => {
       // map from R to X
       const { gameProperties, gameState } = splitGameState(params.data as RGameState)
-
+      console.log('game values', gameProperties, gameState)
       // store documents
       await xmppClient.publishPubSubLeaf(SETUP_DOC,undefined, gameProperties)
       await xmppClient.publishPubSubLeaf(STATE_DOC,undefined, gameState)

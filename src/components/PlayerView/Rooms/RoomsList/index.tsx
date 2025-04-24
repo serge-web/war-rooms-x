@@ -5,7 +5,7 @@ import RoomContent from '../RoomContent'
 import './index.css'
 import { useRooms } from './useRooms'
 import { RoomType } from '../../../../types/rooms-d'
-import { ConfigProvider, ThemeConfig, Typography } from 'antd'
+import { Typography } from 'antd'
 
 const { Text } = Typography
 
@@ -13,14 +13,9 @@ const specialRoom = (room: RoomType): boolean => {
   return room.roomName.startsWith('__')
 }
 
-const theme: ThemeConfig = {
-   token: {
-     fontFamily: 'monospace' 
-   } 
-}
-
 const RoomsList: React.FC = () => {
   const { rooms } = useRooms()
+  
   // Create a FlexLayout model for the rooms
   const model = useMemo((): FlexLayout.Model => {
     const normalRooms = rooms.filter((room: RoomType) => !specialRoom(room))
@@ -80,16 +75,13 @@ const RoomsList: React.FC = () => {
   }
 
   return (
-    <ConfigProvider
-    theme={theme}>
-      <div className="rooms-list-container flex-layout-container">
-        <FlexLayout.Layout 
-          model={model} 
-          factory={factory}
-          onRenderTab={onRenderTab}
-        />
-      </div>
-      </ConfigProvider>
+    <div className="rooms-list-container flex-layout-container">
+      <FlexLayout.Layout 
+        model={model} 
+        factory={factory}
+        onRenderTab={onRenderTab}
+      />
+    </div>
   )
 }
 

@@ -1,12 +1,14 @@
 import React from 'react'
-import { Card, Typography, Space, Tag, Button } from 'antd'
-import { ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
+import { Card, Typography, Space, Tag, Button, Tooltip } from 'antd'
+import { AimOutlined, ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
 import { useGameState } from './useGameState'
+import { useGameProperties } from '../GameState/useGameSetup'
 
 const { Text } = Typography
 
 const GameState: React.FC = () => {
   const { gameState, nextTurn } = useGameState()
+  const { name, description } = useGameProperties()
 
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
@@ -33,6 +35,12 @@ const GameState: React.FC = () => {
       {gameState ? (
         <Space direction='vertical' size={8} style={{ width: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+              <AimOutlined style={{ marginRight: 8, color: '#1677ff' }} />
+              <Tooltip title={description}> 
+                <Text strong data-testid='turn-number'>{name}</Text>
+              </Tooltip>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <NumberOutlined style={{ marginRight: 8, color: '#1677ff' }} />
               <Text strong data-testid='turn-number'>Turn:</Text>

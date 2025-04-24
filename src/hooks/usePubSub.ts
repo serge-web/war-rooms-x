@@ -32,7 +32,7 @@ export const usePubSub = <T extends object>(nodeId: string) => {
     // Handler for PubSub document changes
     const docHandler: PubSubDocumentChangeHandler = (document) => {
       const content = document.content?.json
-      if (content) {
+      if (content && document.id === nodeId) {
         setDocument(content as T)
       }
     }

@@ -1038,7 +1038,9 @@ export class XMPPService {
     }
     
     // Notify all registered handlers
-    this.pubsubChangeHandlers.forEach(handler => handler(document))
+    this.pubsubChangeHandlers.forEach(handler => {
+      handler(document)
+    })
   }
 
   /**
