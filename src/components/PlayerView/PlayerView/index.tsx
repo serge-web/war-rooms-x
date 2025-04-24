@@ -1,14 +1,16 @@
 import React from 'react'
-import { Layout } from 'antd'
+import { ConfigProvider, Layout } from 'antd'
 import { Header, Footer } from 'antd/es/layout/layout'
 import GameState from '../GameState'
 import AdminRoom from '../Rooms/AdminRoom'
 import UserDetails from '../UserDetails'
 import RoomsList from '../Rooms/RoomsList'
+import { useGameProperties } from '../GameState/useGameSetup'
 
 const { Sider, Content } = Layout
 
 const PlayerView: React.FC = () => {
+  const { name, description, playerTheme, adminTheme } = useGameProperties()
   const gameStateStyle: React.CSSProperties = {
     height: 120,
     backgroundColor: '#ccc',
@@ -48,20 +50,24 @@ const PlayerView: React.FC = () => {
   return (
     <Layout style={layoutStyle}>
       <Content style={roomsStyle}>
-        <RoomsList />
+        <ConfigProvider theme={playerTheme}>
+          <RoomsList />
+        </ConfigProvider>
       </Content>
       <Sider width="25%" style={controlPanelStyle}>
-        <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Header style={gameStateStyle}>
-            <GameState />
-          </Header>
-          <Content style={adminMessagesStyle}>
-            <AdminRoom />
+        <ConfigProvider theme={adminTheme}>
+          <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Header style={gameStateStyle}>
+              <GameState name={name} description={description} />
+            </Header>
+            <Content style={adminMessagesStyle}>
+              <AdminRoom />
           </Content>
           <Footer style={userDetailsStyle}>
             <UserDetails />
           </Footer>
         </Layout>
+        </ConfigProvider>
       </Sider>
     </Layout>
   )
