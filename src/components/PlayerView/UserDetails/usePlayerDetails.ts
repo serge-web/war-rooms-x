@@ -31,7 +31,7 @@ export const usePlayerDetails = () => {
             const force = mockForces?.find(f => f.id === mockPlayerId.forceId)
             // ok, use mock data
             setPlayerDetails({
-              id: player?.name || 'unknown',
+              id: player?.id || 'unknown',
               role: player?.name || 'unknown',
               forceName: force?.name || 'unknown',
               forceObjectives: force?.objectives || 'unknown',
