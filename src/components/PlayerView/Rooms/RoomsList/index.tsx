@@ -25,8 +25,11 @@ const RoomsList: React.FC = () => {
       component: 'room',
       config: room
     }))
-    const first = convertedRooms[0]
-    const afterFirst = convertedRooms?.slice(1) || []
+    // split convertedRooms into two equally sized lists
+    const midPoint = Math.ceil(convertedRooms.length / 2)
+    const leftChildren = convertedRooms.slice(0, midPoint)
+    const rightChildren = convertedRooms.slice(midPoint)
+
     const jsonModel: FlexLayout.IJsonModel = {
       global: { tabEnableClose: false, tabEnablePopout: true },
       borders: [],
@@ -37,17 +40,15 @@ const RoomsList: React.FC = () => {
           {
             type: 'tabset',
             weight: 50,
-            children: afterFirst
+            children: leftChildren
+          },
+          {
+            type: 'tabset',
+            weight: 50,
+            children: rightChildren
           }
         ]
       }
-    }
-    if (first) {
-      jsonModel.layout.children.unshift({
-        type: 'tabset',
-        weight: 50,
-        children: [first]
-      })
     }
     return FlexLayout.Model.fromJson(jsonModel)
   }, [rooms])
