@@ -32,7 +32,7 @@ export const EditRoom = ({ id }: { id?: string }) => {
   return (
     <Edit title='> Edit room' id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
-        <TextInput helperText="id values cannot be changed" disabled source="id" />
+        <TextInput helperText="id values cannot be changed" source="id" />
         <TextInput source="name" />
         <TextInput source="description" />
         <NotOwnerDropdown source="members" reference="users" />
