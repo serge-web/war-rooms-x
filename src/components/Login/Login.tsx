@@ -126,34 +126,6 @@ const Login: React.FC = () => {
             </Form.Item>
           </Flex>
 
-          <div className="button-groups">
-            {/* Development Player Interface Buttons */}
-            <div className="button-group">
-              <Flex align="center" className="button-group-row">
-                <div className="button-group-label">Dev: Player</div>
-                <Flex justify='center' vertical={false} className="dev-player-buttons">
-                  { loginRoles.map(([ip, host, name, pwd]) => (
-                    <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
-                      {name}
-                    </Button>
-                  ))}
-                </Flex>
-              </Flex>
-              <Flex align="center" className="button-group-row">
-                <div className="button-group-label">Dev: Admin</div>
-                <Flex justify='center' vertical={false} className="dev-admin-buttons">
-                  <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
-                    Admin
-                  </Button>
-                  <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
-                    Mock Admin
-                  </Button>
-                </Flex>
-              </Flex>
-            </div>
-            
-          </div>
-          
           {/* Real Login Buttons */}
           <div className="button-group">
             <Flex align="center" className="button-group-row">
@@ -171,6 +143,38 @@ const Login: React.FC = () => {
               </Flex>
             </Flex>
           </div>
+          <div className="button-groups">
+            {/* Development Player Interface Buttons */}
+            <div className="button-group">
+              <div className="dev-title">
+                Development quick-links
+              </div>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Player UI</div>
+                <Flex justify='center' vertical={false} className="dev-player-buttons">
+                  { loginRoles.map(([ip, host, name, pwd]) => (
+                    <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
+                      {name}
+                    </Button>
+                  ))}
+                </Flex>
+              </Flex>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Admin UI</div>
+                <Flex justify='center' vertical={false} className="dev-admin-buttons">
+                  <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+                    Admin
+                  </Button>
+                  <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
+                    Mock Admin
+                  </Button>
+                </Flex>
+              </Flex>
+            </div>
+            
+          </div>
+          
+
         </Form>
       </Card>
     </div>
