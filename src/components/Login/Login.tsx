@@ -31,6 +31,13 @@ const Login: React.FC = () => {
     [ip, host, 'no-perms', 'pwd'],
   ]
 
+  const mockRoles = [
+    ['admin', 'umpire'],
+    ['blue-co', 'blue'],
+    ['red-co', 'red'],
+    ['blue-logs', 'blue'],
+  ]
+
   const loginEnabled = useMemo(() => {
     return username && password && host
   }, [host, username, password])
@@ -39,8 +46,8 @@ const Login: React.FC = () => {
     return loginEnabled ? 'Click to login' : 'Please enter username and password'
   }, [loginEnabled])
 
-  const handleMock = () => {
-    setMockPlayerId({ playerId: 'blue-co', forceId: 'blue' })
+  const handleMock = (playerId: string, forceId: string) => {
+    setMockPlayerId({ playerId, forceId })
     setXmppClient(null)
   }
 
@@ -142,9 +149,6 @@ const Login: React.FC = () => {
             <Flex align="center" className="button-group-row">
               <div className="button-group-label">Production:</div>
               <Flex vertical={false} className="real-login-buttons">
-                <Button className="mock-button" onClick={handleMock}>
-                  Mock
-                </Button>
                 <Tooltip title={loginMessage}>
                   <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled}>
                     Login
@@ -162,7 +166,7 @@ const Login: React.FC = () => {
             {/* Development Player Interface Buttons */}
             <div className="button-group">
               <div className="dev-title">
-                Development quick-links
+                Development quick-links (real server)
               </div>
               <Flex align="center" className="button-group-row">
                 <div className="button-group-label">Player UI</div>
@@ -186,10 +190,34 @@ const Login: React.FC = () => {
                 </Flex>
               </Flex>
             </div>
-            
           </div>
-          
 
+          <div className="button-groups">
+            {/* Development Player Interface Buttons */}
+            <div className="button-group">
+              <div className="dev-title">
+                Development quick-links (mock server)
+              </div>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Player UI</div>
+                <Flex justify='center' vertical={false} className="dev-player-buttons">
+                  { mockRoles.map((item) => (
+                    <Button key={item[0]} onClick={() => handleMock(item[0], item[1])}>
+                      {item[0]}
+                    </Button>
+                  ))}
+                </Flex>
+              </Flex>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Admin UI</div>
+                <Flex justify='center' vertical={false} className="dev-admin-buttons">
+                  <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
+                    Admin
+                  </Button>
+                </Flex>
+              </Flex>
+            </div>
+          </div>
         </Form>
         </Card>
       </div>
