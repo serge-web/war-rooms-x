@@ -1,9 +1,17 @@
+:root {
+  --brand-background: rgb(143, 135, 89);
+  --brand-foreground: rgb(54, 68, 40);
+  --brand-background-light: rgba(143, 135, 89, 0.1);
+  --brand-foreground-light: rgba(54, 68, 40, 0.1);
+}
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f0f2f5;
+  background-color: var(--brand-background);
+  color: white;
 }
 
 .login-layout {
@@ -16,6 +24,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--brand-foreground);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .war-rooms-logo {
@@ -26,7 +38,18 @@
 
 .login-card {
   width: 440px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: none;
+}
+
+.login-card .ant-card-head {
+  background-color: var(--brand-foreground);
+  color: white;
+  border-bottom: none;
+}
+
+.login-card .ant-card-head-title {
+  color: white;
 }
 
 .button-groups {
@@ -36,9 +59,9 @@
 .button-group {
   margin-bottom: 12px;
   padding: 8px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--brand-foreground);
   border-radius: 4px;
-  background-color: #fafafa;
+  background-color: var(--brand-foreground-light);
 }
 
 .button-group-row:last-child {
@@ -48,7 +71,7 @@
 
 .button-group-label {
   font-weight: 600;
-  color: #666;
+  color: var(--brand-foreground);
   font-size: 14px;
   min-width: 80px;
   padding-right: 12px;
@@ -57,7 +80,7 @@
 .dev-title {
   font-weight: 600;
   text-align: center;
-  color: #666;
+  color: var(--brand-foreground);
   font-size: 16px;
   min-width: 80px;
   padding-right: 12px;
@@ -78,10 +101,38 @@
 
 /* Add a slight visual distinction between dev and production sections */
 .button-group:last-child {
-  background-color: #f6f6f6;
-  border-color: #d9d9d9;
+  background-color: rgba(54, 68, 40, 0.2);
+  border-color: var(--brand-foreground);
 }
 
 .button-group-label {
-  color: #1890ff;
+  color: var(--brand-foreground);
+}
+
+/* Style the mock button */
+.login-button.ant-btn-primary,
+.admin-button.ant-btn-primary,
+.mock-button {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.8);
+  color: var(--brand-foreground);
+}
+
+.login-button.ant-btn-primary:hover,
+.admin-button.ant-btn-primary:hover {
+  background-color: rgba(54, 68, 40, 0.8);
+  border-color: var(--brand-foreground);
+}
+
+/* Style disabled buttons to be more visible */
+.login-button.ant-btn-primary[disabled],
+.admin-button.ant-btn-primary[disabled] {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #000 !important;
+}
+
+/* Style the switch to match the theme */
+.ant-switch.ant-switch-checked {
+  background-color: var(--brand-foreground);
 }
