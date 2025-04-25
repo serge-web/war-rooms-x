@@ -6,8 +6,9 @@ import { SendMessageResult } from '../../../services/types';
 import { useGameState } from '../GameState/useGameState';
 import { usePlayerDetails } from '../UserDetails/usePlayerDetails';
 import { ReceivedMessage } from 'stanza/protocol';
-import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
+import { prefixKey, useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import { RRoom } from '../../AdminView/raTypes-d';
+import localforage from 'localforage';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<GameMessage[]>([])
@@ -19,7 +20,7 @@ export const useRoom = (room: RoomType) => {
   const { xmppClient } = useWargame()
   const messagesReceived = useRef<boolean | null>(null)
   const [error, setError] = useState<UserError | null>(null)
-  const { data: mockRooms, loading } = useIndexedDBData('chatrooms')
+  const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
   const clearError = () => {
     setError(null)
@@ -66,8 +67,18 @@ export const useRoom = (room: RoomType) => {
         content
       }
       setMessages(prev => [...prev, mockMessage])
+      // also save to indexed db.  The db root is in useIndexedDBData
+      // get the room object from indexed
+      const mockRoom = mockRooms?.find(r => r.id === room.roomName)
+      if (mockRoom) {
+        const existingMessages = mockRoom.dummyMessages || []
+        mockRoom.dummyMessages = [...existingMessages, mockMessage]
+        // save the room object back to indexed db
+        localforage.setItem(`${prefixKey}chatrooms`, mockRooms)
+      }
+
     }
-  }, [xmppClient, room, gameState, playerDetails])
+  }, [xmppClient, room, gameState, playerDetails, mockRooms])
 
   useEffect(() => {
     const messageHandler = (message: ReceivedMessage): void => {
