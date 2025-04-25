@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Form, Input, Card, Flex, Modal, Switch, Tag, Tooltip } from 'antd'
 import './Login.css'
-import initializeLocalForageDataProvider from '../AdminView/localStorageDataProvider'
+import initializeLocalForageDataProvider, { resetLocalForageDataStore } from '../AdminView/localStorageDataProvider'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
@@ -103,7 +103,22 @@ const Login: React.FC = () => {
     // Use the persistent local storage data provider
     const localStorageProvider = await initializeLocalForageDataProvider()
     setRaDataProvider(localStorageProvider)
-  }  
+  }
+  
+  const handleResetDataStore = async () => {
+    try {
+      await resetLocalForageDataStore()
+      Modal.success({
+        title: 'Data Reset Complete',
+        content: 'The ra-data-local-forage data store has been reset with fresh default data.',
+      })
+    } catch (error) {
+      Modal.error({
+        title: 'Data Reset Failed',
+        content: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
 
   return (
     <div className="login-container">
@@ -213,6 +228,9 @@ const Login: React.FC = () => {
                 <Flex justify='center' vertical={false} className="dev-admin-buttons">
                   <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
                     Admin
+                  </Button>
+                  <Button className="reset-data-button" key={'resetData'} onClick={() => handleResetDataStore()}>
+                    Reset Data
                   </Button>
                 </Flex>
               </Flex>
