@@ -11,7 +11,8 @@ const initializeLocalForageDataProvider = async () => {
   // Then initialize the data provider with the default data
   const dataProvider = localForageDataProvider({
     defaultData: mockBackend,
-    loggingEnabled: process.env.NODE_ENV === 'development'
+    loggingEnabled: process.env.NODE_ENV === 'development',
+    prefixLocalForageKey: prefixKey
   })
 
   return dataProvider
