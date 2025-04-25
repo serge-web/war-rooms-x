@@ -29,6 +29,14 @@ const wargame: RGameState ={
   currentPhase: 'phase',
   theme: {}
 }
+const chatrooms: RRoom[] = [
+  {id: 'blue-chat', name: 'blue chat', description: 'blue', memberForces:[blueForce.id]},
+  {id: 'red-chat', name: 'red chat', description: 'red', memberForces:[redForce.id]},
+  {id: 'green-chat', name: 'green chat', description: 'green', memberForces:[greenForce.id]},
+  {id: 'umpire-chat', name: 'umpire chat', description: 'umpire', memberForces:[umpires.id]},
+  {id: 'logs-chat', name: 'logs chat', description: 'logs', members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id]},
+  {id: '__admin', name: '__admin', description: '__admin', public: true}
+]
 export const mockBackend: MockBackend = {
   wargames: [wargame],
   users: [admin, blueCo, redCo, greenCo, blueLogs, redLogs, greenLogs],
@@ -38,12 +46,5 @@ export const mockBackend: MockBackend = {
     greenForce,
     umpires
   ],
-  chatrooms: [
-    {id: 'blue-chat', name: 'blue chat', description: 'blue', memberForces:[blueForce.id]},
-    {id: 'red-chat', name: 'red chat', description: 'red', memberForces:[redForce.id]},
-    {id: 'green-chat', name: 'green chat', description: 'green', memberForces:[greenForce.id]},
-    {id: 'umpire-chat', name: 'umpire chat', description: 'umpire', memberForces:[umpires.id]},
-    {id: 'logs-chat', name: 'logs chat', description: 'logs', members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id]},
-    {id: '__admin', name: '__admin', description: '__admin', public: true}
-  ]
+  chatrooms
 }
