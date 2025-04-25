@@ -98,7 +98,7 @@ const Login: React.FC = () => {
       </Modal>
       <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical" onFinish={handleLogin} initialValues={{ ip, host, username, password }}>
-          <Flex>
+          <Flex style={{paddingBottom: '12px'}}>
             <Switch
               title="Use Remote Server"
               checked={userLocal}
@@ -109,26 +109,28 @@ const Login: React.FC = () => {
             <Tag>{ip}</Tag>
             <Tag>{host}</Tag>
           </Flex>
+          <Flex gap={16}>
+            <Form.Item label="Username" name="username">
+              <Input 
+                placeholder="Enter your username" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+              />
+            </Form.Item>
+            <Form.Item label="Password" name="password">
+              <Input.Password 
+                placeholder="Enter your password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+              />
+            </Form.Item>
+          </Flex>
 
-          <Form.Item label="Username" name="username">
-            <Input 
-              placeholder="Enter your username" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-            />
-          </Form.Item>
-          <Form.Item label="Password" name="password">
-            <Input.Password 
-              placeholder="Enter your password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-            />
-          </Form.Item>
           <div className="button-groups">
             {/* Development Player Interface Buttons */}
             <div className="button-group">
               <Flex align="center" className="button-group-row">
-                <div className="button-group-label">Dev:<br/> Player</div>
+                <div className="button-group-label">Dev: Player</div>
                 <Flex justify='center' vertical={false} className="dev-player-buttons">
                   { loginRoles.map(([ip, host, name, pwd]) => (
                     <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
@@ -137,12 +139,8 @@ const Login: React.FC = () => {
                   ))}
                 </Flex>
               </Flex>
-            </div>
-            
-            {/* Development Admin Interface Buttons */}
-            <div className="button-group">
               <Flex align="center" className="button-group-row">
-                <div className="button-group-label">Dev:<br/> Admin</div>
+                <div className="button-group-label">Dev: Admin</div>
                 <Flex justify='center' vertical={false} className="dev-admin-buttons">
                   <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
                     Admin
@@ -153,6 +151,7 @@ const Login: React.FC = () => {
                 </Flex>
               </Flex>
             </div>
+            
           </div>
           
           {/* Real Login Buttons */}
