@@ -10,3 +10,47 @@
   width: 400px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+.button-groups {
+  margin-bottom: 16px;
+}
+
+.button-group {
+  margin-bottom: 20px;
+  padding: 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.button-group-label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+  font-size: 14px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #d9d9d9;
+}
+
+.dev-player-buttons,
+.dev-admin-buttons,
+.real-login-buttons {
+  gap: 8px;
+}
+
+.dev-player-buttons button,
+.dev-admin-buttons button {
+  margin: 0 4px;
+}
+
+/* Add a slight visual distinction between dev and production sections */
+.button-group:nth-child(3) {
+  background-color: #f6f6f6;
+  border-color: #d9d9d9;
+}
+
+.button-group:nth-child(3) .button-group-label {
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+}

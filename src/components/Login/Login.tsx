@@ -114,34 +114,48 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)} 
             />
           </Form.Item>
-          <div>
-          <Flex justify='center' vertical={false}>
-            { loginRoles.map(([ip, host, name, pwd]) => (
-              <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
-                {name}
+          <div className="button-groups">
+            {/* Development Player Interface Buttons */}
+            <div className="button-group">
+              <div className="button-group-label">Development - Player Interface</div>
+              <Flex justify='center' vertical={false} className="dev-player-buttons">
+                { loginRoles.map(([ip, host, name, pwd]) => (
+                  <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
+                    {name}
+                  </Button>
+                ))}
+              </Flex>
+            </div>
+            
+            {/* Development Admin Interface Buttons */}
+            <div className="button-group">
+              <div className="button-group-label">Development - Admin Interface</div>
+              <Flex justify='center' vertical={false} className="dev-admin-buttons">
+                <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+                  Admin
+                </Button>
+                <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
+                  Mock Admin
+                </Button>
+              </Flex>
+            </div>
+          </div>
+          
+          {/* Real Login Buttons */}
+          <div className="button-group">
+            <div className="button-group-label">Production Login</div>
+            <Flex vertical={false} className="real-login-buttons">
+              <Button className="mock-button" onClick={handleMock} block>
+                Mock
               </Button>
-            ))}
-            </Flex>
-            <Flex justify='center' vertical={false}>
-              <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+              <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
+                Login
+              </Button>
+              <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
                 Admin
               </Button>
-              <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
-                Mock Admin
-              </Button>
-          </Flex>
+            </Flex>
           </div>
-          <Flex vertical={false}>
-            <Button className="mock-button" onClick={handleMock} block>
-              Mock
-            </Button>
-            <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
-              Login
-            </Button>
-            <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
-              Admin
-            </Button>
-        </Flex>
         </Form>
       </Card>
     </div>
