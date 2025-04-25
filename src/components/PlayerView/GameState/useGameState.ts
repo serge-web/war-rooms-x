@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useWargame } from '../../../contexts/WargameContext'
 import { GamePropertiesType, GameStateType } from '../../../types/wargame-d'
 import { incrementState } from './incrementState'
@@ -15,8 +15,10 @@ export const useGameState = () => {
   const { document: gameProperties } = usePubSub<GamePropertiesType>('game-setup')
   const { data: mockWargame, loading } = useIndexedDBData<RGameState[]>('wargames')
   
+  const [effectiveGameState, setEffectiveGameState] = useState<GameStateType | null>(null)
+
   // If XMPP client is null (not undefined), use mock data
-  const effectiveGameState = useMemo(() => {
+  useEffect(() => {
     if(xmppClient === undefined) {
       // don't bother
     } else if (xmppClient === null) {
@@ -24,10 +26,10 @@ export const useGameState = () => {
         const state =  mockWargame[0]
         const { gameState } = splitGameState(state)
         // split the state into two parts
-        return gameState
+        setEffectiveGameState(gameState)
       }
     } else {
-      return gameState
+      setEffectiveGameState(gameState)
     }
   }, [xmppClient, mockWargame, loading, gameState])
   
@@ -60,6 +62,7 @@ export const useGameState = () => {
           const combinedState = mergeGameState(effectiveGameProperties, newState)
           // save the game object back to indexed db
           localforage.setItem(`${prefixKey}wargames`, [combinedState])
+          setEffectiveGameState(newState)
         }
       } else {
         const res = await updateDocument(newState)
