@@ -48,6 +48,7 @@ const Login: React.FC = () => {
 
   const handleMock = (playerId: string, forceId: string) => {
     setMockPlayerId({ playerId, forceId })
+    setXmppClient(null)
   }
 
   const handleLogin = () => {
