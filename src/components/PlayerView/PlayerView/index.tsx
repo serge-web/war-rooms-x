@@ -12,7 +12,7 @@ const { Sider, Content } = Layout
 const PlayerView: React.FC = () => {
   const { playerTheme, adminTheme } = useGameProperties()
   const gameStateStyle: React.CSSProperties = {
-    height: 120,
+    height: '170px',
     backgroundColor: '#ccc',
     lineHeight: '20px',
     padding: '10px'
