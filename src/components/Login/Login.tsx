@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Form, Input, Card, Flex, Modal, Switch, Tag, Tooltip } from 'antd'
 import './Login.css'
-import fakeDataProvider from 'ra-data-fakerest'
+import initializeLocalForageDataProvider from '../AdminView/localStorageDataProvider'
 import { useWargame } from '../../contexts/WargameContext'
 import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
-import { mockBackend } from '../../mockData/mockAdmin'
+// We now use the mockBackend data from the localStorageDataProvider
 import dataProvider from '../AdminView/dataProvider'
 
 const defaultIp = '10.211.55.16'
@@ -90,9 +90,9 @@ const Login: React.FC = () => {
   }  
 
   const handleMockRest = async () => {
-    const data = mockBackend
-    const mockDataProvider = fakeDataProvider(data)
-    setRaDataProvider(mockDataProvider)
+    // Use the persistent local storage data provider
+    const localStorageProvider = await initializeLocalForageDataProvider()
+    setRaDataProvider(localStorageProvider)
   }  
 
   return (
