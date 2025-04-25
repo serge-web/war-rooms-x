@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react'
 import localforage from 'localforage'
 import { mockBackend } from '../mockData/mockAdmin'
 
+export const prefixKey = 'ra-data-local-forage-'
+
 // Function to check if data store exists and initialize it if needed
 const initializeDataStoreIfNeeded = async () => {
-  const prefixKey = 'ra-data-local-forage-'
   
   // Check if any data exists in the store
   const keys = await localforage.keys()
