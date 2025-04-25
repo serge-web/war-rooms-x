@@ -225,11 +225,11 @@ const Login: React.FC = () => {
               </Flex>
               <Flex align="center" className="button-group-row">
                 <div className="button-group-label">Admin UI</div>
-                <Flex justify='center' vertical={false} className="dev-admin-buttons">
+                <Flex justify='space-between' vertical={false} className="dev-admin-buttons">
                   <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
                     Admin
                   </Button>
-                  <Button className="reset-data-button" key={'resetData'} onClick={() => handleResetDataStore()}>
+                  <Button className="reset-data-button" key={'resetData'} onClick={() => handleResetDataStore()} style={{ marginLeft: '16px' }}>
                     Reset Data
                   </Button>
                 </Flex>
