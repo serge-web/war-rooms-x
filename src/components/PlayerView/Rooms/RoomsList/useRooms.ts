@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { mockRooms } from './mockRooms';
-import { MockRoom, RoomType } from '../../../../types/rooms-d';
+import { RoomType } from '../../../../types/rooms-d';
 import { useWargame } from '../../../../contexts/WargameContext';
+import { useIndexedDBData } from '../../../../hooks/useIndexedDBData';
+import { RRoom } from '../../../AdminView/raTypes-d';
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<RoomType[]>([])  
-  const { xmppClient } = useWargame()
+  const { xmppClient, mockPlayerId } = useWargame()
+  const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
   // TODO - also handle details, extract from the room description
 
@@ -13,13 +15,23 @@ export const useRooms = () => {
     if (xmppClient === undefined) {
       // waiting for login
     } else if (xmppClient === null) {
-      // ok, use mock data
-      setRooms(mockRooms.map((room: MockRoom): RoomType => {
-        return {
-          roomName: room.id,
-          naturalName: room.name,
-        }
-      }))
+      if (!loading && mockPlayerId && mockRooms) {
+        // ok, use mock data
+        const myId = mockPlayerId.playerId
+        const myForce = mockPlayerId.forceId
+        const imAdmin = myId === 'admin'
+        const isMyForce = (r: RRoom) => r.memberForces?.includes(myForce)
+        const isMyId = (r: RRoom) => r.members?.includes(myId)
+        const isAdminRoom = (r: RRoom) => r.id === '__admin'
+        const myRooms = mockRooms.filter(r => imAdmin || isAdminRoom(r) || isMyForce(r) || isMyId(r))
+        // filter rooms for those for my role/force
+        setRooms(myRooms.map((room): RoomType => {
+          return {
+            roomName: room.id,
+            naturalName: room.name,
+          }
+        }))
+      } 
     } else {
       // TODO: use real data
       if (xmppClient.mucService) {
@@ -37,7 +49,7 @@ export const useRooms = () => {
         fetchRooms()
       }
     }
-  }, [xmppClient]);
+  }, [xmppClient, mockRooms, loading, mockPlayerId]);
 
   return { rooms };
 }

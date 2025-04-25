@@ -7,6 +7,7 @@ import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
 // We now use the mockBackend data from the localStorageDataProvider
 import dataProvider from '../AdminView/dataProvider'
+import { usePlayerDetails } from '../PlayerView/UserDetails/usePlayerDetails'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -20,6 +21,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { setXmppClient, setRaDataProvider } = useWargame()
+  const { setMockPlayerId } = usePlayerDetails()
   const [userLocal, setUseLocal] = useState(false)
 
   const loginRoles = [
@@ -27,6 +29,13 @@ const Login: React.FC = () => {
     [ip, host, 'blue-co', 'pwd'],
     [ip, host, 'red-co', 'pwd'],
     [ip, host, 'no-perms', 'pwd'],
+  ]
+
+  const mockRoles = [
+    ['admin', 'umpire'],
+    ['blue-co', 'blue'],
+    ['red-co', 'red'],
+    ['blue-logs', 'blue'],
   ]
 
   const loginEnabled = useMemo(() => {
@@ -37,7 +46,8 @@ const Login: React.FC = () => {
     return loginEnabled ? 'Click to login' : 'Please enter username and password'
   }, [loginEnabled])
 
-  const handleMock = () => {
+  const handleMock = (playerId: string, forceId: string) => {
+    setMockPlayerId({ playerId, forceId })
     setXmppClient(null)
   }
 
@@ -139,9 +149,6 @@ const Login: React.FC = () => {
             <Flex align="center" className="button-group-row">
               <div className="button-group-label">Production:</div>
               <Flex vertical={false} className="real-login-buttons">
-                <Button className="mock-button" onClick={handleMock}>
-                  Mock
-                </Button>
                 <Tooltip title={loginMessage}>
                   <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled}>
                     Login
@@ -159,7 +166,7 @@ const Login: React.FC = () => {
             {/* Development Player Interface Buttons */}
             <div className="button-group">
               <div className="dev-title">
-                Development quick-links
+                Development quick-links (real server)
               </div>
               <Flex align="center" className="button-group-row">
                 <div className="button-group-label">Player UI</div>
@@ -183,10 +190,34 @@ const Login: React.FC = () => {
                 </Flex>
               </Flex>
             </div>
-            
           </div>
-          
 
+          <div className="button-groups">
+            {/* Development Player Interface Buttons */}
+            <div className="button-group">
+              <div className="dev-title">
+                Development quick-links (mock server)
+              </div>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Player UI</div>
+                <Flex justify='center' vertical={false} className="dev-player-buttons">
+                  { mockRoles.map((item) => (
+                    <Button key={item[0]} onClick={() => handleMock(item[0], item[1])}>
+                      {item[0]}
+                    </Button>
+                  ))}
+                </Flex>
+              </Flex>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Admin UI</div>
+                <Flex justify='center' vertical={false} className="dev-admin-buttons">
+                  <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
+                    Admin
+                  </Button>
+                </Flex>
+              </Flex>
+            </div>
+          </div>
         </Form>
         </Card>
       </div>

@@ -26,6 +26,7 @@
     "dotenv": "^16.4.7",
     "events": "^3.3.0",
     "flexlayout-react": "^0.8.9",
+    "localforage": "^1.10.0",
     "prettier": "^3.2.5",
     "ra-data-fakerest": "^5.7.2",
     "ra-data-local-forage": "^5.7.3",
