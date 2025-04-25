@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-// import { mockRooms } from './mockRooms';
 import { RoomType } from '../../../../types/rooms-d';
 import { useWargame } from '../../../../contexts/WargameContext';
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData';
