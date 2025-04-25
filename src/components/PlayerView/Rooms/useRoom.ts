@@ -6,9 +6,10 @@ import { SendMessageResult } from '../../../services/types';
 import { useGameState } from '../GameState/useGameState';
 import { usePlayerDetails } from '../UserDetails/usePlayerDetails';
 import { ReceivedMessage } from 'stanza/protocol';
-import { prefixKey, useIndexedDBData } from '../../../hooks/useIndexedDBData';
+import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import { RRoom } from '../../AdminView/raTypes-d';
 import localforage from 'localforage';
+import { prefixKey } from '../../../types/constants';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<GameMessage[]>([])

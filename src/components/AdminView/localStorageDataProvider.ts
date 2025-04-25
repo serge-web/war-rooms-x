@@ -1,6 +1,7 @@
 import localForageDataProvider from 'ra-data-local-forage'
 import { mockBackend } from '../../mockData/mockAdmin'
 import localforage from 'localforage'
+import { prefixKey } from '../../types/constants'
 
 // Initialize the data provider with our mock data
 const initializeLocalForageDataProvider = async () => {
@@ -18,7 +19,6 @@ const initializeLocalForageDataProvider = async () => {
 
 // Function to check if data store exists and initialize it if needed
 const initializeDataStoreIfNeeded = async () => {
-  const prefixKey = 'ra-data-local-forage-'
   
   // Check if any data exists in the store
   const keys = await localforage.keys()
