@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex, Modal } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Button, Form, Input, Card, Flex, Modal, Switch, Tag } from 'antd'
 import './Login.css'
 import fakeDataProvider from 'ra-data-fakerest'
 import { useWargame } from '../../contexts/WargameContext'
@@ -8,8 +8,10 @@ import { XMPPRestService } from '../../services/XMPPRestService'
 import { mockBackend } from '../../mockData/mockAdmin'
 import dataProvider from '../AdminView/dataProvider'
 
-const defaultIp = '134.209.31.87'
-const defaultHost = 'war-rooms-x'
+const defaultIp = '10.211.55.16'
+const defaultHost = 'ubuntu-linux-2404'
+const remoteIp = '134.209.31.87'
+const remoteHost = 'war-rooms-x'
 
 const Login: React.FC = () => {
   const [ip, setIp] = useState(defaultIp)
@@ -18,6 +20,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { setXmppClient, setRaDataProvider } = useWargame()
+  const [userLocal, setUseLocal] = useState(false)
 
   const loginRoles = [
     [ip, host, 'admin', 'pwd'],
@@ -37,6 +40,16 @@ const Login: React.FC = () => {
   const handleLogin = () => {
     doLogin(ip,host, username, password)
   }
+
+  useEffect(() => {
+    if (userLocal) {
+      setIp(defaultIp)
+      setHost(defaultHost)
+    } else {
+      setIp(remoteIp)
+      setHost(remoteHost)
+    }
+  }, [userLocal])
 
   const doLogin = async (ip: string, host: string, name: string, pwd: string) => {
     const xmpp = new XMPPService()
@@ -85,20 +98,17 @@ const Login: React.FC = () => {
       </Modal>
       <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical" onFinish={handleLogin} initialValues={{ ip, host, username, password }}>
-        <Form.Item label="IP" name="ip">
-            <Input 
-              placeholder="Enter your IP" 
-              value={ip} 
-              onChange={(e) => setIp(e.target.value)} 
+          <Flex>
+            <Switch
+              title="Use Remote Server"
+              checked={userLocal}
+              onChange={setUseLocal}
+              checkedChildren="Local"
+              unCheckedChildren="Remote"
             />
-          </Form.Item>
-        <Form.Item label="Host" name="host">
-            <Input 
-              placeholder="Enter your host" 
-              value={host} 
-              onChange={(e) => setHost(e.target.value)} 
-            />
-          </Form.Item>
+            <Tag>{ip}</Tag>
+            <Tag>{host}</Tag>
+          </Flex>
 
           <Form.Item label="Username" name="username">
             <Input 
