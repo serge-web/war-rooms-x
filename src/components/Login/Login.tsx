@@ -96,7 +96,11 @@ const Login: React.FC = () => {
       <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
         <p>{error}</p>
       </Modal>
-      <Card title="War Rooms X - Login" className="login-card">
+      <div className="login-layout">
+        <div className="logo-container">
+          <img src="/war-rooms-logo.png" alt="War Rooms Logo" className="war-rooms-logo" />
+        </div>
+        <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical" onFinish={handleLogin} initialValues={{ ip, host, username, password }}>
           <Flex style={{paddingBottom: '12px'}}>
             <Switch
@@ -176,7 +180,8 @@ const Login: React.FC = () => {
           
 
         </Form>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }
