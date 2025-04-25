@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex, Modal, Switch, Tag } from 'antd'
+import { Button, Form, Input, Card, Flex, Modal, Switch, Tag, Tooltip } from 'antd'
 import './Login.css'
 import fakeDataProvider from 'ra-data-fakerest'
 import { useWargame } from '../../contexts/WargameContext'
@@ -32,6 +32,10 @@ const Login: React.FC = () => {
   const loginEnabled = useMemo(() => {
     return username && password && host
   }, [host, username, password])
+
+  const loginMessage = useMemo(() => {
+    return loginEnabled ? 'Click to login' : 'Please enter username and password'
+  }, [loginEnabled])
 
   const handleMock = () => {
     setXmppClient(null)
@@ -96,9 +100,13 @@ const Login: React.FC = () => {
       <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
         <p>{error}</p>
       </Modal>
-      <Card title="War Rooms X - Login" className="login-card">
+      <div className="login-layout">
+        <div className="logo-container">
+          <img src="/war-rooms-logo.png" alt="War Rooms Logo" className="war-rooms-logo" />
+        </div>
+        <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical" onFinish={handleLogin} initialValues={{ ip, host, username, password }}>
-          <Flex>
+          <Flex style={{paddingBottom: '12px'}}>
             <Switch
               title="Use Remote Server"
               checked={userLocal}
@@ -109,51 +117,79 @@ const Login: React.FC = () => {
             <Tag>{ip}</Tag>
             <Tag>{host}</Tag>
           </Flex>
-
-          <Form.Item label="Username" name="username">
-            <Input 
-              placeholder="Enter your username" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-            />
-          </Form.Item>
-          <Form.Item label="Password" name="password">
-            <Input.Password 
-              placeholder="Enter your password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-            />
-          </Form.Item>
-          <div>
-          <Flex justify='center' vertical={false}>
-            { loginRoles.map(([ip, host, name, pwd]) => (
-              <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
-                {name}
-              </Button>
-            ))}
-            </Flex>
-            <Flex justify='center' vertical={false}>
-              <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
-                Admin
-              </Button>
-              <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
-                Mock Admin
-              </Button>
+          <Flex gap={16}>
+            <Form.Item label="Username" name="username">
+              <Input 
+                placeholder="Enter your username" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
+              />
+            </Form.Item>
+            <Form.Item label="Password" name="password">
+              <Input.Password 
+                placeholder="Enter your password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+              />
+            </Form.Item>
           </Flex>
+
+          {/* Real Login Buttons */}
+          <div className="button-group">
+            <Flex align="center" className="button-group-row">
+              <div className="button-group-label">Production:</div>
+              <Flex vertical={false} className="real-login-buttons">
+                <Button className="mock-button" onClick={handleMock}>
+                  Mock
+                </Button>
+                <Tooltip title={loginMessage}>
+                  <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled}>
+                    Login
+                  </Button>
+                </Tooltip>
+                <Tooltip title={loginMessage}>
+                  <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled}>
+                    Admin
+                  </Button>
+                </Tooltip>
+              </Flex>
+            </Flex>
           </div>
-          <Flex vertical={false}>
-            <Button className="mock-button" onClick={handleMock} block>
-              Mock
-            </Button>
-            <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled} block>
-              Login
-            </Button>
-            <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled} block>
-              Admin
-            </Button>
-        </Flex>
+          <div className="button-groups">
+            {/* Development Player Interface Buttons */}
+            <div className="button-group">
+              <div className="dev-title">
+                Development quick-links
+              </div>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Player UI</div>
+                <Flex justify='center' vertical={false} className="dev-player-buttons">
+                  { loginRoles.map(([ip, host, name, pwd]) => (
+                    <Button key={name} onClick={() => doLogin(ip, host, name, pwd)}>
+                      {name}
+                    </Button>
+                  ))}
+                </Flex>
+              </Flex>
+              <Flex align="center" className="button-group-row">
+                <div className="button-group-label">Admin UI</div>
+                <Flex justify='center' vertical={false} className="dev-admin-buttons">
+                  <Button className="admin-rest-button" key={'restLogin'} onClick={() => handleRestLogin(loginRoles[0][2], loginRoles[0][3])}>
+                    Admin
+                  </Button>
+                  <Button className="mock-rest-button" key={'mockLogin'} onClick={() => handleMockRest()}>
+                    Mock Admin
+                  </Button>
+                </Flex>
+              </Flex>
+            </div>
+            
+          </div>
+          
+
         </Form>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }
