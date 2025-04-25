@@ -15,8 +15,7 @@ export interface GamePlayerDetails {
 
 export const usePlayerDetails = () => {
   const [playerDetails, setPlayerDetails] = useState<GamePlayerDetails | null>(null)
-  const { xmppClient } = useWargame()
-  const [mockPlayerId, setMockPlayerId] = useState<string | null>(null)
+  const { xmppClient, mockPlayerId, setMockPlayerId } = useWargame()
   const { data: mockUsers, loading: usersLoading } = useIndexedDBData<RUser[]>('users')
   const { data: mockForces, loading: forcesLoading } = useIndexedDBData<RGroup[]>('groups')
 
@@ -25,17 +24,15 @@ export const usePlayerDetails = () => {
       if (xmppClient === undefined) {
         // waiting for login
       } else if (xmppClient === null) {
-        console.log('geting player details', usersLoading, forcesLoading, mockPlayerId)
         if (!usersLoading && !forcesLoading) {
           // do we have player id?
           if(mockPlayerId) {
-            const player = mockUsers?.find(p => p.id === mockPlayerId)
-            const force = mockForces?.find(f => f.id === player?.forceId)
-            console.log('mock player', mockUsers, mockForces, player, force)
+            const player = mockUsers?.find(p => p.id === mockPlayerId.playerId)
+            const force = mockForces?.find(f => f.id === mockPlayerId.forceId)
             // ok, use mock data
             setPlayerDetails({
               id: player?.name || 'unknown',
-              role: player?.username || 'unknown',
+              role: player?.name || 'unknown',
               forceName: force?.name || 'unknown',
               forceObjectives: force?.objectives || 'unknown',
               color: force?.color || 'unknown'

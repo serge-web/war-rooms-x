@@ -19,7 +19,6 @@ export const useRooms = () => {
       if (!loading) {
         // ok, use mock data
         const rooms = mockRooms as RRoom[]
-        console.log('mock rooms', rooms)
         setRooms(rooms.map((room): RoomType => {
           return {
             roomName: room.id,

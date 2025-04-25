@@ -2,6 +2,7 @@ import { useState, ReactNode, useMemo } from 'react'
 import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
 import { DataProvider } from 'react-admin'
+import { MockId } from '../types/wargame-d'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -11,6 +12,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   // for this object, `null` is a special value meaning `use mock data`
   const [xmppClient, setXmppClient] = useState<XMPPService | null | undefined>(undefined) 
   const [raDataProvider, setRaDataProvider] = useState<DataProvider | undefined>(undefined)
+  const [mockPlayerId, setMockPlayerId] = useState<MockId | null>(null)
   const loggedIn = useMemo(() => {
     return xmppClient !== undefined
   }, [xmppClient])
@@ -40,7 +42,9 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     xmppClient,
     setXmppClient: setXMPPClientWrapper,
     raDataProvider,
-    setRaDataProvider
+    setRaDataProvider,
+    mockPlayerId,
+    setMockPlayerId
   }
 
   return (
