@@ -47,7 +47,6 @@ export const useGameState = () => {
       return gameProperties
     }
   }, [xmppClient, mockWargame, loading, gameProperties])
-  
 
   const nextTurn = useCallback(async () => {
     if (effectiveGameState && effectiveGameProperties) {
