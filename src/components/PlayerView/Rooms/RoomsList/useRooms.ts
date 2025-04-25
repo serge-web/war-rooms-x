@@ -19,7 +19,11 @@ export const useRooms = () => {
         // ok, use mock data
         const myId = mockPlayerId.playerId
         const myForce = mockPlayerId.forceId
-        const myRooms = mockRooms.filter(r => myId === 'admin' || r.memberForces?.includes(myForce) || r.members?.includes(myId))
+        const imAdmin = myId === 'admin'
+        const isMyForce = (r: RRoom) => r.memberForces?.includes(myForce)
+        const isMyId = (r: RRoom) => r.members?.includes(myId)
+        const isAdminRoom = (r: RRoom) => r.id === '__admin'
+        const myRooms = mockRooms.filter(r => imAdmin || isAdminRoom(r) || isMyForce(r) || isMyId(r))
         // filter rooms for those for my role/force
         setRooms(myRooms.map((room): RoomType => {
           return {
