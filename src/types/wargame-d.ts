@@ -19,12 +19,21 @@ export interface GameStateType {
   currentPhase: string
 }
 
+export interface MockId {
+  playerId: string
+  forceId: string
+}
+
+
+
 export interface WargameContextType {
   loggedIn: boolean
   xmppClient: XMPPService | null | undefined
   setXmppClient: (value: XMPPService | null | undefined) => void
   raDataProvider: DataProvider | undefined
   setRaDataProvider: (value: DataProvider | undefined) => void
+  mockPlayerId: MockId | null
+  setMockPlayerId: (value: MockId | null) => void
 }
 
 /**

@@ -21,7 +21,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { setXmppClient, setRaDataProvider } = useWargame()
-  const { setMockPlayerId, mockPlayerId } = usePlayerDetails()
+  const { setMockPlayerId } = usePlayerDetails()
   const [userLocal, setUseLocal] = useState(false)
 
   const loginRoles = [
@@ -30,8 +30,6 @@ const Login: React.FC = () => {
     [ip, host, 'red-co', 'pwd'],
     [ip, host, 'no-perms', 'pwd'],
   ]
-
-  console.log('login', mockPlayerId)
 
   const loginEnabled = useMemo(() => {
     return username && password && host
@@ -42,7 +40,7 @@ const Login: React.FC = () => {
   }, [loginEnabled])
 
   const handleMock = () => {
-    setMockPlayerId('blue-co')
+    setMockPlayerId({ playerId: 'blue-co', forceId: 'blue' })
     setXmppClient(null)
   }
 
