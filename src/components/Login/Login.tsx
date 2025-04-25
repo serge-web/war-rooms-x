@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex, Modal, Switch, Tag } from 'antd'
+import { Button, Form, Input, Card, Flex, Modal, Switch, Tag, Tooltip } from 'antd'
 import './Login.css'
 import fakeDataProvider from 'ra-data-fakerest'
 import { useWargame } from '../../contexts/WargameContext'
@@ -32,6 +32,10 @@ const Login: React.FC = () => {
   const loginEnabled = useMemo(() => {
     return username && password && host
   }, [host, username, password])
+
+  const loginMessage = useMemo(() => {
+    return loginEnabled ? 'Click to login' : 'Please enter username and password'
+  }, [loginEnabled])
 
   const handleMock = () => {
     setXmppClient(null)
@@ -138,12 +142,16 @@ const Login: React.FC = () => {
                 <Button className="mock-button" onClick={handleMock}>
                   Mock
                 </Button>
-                <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled}>
-                  Login
-                </Button>
-                <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled}>
-                  Admin
-                </Button>
+                <Tooltip title={loginMessage}>
+                  <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled}>
+                    Login
+                  </Button>
+                </Tooltip>
+                <Tooltip title={loginMessage}>
+                  <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled}>
+                    Admin
+                  </Button>
+                </Tooltip>
               </Flex>
             </Flex>
           </div>
