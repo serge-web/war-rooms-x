@@ -1,5 +1,7 @@
 import { RaRecord } from "react-admin"
 import { GamePropertiesType, GameStateType } from "../../types/wargame-d"
+import { GameMessage } from "../../types/rooms-d"
+import { ThemeConfig } from "antd"
 
 /**
  * Base interface for OpenFire records
@@ -48,6 +50,8 @@ export interface RRoom extends RaRecord {
   owners?: string[]
   admins?: string[]
   public?: boolean // whether anyone can join - others are members only
+  dummyMessages?: GameMessage[]
+  dummyTheme?: ThemeConfig
 }
 
 /**

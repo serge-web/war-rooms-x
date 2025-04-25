@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms-d';
-import { mockRooms } from './RoomsList/mockRooms';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
 import { useGameState } from '../GameState/useGameState';
 import { usePlayerDetails } from '../UserDetails/usePlayerDetails';
 import { ReceivedMessage } from 'stanza/protocol';
+import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
+import { RRoom } from '../../AdminView/raTypes-d';
 
 export const useRoom = (room: RoomType) => {
   const [messages, setMessages] = useState<GameMessage[]>([])
@@ -18,6 +19,7 @@ export const useRoom = (room: RoomType) => {
   const { xmppClient } = useWargame()
   const messagesReceived = useRef<boolean | null>(null)
   const [error, setError] = useState<UserError | null>(null)
+  const { data: mockRooms, loading } = useIndexedDBData('chatrooms')
 
   const clearError = () => {
     setError(null)
@@ -76,16 +78,19 @@ export const useRoom = (room: RoomType) => {
     if (xmppClient === undefined) {
       // waiting for login
     } else if (xmppClient === null) {
-      // ok, use mock data
-      const thisRoom = mockRooms.find(r => r.id === room.roomName)
-      if (thisRoom && thisRoom.messages) {
-        setMessages(thisRoom.messages)
+      if (!loading) {
+        // ok, use mock data
+        const rooms = mockRooms as RRoom[]
+        const thisRoom = rooms.find(r => r.id === room.roomName)
+        if (thisRoom && thisRoom.dummyMessages) {
+          setMessages(thisRoom.dummyMessages)
+        }
+        // does room have theme?
+        if (thisRoom && thisRoom.dummyTheme) {
+          setTheme(thisRoom.dummyTheme)
+        }
+        setCanSubmit(Math.random() > 0.5)
       }
-      // does room have theme?
-      if (thisRoom && thisRoom.theme) {
-        setTheme(thisRoom.theme)
-      }
-      setCanSubmit(Math.random() > 0.5)
     } else {
       // TODO: handle room theme, if present
       // TODO: handle other room metadata (esp. permissions)
@@ -112,7 +117,7 @@ export const useRoom = (room: RoomType) => {
       //   xmppClient.leaveRoom(room.roomName, messageHandler)
       // }
     }
-  }, [room, xmppClient]);
+  }, [room, xmppClient, loading, mockRooms]);
 
   return { messages, users, theme, canSubmit, sendMessage, error, clearError };
 }
