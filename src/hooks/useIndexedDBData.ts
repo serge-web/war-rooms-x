@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react'
 import localforage from 'localforage'
 import { mockBackend } from '../mockData/mockAdmin'
-
-export const prefixKey = 'ra-data-local-forage-'
+import { prefixKey } from '../types/constants'
 
 // Function to check if data store exists and initialize it if needed
 const initializeDataStoreIfNeeded = async () => {
@@ -38,7 +37,7 @@ export function useIndexedDBData<T>(resourceName: string) {
         await initializeDataStoreIfNeeded()
         
         // Then fetch the requested resource
-        const result = await localforage.getItem<T>(`ra-data-local-forage-${resourceName}`)
+        const result = await localforage.getItem<T>(`${prefixKey}${resourceName}`)
         setData(result)
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)))
