@@ -21,12 +21,12 @@ const greenForce: RGroup = {id: 'green', name: 'Green', description: 'Friendly f
 const umpires: RGroup = {id: 'umpire', name: 'Umpire', description: 'Umpire Force (adjudicators)', members: [admin.id]}
 const wargame: RGameState ={
   id: '1',
-  name: 'Wargame',
-  startTime: new Date().toISOString(),
+  name: 'Catch that pigeon!',
+  startTime: "2025-04-25T00:00:00.000Z",
   stepTime: '1H30M',
   turnType: 'Linear',
   turn: '1',
-  currentTime: new Date().toISOString(),
+  currentTime: "2025-04-25T12:00:00.000Z",
   currentPhase: 'phase',
   theme: {}
 }

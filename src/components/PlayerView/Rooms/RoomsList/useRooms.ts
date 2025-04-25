@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-// import { mockRooms } from './mockRooms';
 import { RoomType } from '../../../../types/rooms-d';
 import { useWargame } from '../../../../contexts/WargameContext';
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData';
@@ -8,7 +7,7 @@ import { RRoom } from '../../../AdminView/raTypes-d';
 export const useRooms = () => {
   const [rooms, setRooms] = useState<RoomType[]>([])  
   const { xmppClient, mockPlayerId } = useWargame()
-  const { data: mockRooms, loading } = useIndexedDBData('chatrooms')
+  const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
   // TODO - also handle details, extract from the room description
 
@@ -16,12 +15,11 @@ export const useRooms = () => {
     if (xmppClient === undefined) {
       // waiting for login
     } else if (xmppClient === null) {
-      if (!loading && mockPlayerId) {
+      if (!loading && mockPlayerId && mockRooms) {
         // ok, use mock data
-        const rooms = mockRooms as RRoom[]
         const myId = mockPlayerId.playerId
         const myForce = mockPlayerId.forceId
-        const myRooms = rooms.filter(r => myId === 'admin' || r.memberForces?.includes(myForce) || r.members?.includes(myId))
+        const myRooms = mockRooms.filter(r => myId === 'admin' || r.memberForces?.includes(myForce) || r.members?.includes(myId))
         // filter rooms for those for my role/force
         setRooms(myRooms.map((room): RoomType => {
           return {
