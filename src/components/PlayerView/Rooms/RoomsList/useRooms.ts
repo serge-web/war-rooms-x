@@ -9,8 +9,6 @@ export const useRooms = () => {
   const { xmppClient, mockPlayerId } = useWargame()
   const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
-  // TODO - also handle details, extract from the room description
-
   useEffect(() => {
     if (xmppClient === undefined) {
       // waiting for login

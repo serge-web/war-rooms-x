@@ -24,7 +24,6 @@ export const usePlayerDetails = () => {
       if (xmppClient === undefined) {
         // waiting for login
       } else if (xmppClient === null) {
-        console.log('player details - mock', mockPlayerId, mockUsers, mockForces)
         if (!usersLoading && !forcesLoading) {
           // do we have player id?
           if(mockPlayerId) {
