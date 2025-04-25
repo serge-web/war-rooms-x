@@ -7,7 +7,7 @@ import { RRoom } from '../../../AdminView/raTypes-d';
 
 export const useRooms = () => {
   const [rooms, setRooms] = useState<RoomType[]>([])  
-  const { xmppClient } = useWargame()
+  const { xmppClient, mockPlayerId } = useWargame()
   const { data: mockRooms, loading } = useIndexedDBData('chatrooms')
 
   // TODO - also handle details, extract from the room description
@@ -16,16 +16,19 @@ export const useRooms = () => {
     if (xmppClient === undefined) {
       // waiting for login
     } else if (xmppClient === null) {
-      if (!loading) {
+      if (!loading && mockPlayerId) {
         // ok, use mock data
         const rooms = mockRooms as RRoom[]
-        setRooms(rooms.map((room): RoomType => {
+        const myId = mockPlayerId.playerId
+        const myForce = mockPlayerId.forceId
+        const myRooms = rooms.filter(r => myId === 'admin' || r.memberForces?.includes(myForce) || r.members?.includes(myId))
+        // filter rooms for those for my role/force
+        setRooms(myRooms.map((room): RoomType => {
           return {
             roomName: room.id,
             naturalName: room.name,
           }
         }))
-
       } 
     } else {
       // TODO: use real data
@@ -44,7 +47,7 @@ export const useRooms = () => {
         fetchRooms()
       }
     }
-  }, [xmppClient, mockRooms, loading]);
+  }, [xmppClient, mockRooms, loading, mockPlayerId]);
 
   return { rooms };
 }
