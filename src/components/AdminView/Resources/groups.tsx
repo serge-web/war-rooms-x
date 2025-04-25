@@ -49,7 +49,7 @@ const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps)
 export const EditGroup = ({ id }: { id?: string }) => (
   <Edit title='> Edit force' id={id} undoable={false} mutationMode='pessimistic'>
       <SimpleForm>
-          <TextInput helperText="id values cannot be changed" disabled source="id" />
+          <TextInput helperText="id values cannot be changed" source="id" />
           <TextInput source="name" />
           <TextInput source="objectives" multiline />
           <ColorPicker source='color' label='Color' />

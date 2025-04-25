@@ -21,7 +21,7 @@ const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
 export const EditUser = ({ id }: { id?: string }) => (
   <Edit title='> Edit role' id={id} undoable={false}>
     <SimpleForm>
-      <TextInput helperText="id values cannot be changed" disabled source="id" />
+      <TextInput helperText="id values cannot be changed" source="id" />
       <TextInput source="name" />
     </SimpleForm>
   </Edit>
