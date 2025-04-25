@@ -27,7 +27,7 @@ const wargame: RGameState ={
   turnType: 'Linear',
   turn: '1',
   currentTime: "2025-04-25T12:00:00.000Z",
-  currentPhase: 'phase',
+  currentPhase: 'Planning',
   theme: {}
 }
 // Helper function to create a message
