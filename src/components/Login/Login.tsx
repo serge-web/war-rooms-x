@@ -151,12 +151,12 @@ const Login: React.FC = () => {
               <Flex vertical={false} className="real-login-buttons">
                 <Tooltip title={loginMessage}>
                   <Button className="login-button" type="primary" name="login" htmlType="submit" disabled={!loginEnabled}>
-                    Login
+                    Player
                   </Button>
                 </Tooltip>
                 <Tooltip title={loginMessage}>
                   <Button className="admin-button" type="primary" onClick={() => handleRestLogin(username, password)} disabled={!loginEnabled}>
-                    Admin
+                    Game Control (Admin)
                   </Button>
                 </Tooltip>
               </Flex>
