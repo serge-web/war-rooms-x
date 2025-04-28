@@ -32,18 +32,18 @@ export const parseDuration = (isoDuration: string): { quantity: number; unit: st
 
   try {
     // Parse ISO 8601 duration format
-    // Format: P[nY][nM][nD][T[nH][nM][nS]]
-    const regex = /P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?/
+    // Format: P[nY][nM][nD][T[nH][nM][nS]] with support for decimal values
+    const regex = /P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?/
     const matches = isoDuration.match(regex)
 
     if (!matches) {
       return { quantity: 1, unit: 'hours' }
     }
 
-    const days = matches[1] ? parseInt(matches[1]) : 0
-    const hours = matches[2] ? parseInt(matches[2]) : 0
-    const minutes = matches[3] ? parseInt(matches[3]) : 0
-    const seconds = matches[4] ? parseInt(matches[4]) : 0
+    const days = matches[1] ? parseFloat(matches[1]) : 0
+    const hours = matches[2] ? parseFloat(matches[2]) : 0
+    const minutes = matches[3] ? parseFloat(matches[3]) : 0
+    const seconds = matches[4] ? parseFloat(matches[4]) : 0
 
     // Determine the most significant unit
     if (days > 0) {

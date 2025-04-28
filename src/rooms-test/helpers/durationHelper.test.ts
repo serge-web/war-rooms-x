@@ -24,6 +24,14 @@ describe('durationHelper', () => {
       // Complex durations should return the most significant unit
       expect(parseDuration('P1DT6H')).toEqual({ quantity: 1.25, unit: 'days' })
       expect(parseDuration('PT1H30M')).toEqual({ quantity: 1.5, unit: 'hours' })
+      expect(parseDuration('PT1.5H')).toEqual({ quantity: 1.5, unit: 'hours' })
+    })
+    
+    it('should handle decimal values in different units', () => {
+      expect(parseDuration('P1.5D')).toEqual({ quantity: 1.5, unit: 'days' })
+      expect(parseDuration('PT2.5H')).toEqual({ quantity: 2.5, unit: 'hours' })
+      expect(parseDuration('PT30.5M')).toEqual({ quantity: 30.5, unit: 'minutes' })
+      expect(parseDuration('PT45.75S')).toEqual({ quantity: 45.75, unit: 'seconds' })
     })
     
     it('should handle legacy format (plain numbers)', () => {
