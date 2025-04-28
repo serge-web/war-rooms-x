@@ -38,7 +38,7 @@ Enable distributed training exercises that simulate operational command environm
 #### Rooms
 - Implemented as XMPP MUC rooms.
 - Configured with:
-  - Description
+  - Description (contains JSON metadata)
   - Assigned forces and players
   - Write permissions per game phase
   - Structured message templates (optional)
