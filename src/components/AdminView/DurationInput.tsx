@@ -2,17 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Stack, TextField, Select, MenuItem, FormHelperText } from '@mui/material'
 import { useInput, InputProps } from 'react-admin'
-import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
-
-dayjs.extend(duration)
-
-const timeUnits = [
-  { value: 'seconds', label: 'Seconds', iso: 'S' },
-  { value: 'minutes', label: 'Minutes', iso: 'M' },
-  { value: 'hours', label: 'Hours', iso: 'H' },
-  { value: 'days', label: 'Days', iso: 'D' }
-]
+import { timeUnits, parseDuration, formatDuration } from '../../helpers/durationHelper'
 
 export const DurationInput = (props: InputProps) => {
   const { field, fieldState } = useInput(props)
@@ -22,46 +12,15 @@ export const DurationInput = (props: InputProps) => {
   // Parse ISO duration on initial load
   useEffect(() => {
     if (field.value) {
-      try {
-        // Parse the ISO duration string
-        const dur = dayjs.duration(field.value)
-        
-        // Find the appropriate unit and quantity
-        if (field.value.includes('D')) {
-          setQuantity(dur.asDays())
-          setUnit('days')
-        } else if (field.value.includes('H')) {
-          setQuantity(dur.asHours())
-          setUnit('hours')
-        } else if (field.value.includes('M')) {
-          setQuantity(dur.asMinutes())
-          setUnit('minutes')
-        } else {
-          setQuantity(dur.asSeconds())
-          setUnit('seconds')
-        }
-      } catch {
-        // Handle legacy format
-        const value = parseInt(field.value)
-        if (!isNaN(value)) {
-          setQuantity(value)
-          setUnit('minutes') // Default assumption
-        }
-      }
+      const { quantity, unit } = parseDuration(field.value)
+      setQuantity(quantity)
+      setUnit(unit)
     }
   }, [field.value])
   
   // Update the ISO duration string when inputs change
   const handleChange = (newQuantity: number, newUnit: string) => {
-    const unitInfo = timeUnits.find(u => u.value === newUnit)
-    if (!unitInfo) return
-    
-    let isoDuration = 'P'
-    if (['seconds', 'minutes', 'hours'].includes(newUnit)) {
-      isoDuration += 'T'
-    }
-    isoDuration += `${newQuantity}${unitInfo.iso}`
-    
+    const isoDuration = formatDuration(newQuantity, newUnit)
     field.onChange(isoDuration)
   }
   
