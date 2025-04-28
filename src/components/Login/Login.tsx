@@ -131,6 +131,8 @@ const Login: React.FC = () => {
         </div>
         <Card title="War Rooms X - Login" className="login-card">
         <Form layout="vertical" onFinish={handleLogin} initialValues={{ ip, host, username, password }}>
+          <div className="button-group">
+
           <Flex style={{paddingBottom: '12px'}}>
             <Switch
               title="Use Remote Server"
@@ -206,12 +208,13 @@ const Login: React.FC = () => {
               </Flex>
             </div>
           </div>
+          </div>
 
           <div className="button-groups">
             {/* Development Player Interface Buttons */}
             <div className="button-group">
               <div className="dev-title">
-                Development quick-links (mock server)
+                Development quick-links (mock backend)
               </div>
               <Flex align="center" className="button-group-row">
                 <div className="button-group-label">Player UI</div>
