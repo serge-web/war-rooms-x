@@ -13,7 +13,7 @@ export const WargameList = () => (
         <Datagrid>
         <TextField<RGameState> source="name" />
             <DateField<RGameState> showTime={true} source="startTime" />
-            <TextField<RGameState> source="stepTime" />
+            <TextField<RGameState> source="interval" />
             <TextField<RGameState> source="turnType" />
             <TextField<RGameState> source="turn" />
             <DateField<RGameState> showTime={true} source="currentTime" />
@@ -137,7 +137,7 @@ export const WargameEdit = () => {
                 <TextInput helperText="A description of the wargame" source="description" />
                 <Stack direction="row">
                   <DateTimeInput required helperText="The start date and time" source="startTime" />
-                  <TextInput required helperText="The step interval" source="stepTime" />
+                  <TextInput required helperText="The step interval" source="interval" />
                   <RadioButtonGroupInput required helperText="The turn model 2" source="turnType" choices={turnModels} />
                 </Stack>
                 <Stack direction="row" spacing={2} sx={{ mt: 2 }}>

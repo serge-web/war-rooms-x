@@ -6,7 +6,7 @@ export const splitGameState = (state: RGameState): { gameProperties: GamePropert
     name: state.name,
     description: state.description,
     startTime: state.startTime,
-    stepTime: state.stepTime,
+    interval: state.interval,
     turnType: state.turnType,
     playerTheme: state.playerTheme,
     adminTheme: state.adminTheme

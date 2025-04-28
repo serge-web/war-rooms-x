@@ -7,7 +7,7 @@ export interface GamePropertiesType {
   name: string
   description?: string
   startTime: string
-  stepTime: string
+  interval: string
   turnType: typeof PLAN_ADJUDICATE_TURNS | typeof LINEAR_TURNS
   playerTheme?: ThemeConfig
   adminTheme?: ThemeConfig

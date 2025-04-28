@@ -11,7 +11,7 @@ describe('Turn Model Helpers', () => {
   const baseGameProperties: GamePropertiesType = {
     name: 'Test Game',
     startTime: '2025-04-25T12:00:00Z',
-    stepTime: '1h',
+    interval: '1h',
     turnType: LINEAR_TURNS
   }
 
