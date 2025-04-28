@@ -9,13 +9,13 @@ This document outlines the PubSub nodes used by War-Rooms-X for storing and dist
 PubSub nodes are used to distribute data across multiple clients and keep the system synchronized. The nodes are structured around core gameplay elements like the wargame state, message templates, and room-specific configurations.
 
 ### PubSub Node Naming Convention
-- Nodes are named hierarchically using slashes (e.g., `warroomsx/gamestate`)
+- Nodes are named hierarchically using dots (e.g., `game-state`)
 - Node names reflect their content, such as game state, room metadata, or templates
 
 ### Example Node
 ```json
 {
-  "node": "warroomsx/gamestate",
+  "node": "gamestate",
   "payload": {
     "turn": 3,
     "phase": "Adjudication",
@@ -25,7 +25,7 @@ PubSub nodes are used to distribute data across multiple clients and keep the sy
 
 📦 Node Types
 
-1. Game State (warroomsx/gamestate)
+1. Game State (gamestate)
 	•	Purpose: Track global game state (turn number, phase, date/time)
 	•	Structure:
 ```
@@ -36,7 +36,7 @@ PubSub nodes are used to distribute data across multiple clients and keep the sy
 }
 ```
 
-2. Room Metadata (warroomsx/rooms/{roomName})
+2. Room Metadata (rooms.{roomName})
 	•	Purpose: Store metadata specific to each chat room, including participants, permissions, and templates
 	•	Structure:
 ```
@@ -63,9 +63,9 @@ PubSub nodes are used to distribute data across multiple clients and keep the sy
 
 	•	Participation: A list of roles and the templates available to them, along with the phases in which they can be used
 	•	Plain chat: Treated as a template type, controlling when players can write into a chat room
-	•	Subscribers: Room participants (via useRoom), admin interface for room configuration
+	•	Subscribers: Room participants (via useRoom), admin interface for room configuration  
 
-3. Templates (warroomsx/templates)
+3. Templates (templates.{templateName})
 	•	Purpose: Store structured message templates for different roles and forces
 	•	Structure:
 ```json
@@ -78,7 +78,7 @@ PubSub nodes are used to distribute data across multiple clients and keep the sy
 ```
 	•	Subscribers: Players’ rooms (filtered by force/role/phase), admin interface for template assignment
 
-  4. Wargame Metadata (warroomsx/wargame)
+  4. Wargame Metadata (game-setup)
 	•	Purpose: Store static metadata about the wargame (name, description, start time, and theme)
 	•	Structure:
   ```

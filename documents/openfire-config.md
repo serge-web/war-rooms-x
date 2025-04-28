@@ -11,7 +11,7 @@ These are the steps to installing and configuring Openfire for this app.
     a. REST API
 4. Configure REST (Server / Server Settings / REST API)
     a. Enable REST
-    b. Specify HTTP basic auth
+    b. Specify HTTP basic auth (note: Swagger UI requires pass-phrase, not user/pwd)
     c. Enable additional logging
     d. Relax wildcards (adminConsole.access.allow-wildcards-in-excludes: true)[1]
 
