@@ -12,7 +12,7 @@ describe('Game State Helper Functions', () => {
         name: 'Test Wargame',
         description: 'Test description',
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS,
         turn: '1',
         currentTime: '2023-01-01T01:00:00Z',
@@ -27,7 +27,7 @@ describe('Game State Helper Functions', () => {
         name: 'Test Wargame',
         description: 'Test description',
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS
       })
 
@@ -44,7 +44,7 @@ describe('Game State Helper Functions', () => {
         id: '0',
         name: 'Test Wargame',
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS,
         turn: '1',
         currentTime: '2023-01-01T01:00:00Z',
@@ -60,7 +60,7 @@ describe('Game State Helper Functions', () => {
         name: 'Test Wargame',
         description: undefined,
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS
       })
     })
@@ -73,7 +73,7 @@ describe('Game State Helper Functions', () => {
         name: 'Test Wargame',
         description: 'Test description',
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS
       }
 
@@ -92,7 +92,7 @@ describe('Game State Helper Functions', () => {
         name: 'Test Wargame',
         description: 'Test description',
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS,
         turn: '1',
         currentTime: '2023-01-01T01:00:00Z',
@@ -106,7 +106,7 @@ describe('Game State Helper Functions', () => {
         name: 'Test Wargame',
         description: 'Test description',
         startTime: '2023-01-01T00:00:00Z',
-        stepTime: '1h',
+        interval: '1h',
         turnType: PLAN_ADJUDICATE_TURNS
       }
 

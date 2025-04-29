@@ -17,7 +17,7 @@ const DEFAULT_SETUP: GamePropertiesType = {
   name: '',
   description: '',
   startTime: new Date().toISOString(),
-  stepTime: '1',
+  interval: '1',
   turnType: 'Linear',
   playerTheme: undefined,
   adminTheme: undefined

@@ -7,13 +7,14 @@ import { useMemo, useState, useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
 import { ThemeEditor } from './theme-editor'
 import { ThemeConfig } from 'antd'
+import { DurationInput } from '../DurationInput'
 
 export const WargameList = () => (
     <List>
         <Datagrid>
         <TextField<RGameState> source="name" />
             <DateField<RGameState> showTime={true} source="startTime" />
-            <TextField<RGameState> source="stepTime" />
+            <TextField<RGameState> source="interval" />
             <TextField<RGameState> source="turnType" />
             <TextField<RGameState> source="turn" />
             <DateField<RGameState> showTime={true} source="currentTime" />
@@ -135,10 +136,12 @@ export const WargameEdit = () => {
               <CardContent>
                 <TextInput required helperText="The name of the wargame" source="name" />
                 <TextInput helperText="A description of the wargame" source="description" />
+                <Stack direction="row" spacing={12}>
+                  <DateTimeInput style={{ width: '40%' }} required helperText="The start date and time" source="startTime" />
+                  <DurationInput helperText="The step interval" source="interval" />
+                </Stack>
                 <Stack direction="row">
-                  <DateTimeInput required helperText="The start date and time" source="startTime" />
-                  <TextInput required helperText="The step interval" source="stepTime" />
-                  <RadioButtonGroupInput required helperText="The turn model 2" source="turnType" choices={turnModels} />
+                  <RadioButtonGroupInput required helperText="The turn model" source="turnType" choices={turnModels} />
                 </Stack>
                 <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
                   <Button 

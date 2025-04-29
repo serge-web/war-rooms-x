@@ -23,7 +23,7 @@ const wargame: RGameState ={
   id: '1',
   name: 'Catch that pigeon!',
   startTime: "2025-04-25T00:00:00.000Z",
-  stepTime: '1H30M',
+  interval: 'PT1H30M',
   turnType: 'Linear',
   turn: '1',
   currentTime: "2025-04-25T12:00:00.000Z",
