@@ -1,8 +1,9 @@
-import { useState, ReactNode, useMemo } from 'react'
+import { useState, ReactNode, useMemo, useCallback } from 'react'
 import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
 import { DataProvider } from 'react-admin'
-import { MockId } from '../types/wargame-d'
+import { ForceConfigType, MockId } from '../types/wargame-d'
+import { useForces } from '../hooks/useForces'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -13,9 +14,14 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   const [xmppClient, setXmppClient] = useState<XMPPService | null | undefined>(undefined) 
   const [raDataProvider, setRaDataProvider] = useState<DataProvider | undefined>(undefined)
   const [mockPlayerId, setMockPlayerId] = useState<MockId | null>(null)
+  const { getForce: localGetForce } = useForces() 
   const loggedIn = useMemo(() => {
     return xmppClient !== undefined
   }, [xmppClient])
+
+  const getForce = useCallback(async (forceId: string): Promise<ForceConfigType | undefined> => {
+    return localGetForce(forceId, xmppClient)
+  }, [localGetForce, xmppClient])
 
   const setXMPPClientWrapper = (client: XMPPService | null | undefined) => {
     if (client === null || client === undefined) {
@@ -44,7 +50,8 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     raDataProvider,
     setRaDataProvider,
     mockPlayerId,
-    setMockPlayerId
+    setMockPlayerId,
+    getForce
   }
 
   return (

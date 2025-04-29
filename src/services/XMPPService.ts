@@ -1007,6 +1007,7 @@ export class XMPPService {
 
       // do we already have a subscription?
       if (existingSub) {
+        console.log('getting doc with existing subscription')
         // we need to use a special stanza, which provides the subscription id.
         const iq = {
           type: 'get',
@@ -1019,6 +1020,7 @@ export class XMPPService {
           }
         } as IQ
         const items = await this.client.sendIQ(iq)
+        console.log('got doc with existing subscription', items)
         if (items?.pubsub?.fetch?.items && items.pubsub.fetch.items.length > 0) {
           const item = items.pubsub.fetch.items[0] as PubSubDocument
           return item
@@ -1026,8 +1028,9 @@ export class XMPPService {
         return null
     }
       else {
+        console.log('getting doc without existing subscription')
         const result = await this.client.getItems(this.pubsubService, nodeId)
-
+        console.log('got doc without existing subscription', result)
         if (result.items && result.items.length > 0) {
           const item = result.items[0] as PubSubDocument
           return item
@@ -1040,6 +1043,7 @@ export class XMPPService {
       // check for item not found
       const sError = error as { error: { condition: string } }
       if(sError && sError.error?.condition === 'item-not-found') {
+        console.log('item not found', nodeId)
         return null
       } else {
         console.error(`Error getting PubSub document ${nodeId}:`, error)
