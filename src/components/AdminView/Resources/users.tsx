@@ -19,7 +19,7 @@ const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
 }
 
 export const EditUser = ({ id }: { id?: string }) => (
-  <Edit title='> Edit role' id={id} undoable={false}>
+  <Edit title='> Edit role' id={id} undoable={false} mutationMode='pessimistic'>
     <SimpleForm>
       <TextInput helperText="id values cannot be changed" source="id" />
       <TextInput source="name" />
