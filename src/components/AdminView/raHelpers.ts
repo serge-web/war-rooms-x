@@ -92,7 +92,9 @@ const roomRtoX = (result: RRoom): XRoom => {
     naturalName: result.name,
     description: result.description,
     members: result.members?.map(formatMemberWithHost) || [],
-    memberGroups: result.memberForces
+    memberGroups: result.memberForces,
+    persistent: true,
+    publicRoom: result.public
   }
 }
 
