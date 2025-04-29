@@ -116,7 +116,7 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
     name: forceConfig?.name || result.name,
     objectives: forceConfig?.objectives || undefined,
     members: members.map(formatMemberWithHost),
-    color: forceConfig?.color || undefined
+    color: forceConfig?.color || '#FF0'
   }
   return res
 }

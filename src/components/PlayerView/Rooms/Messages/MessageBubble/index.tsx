@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './index.css'
 import { ChatMessage, GameMessage } from '../../../../../types/rooms-d'
 import { renderObjectContent } from './renderObjectContent'
+import { useForces } from '../../../../../hooks/useForces'
 
 const renderMessage = (mType: string, jsonObject: object): React.ReactNode => {
   switch(mType) {
@@ -18,7 +19,13 @@ const MessageBubble: React.FC<{
   message: GameMessage
   isSelf: boolean
 }> = ({ message, isSelf }) => {
+  const { getForce} = useForces()
+  const [forceColor, setForceColor] = useState<string | undefined>(undefined)
   const from = message.details.senderName
+  getForce(message.details.senderForce).then((force) => {
+    setForceColor(force?.color)
+  })
+  console.log('sender color', forceColor, message.details)
   return (
     <div 
       data-testid={`message-${message.id}`} 

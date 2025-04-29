@@ -68,7 +68,7 @@ export interface RGroup extends RaRecord {
   name: string
   objectives?: string
   members?: string[]
-  color?: string
+  color: string
 }
 
 /**
