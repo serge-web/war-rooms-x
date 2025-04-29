@@ -14,8 +14,9 @@ These are the steps to installing and configuring Openfire for this app.
     b. Specify HTTP basic auth (note: Swagger UI requires pass-phrase, not user/pwd)
     c. Enable additional logging
     d. Relax wildcards (adminConsole.access.allow-wildcards-in-excludes: true)[1]
-
-
+5. Configure MUC
+    a. Group Chat / Group Chat Settings / History : Show Entire Chat History
+    b. Default Room Settings: Make Room Persistent
 
 
  [1] According to article here: https://discourse.igniterealtime.org/t/when-i-upload-to-4-7-5-the-restapi-always-redirect/92892/2   
