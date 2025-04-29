@@ -8,6 +8,7 @@ import { ForceConfigType, UserConfigType } from '../../../types/wargame-d';
 export interface GamePlayerDetails {
   id: string
   role: string
+  forceId: string
   forceName: string
   forceObjectives?: string
   color?: string
@@ -33,6 +34,7 @@ export const usePlayerDetails = () => {
             setPlayerDetails({
               id: player?.id || 'unknown',
               role: player?.name || 'unknown',
+              forceId: force?.id || 'unknown',
               forceName: force?.name || 'unknown',
               forceObjectives: force?.objectives || 'unknown',
               color: force?.color || 'unknown'
@@ -50,6 +52,7 @@ export const usePlayerDetails = () => {
             setPlayerDetails({
               id: trimHost(xmppClient.bareJid),
               role: userConfig.name || 'unknown',
+              forceId: '',
               forceName: '',
               forceObjectives: '',
               color: undefined
@@ -64,6 +67,7 @@ export const usePlayerDetails = () => {
                   setPlayerDetails({
                     id: trimHost(xmppClient.bareJid),
                     role: userConfig.name || 'unknown',
+                    forceId: forceId,
                     forceName: forceConfig.name,
                     forceObjectives: forceConfig.objectives,
                     color: forceConfig.color
