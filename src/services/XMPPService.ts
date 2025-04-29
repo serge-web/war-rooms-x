@@ -691,6 +691,7 @@ export class XMPPService {
             { name: 'FORM_TYPE', type: 'hidden', value: 'http://jabber.org/protocol/pubsub#node_config' },
             { name: 'pubsub#node_type', value: 'leaf' },
             { name: 'pubsub#access_model', value: 'open' },
+            { name: 'pubsub#persist_items', value: 'true' },
             ]
           };
 

@@ -35,7 +35,7 @@ export const useRoom = (room: RoomType) => {
         messageType,
         senderId: playerDetails?.id || '',
         senderName: playerDetails?.role || '',
-        senderForce: playerDetails?.forceName || '',
+        senderForce: playerDetails?.forceId || '',
         turn: gameState?.turn || '',
         phase: gameState?.currentPhase || '',
         timestamp: new Date().toISOString(),
