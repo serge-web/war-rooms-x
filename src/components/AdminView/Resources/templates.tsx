@@ -4,7 +4,6 @@ import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
 import { Theme as AntdTheme } from '@rjsf/antd'
-import { Flex } from 'antd'
 import './templates.css'
 
 // Create the Ant Design themed form
@@ -46,6 +45,15 @@ const FormPreview = () => {
     const { id, label, children, schema, uiSchema } = props
     const isRoot = id === 'root'
     
+    // Root level container gets special treatment
+    if (isRoot) {
+      return (
+        <div className='form-item root-item' id={id}>
+          <div className='root-form-container'>{children}</div>
+        </div>
+      )
+    }
+    
     // Check if this is a number field with any special widget
     const isNumberField = schema.type === 'number' || schema.type === 'integer'
     const hasNumberWidget = isNumberField && uiSchema?.['ui:widget'] !== undefined
@@ -55,16 +63,17 @@ const FormPreview = () => {
       return (
         <div className='form-item number-field' id={id}>
           <label htmlFor={id}>{label}</label>
-          <div className='number-widget-container'>{children}</div>
+          <div className='field-container number-widget-container'>{children}</div>
         </div>
       )
     }
     
+    // Standard field with label on the left
     return (
-      <Flex className='form-item' id={id} vertical={isRoot}>
+      <div className='form-item' id={id}>
         <label htmlFor={id}>{label}</label>
-        <div>{children}</div>
-      </Flex>
+        <div className='field-container'>{children}</div>
+      </div>
     )
   }
   
