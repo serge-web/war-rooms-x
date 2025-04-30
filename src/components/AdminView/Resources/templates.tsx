@@ -10,17 +10,16 @@ import './templates.css'
 const Form = withTheme(AntdTheme)
 
 interface BoldNameFieldProps {
-  source: string
   selectedId: string | null
 }
 
-const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
+const BoldNameField = ({ selectedId }: BoldNameFieldProps) => {
   const record = useRecordContext()
   if (!record) return null
   
   return (
     <span style={{ fontWeight: record.id === selectedId ? 'bold' : 'normal' }}>
-      {record[source]}
+      {record.schema.title || 'Pending'}
     </span>
   )
 }
@@ -124,7 +123,7 @@ export const ListTemplates: React.FC = () => {
               return false // Prevent default navigation
             }}
           >
-            <BoldNameField source='name' selectedId={selectedTemplateId} />
+            <BoldNameField selectedId={selectedTemplateId} />
             <TextField source='id' />
             <EditButton />
           </Datagrid>
