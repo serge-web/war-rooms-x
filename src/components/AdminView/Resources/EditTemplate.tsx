@@ -151,6 +151,7 @@ const TemplateEditorForm = ({
           >
             <div style={{ height: '100%' }}>
               <FormBuilder
+                className='form-builder'
                 schema={JSON.stringify(schema)}
                 uischema={JSON.stringify(uiSchema)}
                 onChange={(newSchema: string, newUiSchema: string) => {

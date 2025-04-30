@@ -56,3 +56,56 @@
 .form-item.root-item > div {
   width: 100%;
 }
+
+.form-head {
+  width: default !important;
+}
+.form-builder h5 {
+  line-height: 12px !important;
+  margin: 0px !important;
+  color: #f00 !important;
+}
+
+.form-builder span.toggle-collapse {
+  display: inline-block !important;
+}
+
+.form-builder h4 {
+  display: inline !important;
+}
+
+.form-builder > div {
+  padding: 2px !important;
+  width: 100% !important;
+}
+
+.form-builder .card-container {
+  width: 100% !important;
+}
+
+.form-builder .d-flex {
+  color: #0b0 !important;
+}
+
+.form-builder .toggle-collapse span {
+  display: inline !important;
+}
+
+
+.form-builder .card-entry-row {
+  display: inline !important;
+  width: 100% !important;
+}
+.form-builder .card-entry h5, .form-builder .card-entry div {
+  display: inline !important;
+}
+
+.form-builder .card-entry-row {
+  display: flex !important;
+}
+
+.form-builder .card-entry-row > * {
+  display: inline !important;
+}
+
+  
