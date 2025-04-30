@@ -2,3 +2,47 @@
   padding-right: 12px;
   font-weight: bold;
 }
+
+/* Number field styles */
+.number-field {
+  margin-bottom: 24px;
+}
+
+.number-widget-container {
+  padding: 8px 0;
+  width: 100%;
+}
+
+/* Slider specific styles */
+.number-field .ant-slider {
+  margin: 12px 0;
+  width: 100%;
+}
+
+/* Ensure slider track is visible and interactive */
+.ant-slider-rail, .ant-slider-track {
+  height: 4px !important;
+}
+
+.ant-slider-handle {
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+
+/* Number input styles */
+.number-field .ant-input-number {
+  width: 100%;
+  max-width: 200px;
+}
+
+/* Radio button styles for number enums */
+.number-field .ant-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Improve form layout */
+.ant-form-horizontal .form-item {
+  margin-bottom: 16px;
+}
