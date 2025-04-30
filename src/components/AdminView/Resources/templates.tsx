@@ -1,4 +1,4 @@
-import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext } from 'react-admin'
+import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext, EditButton, TopToolbar } from 'react-admin'
 import { useState } from 'react'
 import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
@@ -82,12 +82,27 @@ const FormPreview = () => {
   )
 }
 
+const TemplateShowActions = ({ id }: { id?: string }) => {
+  // Only render if we have a valid ID
+  if (!id) return null
+  
+  return (
+    <TopToolbar>
+      <EditButton record={{ id }} />
+    </TopToolbar>
+  )
+}
+
 export const ShowTemplates = ({ id }: { id?: string }) => {
   // Return early if no id is provided
   if (!id) return null
   
   return (
-    <Show title='> Template details' id={id}>
+    <Show 
+      title='> Template details' 
+      id={id as string}
+      actions={<TemplateShowActions id={id} />}
+    >
       <SimpleShowLayout>
         <FormPreview />
       </SimpleShowLayout>
@@ -111,6 +126,7 @@ export const ListTemplates: React.FC = () => {
           >
             <BoldNameField source='name' selectedId={selectedTemplateId} />
             <TextField source='id' />
+            <EditButton />
           </Datagrid>
         </List>
       </div>
