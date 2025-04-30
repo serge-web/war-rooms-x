@@ -2,6 +2,7 @@ import { DataProvider } from "react-admin"
 import { XMPPService } from "../services/XMPPService"
 import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
 import { ThemeConfig } from "antd"
+import { RoomTypeFactory } from "../roomTypes/RoomTypeFactory"
 
 export interface GamePropertiesType {
   name: string
@@ -34,6 +35,7 @@ export interface WargameContextType {
   setRaDataProvider: (value: DataProvider | undefined) => void
   mockPlayerId: MockId | null
   setMockPlayerId: (value: MockId | null) => void
+  roomTypeFactory: RoomTypeFactory
 }
 
 /**
