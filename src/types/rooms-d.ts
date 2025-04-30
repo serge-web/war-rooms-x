@@ -1,4 +1,5 @@
-import { ThemeConfig } from "antd"
+import { ThemeConfig } from 'antd'
+import { RJSFSchema, UiSchema } from '@rjsf/utils'
 
 export interface RoomDetails {
   roomType: 'chat' | 'map'
@@ -73,7 +74,9 @@ export interface MapRoomConfig extends CustomRoomConfig {
 }
 
 export interface Template {
-  content: string
+  name: string
+  schema: RJSFSchema
+  uiSchema: UiSchema
 }
 
 export interface FormRoomConfig extends CustomRoomConfig {
