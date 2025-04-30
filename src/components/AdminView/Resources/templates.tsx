@@ -1,4 +1,4 @@
-import { Datagrid, List, TextField } from 'react-admin';
+import { Datagrid, List, Show, SimpleShowLayout, TextField } from 'react-admin';
 
 export const ListTemplates: React.FC = () => (
     <List>
@@ -9,3 +9,14 @@ export const ListTemplates: React.FC = () => (
     </List>
 );
 
+
+export const ShowTemplates = () => (
+    <Show>
+        <SimpleShowLayout>
+            <TextField source="id" />
+            <TextField source="name" />
+            <TextField source="schema.type" />
+            <TextField source="uiSchema.message.ui:widget" />
+        </SimpleShowLayout>
+    </Show>
+)

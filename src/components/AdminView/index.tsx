@@ -4,7 +4,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ChatIcon from '@mui/icons-material/Chat';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
-import { Admin, Resource } from 'react-admin'
+import { Admin, Resource, ShowGuesser } from 'react-admin'
 import { useWargame } from '../../contexts/WargameContext'
 import CustomLayout from './CustomLayout'
 import { ListGroup } from './Resources/groups'
@@ -24,7 +24,7 @@ export const AdminView: React.FC = () => {
     <Resource name="groups" list={ListGroup} icon={GroupIcon} options={{label: 'Forces'}}  />
     <Resource name="users" list={ListUser} icon={PersonIcon} options={{label: 'Roles'}} />
     <Resource name="chatrooms" list={ListRoom} icon={ChatIcon} options={{label: 'Rooms'}} />
-    <Resource name="templates" list={ListTemplates} icon={DynamicFormIcon} options={{label: 'Templates'}} />
+    <Resource name="templates" list={ListTemplates} show={ShowGuesser} icon={DynamicFormIcon} options={{label: 'Templates'}} />
   </Admin>
   )
 }
