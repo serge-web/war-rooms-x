@@ -6,6 +6,7 @@ import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
 import { Theme as AntdTheme } from '@rjsf/antd'
 import { FormBuilder } from '@ginkgo-bioworks/react-json-schema-form-builder'
+import DraggableContainer from '../../common/DraggableContainer'
 import './templates.css'
 
 // Create the Ant Design themed form
@@ -85,12 +86,6 @@ const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (sav
   
   const [schema, setSchema] = useState<RJSFSchema>({ type: 'object', properties: {} })
   const [uiSchema, setUiSchema] = useState<UiSchema>({})
-  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(50) // percentage
-  
-  // Refs for draggable divider
-  const containerRef = useRef<HTMLDivElement>(null)
-  const dividerRef = useRef<HTMLDivElement>(null)
-  const isDraggingRef = useRef<boolean>(false)
 
   // Custom save function wrapped in useCallback to prevent recreation on every render
   const handleSave = useCallback(() => {
@@ -140,44 +135,9 @@ const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (sav
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>      
-      {/* Resizable panels with draggable divider */}
-      <div 
-        ref={containerRef}
-        style={{ 
-          display: 'flex', 
-          position: 'relative',
-          height: 'calc(100vh - 250px)', // Adjust based on your layout
-          minHeight: '500px'
-        }}
-        onMouseUp={() => {
-          isDraggingRef.current = false
-          document.body.style.cursor = 'default'
-        }}
-        onMouseMove={(e) => {
-          if (!isDraggingRef.current || !containerRef.current) return
-          
-          const containerRect = containerRef.current.getBoundingClientRect()
-          const containerWidth = containerRect.width
-          const mouseX = e.clientX - containerRect.left
-          
-          // Calculate percentage (constrained between 30% and 70%)
-          let newLeftWidth = (mouseX / containerWidth) * 100
-          newLeftWidth = Math.max(30, Math.min(70, newLeftWidth))
-          
-          setLeftPanelWidth(newLeftWidth)
-        }}
-        onMouseLeave={() => {
-          isDraggingRef.current = false
-          document.body.style.cursor = 'default'
-        }}
-      >
-        {/* Editor Section */}
-        <div style={{ 
-          width: `${leftPanelWidth}%`, 
-          height: '100%',
-          overflow: 'hidden',
-          transition: isDraggingRef.current ? 'none' : 'width 0.1s ease'
-        }}>
+      <DraggableContainer
+        initialLeftPanelWidth={50}
+        leftPanel={
           <Card
             title="Form Builder"
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
@@ -212,49 +172,8 @@ const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (sav
               />
             </div>
           </Card>
-        </div>
-        
-        {/* Draggable divider */}
-        <div
-          ref={dividerRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: `${leftPanelWidth}%`,
-            width: '10px',
-            transform: 'translateX(-50%)',
-            cursor: 'col-resize',
-            zIndex: 10,
-            transition: isDraggingRef.current ? 'none' : 'left 0.1s ease'
-          }}
-          onMouseDown={(e) => {
-            isDraggingRef.current = true
-            document.body.style.cursor = 'col-resize'
-            e.preventDefault() // Prevent text selection during drag
-          }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: '50%',
-              width: '4px',
-              backgroundColor: '#e8e8e8',
-              transform: 'translateX(-50%)',
-              borderRadius: '2px'
-            }}
-          />
-        </div>
-        
-        {/* Preview Section */}
-        <div style={{ 
-          width: `${100 - leftPanelWidth}%`, 
-          height: '100%',
-          overflow: 'hidden',
-          transition: isDraggingRef.current ? 'none' : 'width 0.1s ease'
-        }}>
+        }
+        rightPanel={
           <Card 
             title="Live Preview"
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
@@ -265,8 +184,8 @@ const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (sav
               uiSchema={uiSchema}
             />
           </Card>
-        </div>
-      </div>
+        }
+      />
     </div>
   )
 }
