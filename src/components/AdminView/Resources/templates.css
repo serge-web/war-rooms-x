@@ -108,4 +108,12 @@
   display: inline !important;
 }
 
+.form-builder .card-entry-row input {
+  width: 20% !important;
+}
+
+.form-builder .card-entry div div div {
+  display: inline-block !important;
+}
+
   
