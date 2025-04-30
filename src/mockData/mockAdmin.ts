@@ -172,7 +172,48 @@ const templates: Template[] = [
         'ui:widget': 'textarea'
       }
     }
-  }, {
+  },
+  {
+    id: 'sitrep',
+    name: 'Situation Report',
+    schema: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          title: 'Report Title'
+        },
+        urgency: {
+          type: 'number',
+          title: 'Urgency Level',
+          minimum: 1,
+          maximum: 10,
+          default: 5
+        },
+        description: {
+          type: 'string',
+          title: 'Situation Description'
+        },
+        location: {
+          type: 'string',
+          title: 'Location'
+        }
+      },
+      required: ['title', 'description']
+    },
+    uiSchema: {
+      urgency: {
+        'ui:widget': 'range'
+      },
+      description: {
+        'ui:widget': 'textarea',
+        'ui:options': {
+          rows: 5
+        }
+      }
+    }
+  },
+  {
     id: 'demo-numbers',
     name: 'Number Demo',
     schema: {
