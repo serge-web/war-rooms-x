@@ -157,9 +157,9 @@ const chatrooms: RRoom[] = [
 const templates: Template[] = [
   {
     id: 'chat',
-    name: 'Chat',
     schema: {
       type: 'object',
+      title: 'Chat',
       properties: {
         message: {
           type: 'string',
@@ -175,9 +175,9 @@ const templates: Template[] = [
   },
   {
     id: 'sitrep',
-    name: 'Situation Report',
     schema: {
       type: 'object',
+      title: 'Situation Report',
       properties: {
         title: {
           type: 'string',
@@ -215,7 +215,6 @@ const templates: Template[] = [
   },
   {
     id: 'demo-numbers',
-    name: 'Number Demo',
     schema: {
         "type": "object",
         "title": "Number fields & widgets",
