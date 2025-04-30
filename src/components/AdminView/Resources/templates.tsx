@@ -43,14 +43,29 @@ const FormPreview = () => {
   }
 
   function CustomFieldTemplate(props: FieldTemplateProps) {
-    const { id, label, children } = props;
-    const isVertical = id === 'root'
+    const { id, label, children, schema, uiSchema } = props
+    const isRoot = id === 'root'
+    
+    // Check if this is a number field with any special widget
+    const isNumberField = schema.type === 'number' || schema.type === 'integer'
+    const hasNumberWidget = isNumberField && uiSchema?.['ui:widget'] !== undefined
+    
+    // Special handling for number fields with widgets (sliders, range inputs, etc.)
+    if (isNumberField && hasNumberWidget) {
+      return (
+        <div className='form-item number-field' id={id}>
+          <label htmlFor={id}>{label}</label>
+          <div className='number-widget-container'>{children}</div>
+        </div>
+      )
+    }
+    
     return (
-      <Flex className='form-item' id={id} vertical={isVertical}>
+      <Flex className='form-item' id={id} vertical={isRoot}>
         <label htmlFor={id}>{label}</label>
         <div>{children}</div>
       </Flex>
-    );
+    )
   }
   
   return (
