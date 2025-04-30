@@ -4,6 +4,36 @@
 
 This document outlines the technical design for implementing the **Structured Messaging** feature in the War-Rooms-X system. It reflects the use of a **Room Type Factory + Strategy Pattern**, which modularizes room-specific behavior and supports future extensibility.
 
+```mermaid
+classDiagram
+    class RoomTypeFactory {
+        - strategies: Record<string, RoomTypeStrategy>
+        + register(strategy: RoomTypeStrategy): void
+        + get(id: string): RoomTypeStrategy | undefined
+        + list(): RoomTypeStrategy[]
+    }
+
+    class RoomTypeStrategy {
+        <<interface>>
+        + id: string
+        + label: string
+        + isConfigValid(config: any): boolean
+        + renderShow(config: any): ReactElement
+        + renderEdit(config: any, onChange: Function): ReactElement
+    }
+
+    class StructuredMessagingStrategy {
+        + id = "structured"
+        + label = "Structured Messaging"
+        + isConfigValid(config): boolean
+        + renderShow(config): ReactElement
+        + renderEdit(config, onChange): ReactElement
+    }
+
+    RoomTypeFactory --> "1..*" RoomTypeStrategy
+    StructuredMessagingStrategy ..|> RoomTypeStrategy
+```
+
 ---
 
 ## 2. Technology Stack
