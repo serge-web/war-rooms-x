@@ -1,4 +1,4 @@
-import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext, useGetOne } from 'react-admin'
+import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext } from 'react-admin'
 import { useState } from 'react'
 import Form from '@rjsf/core'
 import { RJSFSchema } from '@rjsf/utils'
@@ -20,41 +20,38 @@ const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
   )
 }
 
-export const ShowTemplates = ({ id }: { id?: string }) => {
-  // Always call the hook at the top level, but use the enabled option to control when the request is made
-  const { data: record, isLoading, error } = useGetOne(
-    'templates',
-    { id: id || '' }, // Provide a fallback empty string to avoid undefined
-    { enabled: !!id } // Only make the request if id is provided
+// Form preview component that uses useRecordContext
+const FormPreview = () => {
+  const record = useRecordContext()
+  if (!record) return null
+  
+  return (
+    <div style={{ marginTop: '1rem', border: '1px solid #eee', padding: '1.5rem', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
+      <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#333' }}>Form Preview - {record.name}</h3>
+      <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '4px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <Form
+          schema={record.schema as RJSFSchema}
+          uiSchema={record.uiSchema}
+          validator={validator}
+          onSubmit={(e) => {
+            console.log('Form submitted with data:', e.formData)
+          }}
+          formData={{}}
+          liveValidate
+        />
+      </div>
+    </div>
   )
-  
-  console.log('record', record, 'isLoading', isLoading, 'error', error)
-  
+}
+
+export const ShowTemplates = ({ id }: { id?: string }) => {
   // Return early if no id is provided
   if (!id) return null
   
   return (
     <Show title='> Template details' id={id}>
       <SimpleShowLayout>
-        <TextField source='id' />
-        <TextField source='name' />
-        {record && !isLoading && (
-          <div style={{ marginTop: '1rem', border: '1px solid #eee', padding: '1.5rem', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#333' }}>Form Preview</h3>
-            <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '4px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <Form
-                schema={record.schema as RJSFSchema}
-                uiSchema={record.uiSchema}
-                validator={validator}
-                onSubmit={(e) => {
-                  console.log('Form submitted with data:', e.formData)
-                }}
-                formData={{}}
-                liveValidate
-              />
-            </div>
-          </div>
-        )}
+        <FormPreview />
       </SimpleShowLayout>
     </Show>
   )
