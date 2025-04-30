@@ -1,9 +1,11 @@
 import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext } from 'react-admin'
 import { useState } from 'react'
-import { RJSFSchema } from '@rjsf/utils'
+import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
 import { Theme as AntdTheme } from '@rjsf/antd'
+import { Flex } from 'antd'
+import './templates.css'
 
 // Create the Ant Design themed form
 const Form = withTheme(AntdTheme)
@@ -39,6 +41,17 @@ const FormPreview = () => {
       norender: false,
     }
   }
+
+  function CustomFieldTemplate(props: FieldTemplateProps) {
+    const { id, label, children } = props;
+    const isVertical = id === 'root'
+    return (
+      <Flex className='form-item' id={id} vertical={isVertical}>
+        <label htmlFor={id}>{label}</label>
+        <div>{children}</div>
+      </Flex>
+    );
+  }
   
   return (
     <div style={{ marginTop: '1rem', border: '1px solid #eee', padding: '1.5rem', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
@@ -48,12 +61,11 @@ const FormPreview = () => {
           schema={record.schema as RJSFSchema}
           uiSchema={enhancedUiSchema}
           validator={validator}
-          onSubmit={(e) => {
-            console.log('Form submitted with data:', e.formData)
-          }}
           formData={{}}
           liveValidate
-          className='ant-form ant-form-vertical'
+          className='ant-form ant-form-horizontal'
+          children={null} // hide the submit button
+          templates={{ FieldTemplate: CustomFieldTemplate }}
         />
       </div>
     </div>
