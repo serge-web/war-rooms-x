@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Edit, useRecordContext, useNotify, useRedirect, SaveButton, Toolbar } from 'react-admin'
-import { Card, Input, Button, Space } from 'antd'
+import { Card, Button, Space } from 'antd'
 import { RJSFSchema, UiSchema, FieldTemplateProps } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
@@ -14,12 +14,12 @@ const Form = withTheme(AntdTheme)
 // Custom toolbar that only shows the save button
 const EditToolbar = (props: { onSave?: () => void }) => (
   <Toolbar {...props}>
-    <SaveButton />
+    <SaveButton onClick={props.onSave} />
   </Toolbar>
 )
 
 // Form preview component that uses the current edit state
-const FormPreview = ({ schema, uiSchema, name }: { schema: RJSFSchema, uiSchema: UiSchema, name: string }) => {
+const FormPreview = ({ schema, uiSchema }: { schema: RJSFSchema, uiSchema: UiSchema }) => {
   // Create a merged UI schema with Ant Design specific options
   const enhancedUiSchema = {
     ...uiSchema,
@@ -30,6 +30,11 @@ const FormPreview = ({ schema, uiSchema, name }: { schema: RJSFSchema, uiSchema:
       norender: false,
     }
   }
+
+  const name = useMemo(() => {
+    const record = schema.title || 'unnamed'
+    return record
+  }, [schema])
 
   function CustomFieldTemplate(props: FieldTemplateProps) {
     const { id, label, children } = props
@@ -73,14 +78,34 @@ const FormPreview = ({ schema, uiSchema, name }: { schema: RJSFSchema, uiSchema:
 }
 
 // Template editor form component that uses the record context
-const TemplateEditorForm = () => {
+const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (saveHandler: () => void) => void }) => {
   const record = useRecordContext()
   const notify = useNotify()
   const redirect = useRedirect()
   
   const [schema, setSchema] = useState<RJSFSchema>({ type: 'object', properties: {} })
   const [uiSchema, setUiSchema] = useState<UiSchema>({})
-  const [name, setName] = useState<string>('')
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(50) // percentage
+  
+  // Refs for draggable divider
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dividerRef = useRef<HTMLDivElement>(null)
+  const isDraggingRef = useRef<boolean>(false)
+
+  // Custom save function wrapped in useCallback to prevent recreation on every render
+  const handleSave = useCallback(() => {
+    // The save will be handled by react-admin
+    // We're just updating the record context with our edited values
+    if (record) {
+      record.schema = schema
+      record.uiSchema = uiSchema
+    } 
+    
+    notify('Template saved successfully', { type: 'success' })
+    
+    // After save, redirect to the list view
+    redirect('list', 'templates')
+  }, [record, schema, uiSchema, notify, redirect])
 
   // Initialize form state from record
   useEffect(() => {
@@ -96,30 +121,13 @@ const TemplateEditorForm = () => {
       
       setSchema(initialSchema)
       setUiSchema(record.uiSchema || {})
-      setName(record.name || '')
     }
   }, [record])
-
-  // Handle name change
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value)
-  }
-
-  // Custom save function
-  const handleSave = () => {
-    // The save will be handled by react-admin
-    // We're just updating the record context with our edited values
-    if (record) {
-      record.schema = schema
-      record.uiSchema = uiSchema
-      record.name = name
-    }
-    
-    notify('Template saved successfully', { type: 'success' })
-    
-    // After save, redirect to the list view
-    redirect('list', 'templates')
-  }
+  
+  // Register the save handler with the parent component
+  useEffect(() => {
+    registerSaveHandler(handleSave)
+  }, [registerSaveHandler, handleSave])
 
   // Handle cancel
   const handleCancel = () => {
@@ -131,20 +139,48 @@ const TemplateEditorForm = () => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <Card title="Template Name">
-        <Input
-          value={name}
-          onChange={handleNameChange}
-          style={{ width: '100%' }}
-        />
-      </Card>
-      
-      <div style={{ display: 'flex', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>      
+      {/* Resizable panels with draggable divider */}
+      <div 
+        ref={containerRef}
+        style={{ 
+          display: 'flex', 
+          position: 'relative',
+          height: 'calc(100vh - 250px)', // Adjust based on your layout
+          minHeight: '500px'
+        }}
+        onMouseUp={() => {
+          isDraggingRef.current = false
+          document.body.style.cursor = 'default'
+        }}
+        onMouseMove={(e) => {
+          if (!isDraggingRef.current || !containerRef.current) return
+          
+          const containerRect = containerRef.current.getBoundingClientRect()
+          const containerWidth = containerRect.width
+          const mouseX = e.clientX - containerRect.left
+          
+          // Calculate percentage (constrained between 30% and 70%)
+          let newLeftWidth = (mouseX / containerWidth) * 100
+          newLeftWidth = Math.max(30, Math.min(70, newLeftWidth))
+          
+          setLeftPanelWidth(newLeftWidth)
+        }}
+        onMouseLeave={() => {
+          isDraggingRef.current = false
+          document.body.style.cursor = 'default'
+        }}
+      >
         {/* Editor Section */}
-        <div style={{ flex: 1 }}>
+        <div style={{ 
+          width: `${leftPanelWidth}%`, 
+          height: '100%',
+          overflow: 'hidden',
+          transition: isDraggingRef.current ? 'none' : 'width 0.1s ease'
+        }}>
           <Card
             title="Form Builder"
+            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
             extra={
               <Space>
                 <Button onClick={handleCancel}>Cancel</Button>
@@ -156,8 +192,9 @@ const TemplateEditorForm = () => {
                 </Button>
               </Space>
             }
+            bodyStyle={{ flex: 1, overflow: 'auto' }}
           >
-            <div style={{ height: '600px', overflow: 'auto' }}>
+            <div style={{ height: '100%' }}>
               <FormBuilder
                 schema={JSON.stringify(schema)}
                 uischema={JSON.stringify(uiSchema)}
@@ -177,13 +214,55 @@ const TemplateEditorForm = () => {
           </Card>
         </div>
         
+        {/* Draggable divider */}
+        <div
+          ref={dividerRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${leftPanelWidth}%`,
+            width: '10px',
+            transform: 'translateX(-50%)',
+            cursor: 'col-resize',
+            zIndex: 10,
+            transition: isDraggingRef.current ? 'none' : 'left 0.1s ease'
+          }}
+          onMouseDown={(e) => {
+            isDraggingRef.current = true
+            document.body.style.cursor = 'col-resize'
+            e.preventDefault() // Prevent text selection during drag
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: '50%',
+              width: '4px',
+              backgroundColor: '#e8e8e8',
+              transform: 'translateX(-50%)',
+              borderRadius: '2px'
+            }}
+          />
+        </div>
+        
         {/* Preview Section */}
-        <div style={{ flex: 1 }}>
-          <Card title="Live Preview">
+        <div style={{ 
+          width: `${100 - leftPanelWidth}%`, 
+          height: '100%',
+          overflow: 'hidden',
+          transition: isDraggingRef.current ? 'none' : 'width 0.1s ease'
+        }}>
+          <Card 
+            title="Live Preview"
+            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            bodyStyle={{ flex: 1, overflow: 'auto' }}
+          >
             <FormPreview 
               schema={schema} 
               uiSchema={uiSchema}
-              name={name}
             />
           </Card>
         </div>
@@ -194,15 +273,30 @@ const TemplateEditorForm = () => {
 
 // Main edit template component that wraps the form with the Edit component
 export const EditTemplate = () => {
+  // Create a ref to store the save function from the child component
+  const saveRef = useRef<(() => void) | null>(null)
+  
+  // Handler for the save button in the toolbar
+  const handleSave = () => {
+    if (saveRef.current) {
+      saveRef.current()
+    }
+  }
+  
+  // Function to register the save handler from the child component
+  const registerSaveHandler = (saveHandler: () => void) => {
+    saveRef.current = saveHandler
+  }
+  
   return (
     <Edit 
       title="Edit Template" 
       redirect="list"
       component="div"
       actions={false}
-      toolbar={<EditToolbar onSave={() => {}} />}
+      toolbar={<EditToolbar onSave={handleSave} />}
     >
-      <TemplateEditorForm />
+      <TemplateEditorForm registerSaveHandler={registerSaveHandler} />
     </Edit>
   )
 }
