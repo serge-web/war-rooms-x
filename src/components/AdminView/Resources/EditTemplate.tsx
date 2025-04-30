@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Edit, useRecordContext, useRedirect } from 'react-admin'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Edit, useRecordContext, useRedirect, useNotify, useSaveContext } from 'react-admin'
 import { Card, Button, Space } from 'antd'
 import { RJSFSchema, UiSchema, FieldTemplateProps } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
@@ -78,35 +78,23 @@ interface TemplateEditorFormProps {
   initialSchema?: RJSFSchema
   initialUiSchema?: UiSchema
   onChange: (schema: RJSFSchema, uiSchema: UiSchema) => void
+  doSave: () => void
 }
 
 const TemplateEditorForm = ({ 
   initialSchema, 
   initialUiSchema, 
-  onChange
+  onChange,
+  doSave
 }: TemplateEditorFormProps) => {
   const redirect = useRedirect()
+  const notify = useNotify()
   
   // Local state for the form data
-  const [schema, setSchema] = useState<RJSFSchema>({ type: 'object', properties: {} })
-  const [uiSchema, setUiSchema] = useState<UiSchema>({})
+  const [schema, setSchema] = useState<RJSFSchema>(initialSchema || { type: 'object', properties: {} })
+  const [uiSchema, setUiSchema] = useState<UiSchema>(initialUiSchema || {})
 
-  // Initialize form state from props
-  useEffect(() => {
-    if (initialSchema) {
-      // Ensure schema has required structure for form builder
-      const processedSchema = { ...initialSchema }
-      if (!processedSchema.type) {
-        processedSchema.type = 'object'
-      }
-      if (!processedSchema.properties) {
-        processedSchema.properties = {}
-      }
-      
-      setSchema(processedSchema)
-      setUiSchema(initialUiSchema || {})
-    }
-  }, [initialSchema, initialUiSchema])
+  console.log('template editor render', schema.title, uiSchema)
   
   // Propagate changes to parent component
   useEffect(() => {
@@ -133,6 +121,14 @@ const TemplateEditorForm = ({
             extra={
               <Space>
                 <Button onClick={handleCancel}>Cancel</Button>
+                <Button type='primary' onClick={() => {
+                  // We don't need to manually save here as React Admin's Edit component
+                  // will handle the save action when its save button is clicked
+                  notify('Ready to save', { type: 'info' })
+                  doSave()
+                }}>
+                  Save
+                </Button>
               </Space>
             }
             bodyStyle={{ flex: 1, overflow: 'auto' }}
@@ -173,79 +169,48 @@ const TemplateEditorForm = ({
   )
 }
 
+// This component will be rendered inside the Edit context
+const EditForm: React.FC = () => {
+  const record = useRecordContext()
+  const [localState, setLocalState] = useState({ schema: record?.schema, uiSchema: record?.uiSchema })
+  const { save } = useSaveContext()
+
+  console.log('EditForm render', record?.schema.title)
+  
+  const performUpdate = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
+    const newSchema = JSON.stringify(schema)
+    const newUiSchema = JSON.stringify(uiSchema)
+    const oldSchema = JSON.stringify(localState?.schema)
+    const oldUiSchema = JSON.stringify(localState?.uiSchema)
+    
+    if (newSchema !== oldSchema || newUiSchema !== oldUiSchema) {
+      setLocalState({ schema, uiSchema })
+    }
+  }, [ localState])
+  
+  return (
+    <div data-testid="edit-form">
+      <TemplateEditorForm 
+        initialSchema={record?.schema} 
+        initialUiSchema={record?.uiSchema}
+        onChange={performUpdate}
+        doSave={() => save && save(localState)}
+      />
+    </div>
+  )
+}
+
 // Main edit template component that wraps the form with the Edit component
 export const EditTemplate = () => {
-  // This component will be rendered inside the Edit context
-  const EditForm = () => {
-    const record = useRecordContext()
-    const [formData, setFormData] = useState<{ schema: RJSFSchema, uiSchema: UiSchema }>({ 
-      schema: record?.schema || { type: 'object', properties: {} }, 
-      uiSchema: record?.uiSchema || {} 
-    })
-    
-    // Initialize form data from record when it changes
-    useEffect(() => {
-      if (record) {
-        setFormData({
-          schema: record.schema || { type: 'object', properties: {} },
-          uiSchema: record.uiSchema || {}
-        })
-      }
-    }, [record])
-    
-    // We'll use the formData directly in the save process
-    
-    // Handle form data changes
-    const handleFormChange = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
-      setFormData({ schema, uiSchema })
-    }, [])
-    
-    return (
-      <div data-testid="edit-form">
-        {/* Store the current form data in a data attribute for the transform function */}
-        <div 
-          style={{ display: 'none' }} 
-          data-form-data={JSON.stringify(formData)}
-        />
-        <TemplateEditorForm 
-          initialSchema={record?.schema} 
-          initialUiSchema={record?.uiSchema}
-          onChange={handleFormChange}
-        />
-      </div>
-    )
-  }
   
   return (
     <Edit 
       title="Edit Template" 
       redirect="list"
       component="div"
-      actions={false}
-      transform={(data) => {
-        // This is called by React Admin before saving
-        // Find the EditForm component's formData and merge it with the data
-        const editForm = document.querySelector('[data-testid="edit-form"]')
-        if (editForm && editForm.__reactProps$) {
-          // Access the formData through the DOM (not ideal but works as a fallback)
-          const formDataElement = editForm.querySelector('[data-form-data]')
-          if (formDataElement && formDataElement.dataset.formData) {
-            try {
-              const formData = JSON.parse(formDataElement.dataset.formData)
-              return {
-                ...data,
-                schema: formData.schema,
-                uiSchema: formData.uiSchema
-              }
-            } catch (e) {
-              console.error('Error parsing form data:', e)
-            }
-          }
-        }
-        return data
-      }}
+      mutationMode="pessimistic"
     >
-      <EditForm />
+      <EditForm/>
     </Edit>
   )
 }
