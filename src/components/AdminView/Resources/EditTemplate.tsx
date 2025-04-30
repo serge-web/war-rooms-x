@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Edit, useRecordContext, useNotify, useRedirect, SaveButton, Toolbar } from 'react-admin'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Edit, useRecordContext, useRedirect } from 'react-admin'
 import { Card, Button, Space } from 'antd'
 import { RJSFSchema, UiSchema, FieldTemplateProps } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
@@ -12,12 +12,7 @@ import './templates.css'
 // Create the Ant Design themed form
 const Form = withTheme(AntdTheme)
 
-// Custom toolbar that only shows the save button
-const EditToolbar = (props: { onSave?: () => void }) => (
-  <Toolbar {...props}>
-    <SaveButton onClick={props.onSave} />
-  </Toolbar>
-)
+// We don't need a custom toolbar anymore as we're using React Admin's default save mechanism
 
 // Form preview component that uses the current edit state
 const FormPreview = ({ schema, uiSchema }: { schema: RJSFSchema, uiSchema: UiSchema }) => {
@@ -78,60 +73,54 @@ const FormPreview = ({ schema, uiSchema }: { schema: RJSFSchema, uiSchema: UiSch
   )
 }
 
-// Template editor form component that uses the record context
-const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (saveHandler: () => void) => void }) => {
-  const record = useRecordContext()
-  const notify = useNotify()
+// Template editor form component
+interface TemplateEditorFormProps {
+  initialSchema?: RJSFSchema
+  initialUiSchema?: UiSchema
+  onChange: (schema: RJSFSchema, uiSchema: UiSchema) => void
+}
+
+const TemplateEditorForm = ({ 
+  initialSchema, 
+  initialUiSchema, 
+  onChange
+}: TemplateEditorFormProps) => {
   const redirect = useRedirect()
   
+  // Local state for the form data
   const [schema, setSchema] = useState<RJSFSchema>({ type: 'object', properties: {} })
   const [uiSchema, setUiSchema] = useState<UiSchema>({})
 
-  // Custom save function wrapped in useCallback to prevent recreation on every render
-  const handleSave = useCallback(() => {
-    // The save will be handled by react-admin
-    // We're just updating the record context with our edited values
-    if (record) {
-      record.schema = schema
-      record.uiSchema = uiSchema
-    } 
-    
-    notify('Template saved successfully', { type: 'success' })
-    
-    // After save, redirect to the list view
-    redirect('list', 'templates')
-  }, [record, schema, uiSchema, notify, redirect])
-
-  // Initialize form state from record
+  // Initialize form state from props
   useEffect(() => {
-    if (record) {
+    if (initialSchema) {
       // Ensure schema has required structure for form builder
-      const initialSchema = record.schema || { type: 'object', properties: {} }
-      if (!initialSchema.type) {
-        initialSchema.type = 'object'
+      const processedSchema = { ...initialSchema }
+      if (!processedSchema.type) {
+        processedSchema.type = 'object'
       }
-      if (!initialSchema.properties) {
-        initialSchema.properties = {}
+      if (!processedSchema.properties) {
+        processedSchema.properties = {}
       }
       
-      setSchema(initialSchema)
-      setUiSchema(record.uiSchema || {})
+      setSchema(processedSchema)
+      setUiSchema(initialUiSchema || {})
     }
-  }, [record])
+  }, [initialSchema, initialUiSchema])
   
-  // Register the save handler with the parent component
+  // Propagate changes to parent component
   useEffect(() => {
-    registerSaveHandler(handleSave)
-  }, [registerSaveHandler, handleSave])
+    onChange(schema, uiSchema)
+  }, [schema, uiSchema, onChange])
+  
+  // No longer need a save handler as React Admin handles saving
 
   // Handle cancel
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     redirect('list', 'templates')
-  }
+  }, [redirect])
 
-  if (!record) {
-    return <div>Loading...</div>
-  }
+  // No need to check for record anymore as we're getting data from props
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>      
@@ -144,12 +133,6 @@ const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (sav
             extra={
               <Space>
                 <Button onClick={handleCancel}>Cancel</Button>
-                <Button 
-                  type="primary"
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
               </Space>
             }
             bodyStyle={{ flex: 1, overflow: 'auto' }}
@@ -192,19 +175,45 @@ const TemplateEditorForm = ({ registerSaveHandler }: { registerSaveHandler: (sav
 
 // Main edit template component that wraps the form with the Edit component
 export const EditTemplate = () => {
-  // Create a ref to store the save function from the child component
-  const saveRef = useRef<(() => void) | null>(null)
-  
-  // Handler for the save button in the toolbar
-  const handleSave = () => {
-    if (saveRef.current) {
-      saveRef.current()
-    }
-  }
-  
-  // Function to register the save handler from the child component
-  const registerSaveHandler = (saveHandler: () => void) => {
-    saveRef.current = saveHandler
+  // This component will be rendered inside the Edit context
+  const EditForm = () => {
+    const record = useRecordContext()
+    const [formData, setFormData] = useState<{ schema: RJSFSchema, uiSchema: UiSchema }>({ 
+      schema: record?.schema || { type: 'object', properties: {} }, 
+      uiSchema: record?.uiSchema || {} 
+    })
+    
+    // Initialize form data from record when it changes
+    useEffect(() => {
+      if (record) {
+        setFormData({
+          schema: record.schema || { type: 'object', properties: {} },
+          uiSchema: record.uiSchema || {}
+        })
+      }
+    }, [record])
+    
+    // We'll use the formData directly in the save process
+    
+    // Handle form data changes
+    const handleFormChange = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
+      setFormData({ schema, uiSchema })
+    }, [])
+    
+    return (
+      <div data-testid="edit-form">
+        {/* Store the current form data in a data attribute for the transform function */}
+        <div 
+          style={{ display: 'none' }} 
+          data-form-data={JSON.stringify(formData)}
+        />
+        <TemplateEditorForm 
+          initialSchema={record?.schema} 
+          initialUiSchema={record?.uiSchema}
+          onChange={handleFormChange}
+        />
+      </div>
+    )
   }
   
   return (
@@ -213,9 +222,30 @@ export const EditTemplate = () => {
       redirect="list"
       component="div"
       actions={false}
-      toolbar={<EditToolbar onSave={handleSave} />}
+      transform={(data) => {
+        // This is called by React Admin before saving
+        // Find the EditForm component's formData and merge it with the data
+        const editForm = document.querySelector('[data-testid="edit-form"]')
+        if (editForm && editForm.__reactProps$) {
+          // Access the formData through the DOM (not ideal but works as a fallback)
+          const formDataElement = editForm.querySelector('[data-form-data]')
+          if (formDataElement && formDataElement.dataset.formData) {
+            try {
+              const formData = JSON.parse(formDataElement.dataset.formData)
+              return {
+                ...data,
+                schema: formData.schema,
+                uiSchema: formData.uiSchema
+              }
+            } catch (e) {
+              console.error('Error parsing form data:', e)
+            }
+          }
+        }
+        return data
+      }}
     >
-      <TemplateEditorForm registerSaveHandler={registerSaveHandler} />
+      <EditForm />
     </Edit>
   )
 }
