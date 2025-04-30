@@ -77,29 +77,44 @@ const FormPreview = ({ schema, uiSchema }: { schema: RJSFSchema, uiSchema: UiSch
 interface TemplateEditorFormProps {
   initialSchema?: RJSFSchema
   initialUiSchema?: UiSchema
-  onChange: (schema: RJSFSchema, uiSchema: UiSchema) => void
-  doSave: () => void
 }
 
 const TemplateEditorForm = ({ 
   initialSchema, 
-  initialUiSchema, 
-  onChange,
-  doSave
+  initialUiSchema
 }: TemplateEditorFormProps) => {
   const redirect = useRedirect()
   const notify = useNotify()
+  const record = useRecordContext()
   
   // Local state for the form data
   const [schema, setSchema] = useState<RJSFSchema>(initialSchema || { type: 'object', properties: {} })
   const [uiSchema, setUiSchema] = useState<UiSchema>(initialUiSchema || {})
 
-  console.log('template editor render', schema.title, uiSchema)
+  const [localState, setLocalState] = useState({ schema: record?.schema, uiSchema: record?.uiSchema })
+  const { save } = useSaveContext()
+
+  const doSave = useCallback(() => {
+    if (save) {
+      save(localState)
+    }
+  }, [save, localState])
+
+  const performUpdate = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
+    const newSchema = JSON.stringify(schema)
+    const newUiSchema = JSON.stringify(uiSchema)
+    const oldSchema = JSON.stringify(localState?.schema)
+    const oldUiSchema = JSON.stringify(localState?.uiSchema)
+    
+    if (newSchema !== oldSchema || newUiSchema !== oldUiSchema) {
+      setLocalState({ schema, uiSchema })
+    }
+  }, [ localState])
   
   // Propagate changes to parent component
   useEffect(() => {
-    onChange(schema, uiSchema)
-  }, [schema, uiSchema, onChange])
+    performUpdate(schema, uiSchema)
+  }, [schema, uiSchema, performUpdate])
   
   // No longer need a save handler as React Admin handles saving
 
@@ -107,6 +122,7 @@ const TemplateEditorForm = ({
   const handleCancel = useCallback(() => {
     redirect('list', 'templates')
   }, [redirect])
+
 
   // No need to check for record anymore as we're getting data from props
 
@@ -172,29 +188,12 @@ const TemplateEditorForm = ({
 // This component will be rendered inside the Edit context
 const EditForm: React.FC = () => {
   const record = useRecordContext()
-  const [localState, setLocalState] = useState({ schema: record?.schema, uiSchema: record?.uiSchema })
-  const { save } = useSaveContext()
 
-  console.log('EditForm render', record?.schema.title)
-  
-  const performUpdate = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
-    const newSchema = JSON.stringify(schema)
-    const newUiSchema = JSON.stringify(uiSchema)
-    const oldSchema = JSON.stringify(localState?.schema)
-    const oldUiSchema = JSON.stringify(localState?.uiSchema)
-    
-    if (newSchema !== oldSchema || newUiSchema !== oldUiSchema) {
-      setLocalState({ schema, uiSchema })
-    }
-  }, [ localState])
-  
   return (
     <div data-testid="edit-form">
       <TemplateEditorForm 
         initialSchema={record?.schema} 
         initialUiSchema={record?.uiSchema}
-        onChange={performUpdate}
-        doSave={() => save && save(localState)}
       />
     </div>
   )
