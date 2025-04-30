@@ -28,7 +28,7 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<StructuredM
    * @param config Configuration to validate
    * @returns Type guard for StructuredMessagingConfig
    */
-  public isConfigValid(config: any): config is StructuredMessagingConfig {
+  public isConfigValid(config: StructuredMessagingConfig): config is StructuredMessagingConfig {
     return (
       config !== null &&
       typeof config === 'object' &&
@@ -73,6 +73,7 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<StructuredM
       <div>
         <h3>Edit Structured Messaging Configuration</h3>
         <p>Template selection would be implemented here</p>
+        <p>{JSON.stringify([config, !!onChange])}</p>
         {/* This would be replaced with actual form elements */}
       </div>
     )

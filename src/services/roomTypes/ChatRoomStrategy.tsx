@@ -52,12 +52,27 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
    * @returns React element for editing the configuration
    */
   public renderEdit(
+    config: ChatRoomConfig,
+    onChange: (config: ChatRoomConfig) => void
   ): ReactElement {
     // Simple editor for chat room configuration
     // This would be expanded in a real implementation
     return (
       <div>
         <h3>Edit Chat Room Configuration</h3>
+        <p>Room Type: {config.roomType}</p>
+        <button
+          onClick={() => {
+            // Example of using onChange
+            onChange({
+              ...config,
+              // This is just a placeholder to show we're using onChange
+              roomType: 'chat'
+            })
+          }}
+        >
+          Update Configuration
+        </button>
         <p>No additional configuration needed for basic chat rooms.</p>
       </div>
     )
