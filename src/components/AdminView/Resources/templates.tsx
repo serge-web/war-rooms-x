@@ -1,8 +1,12 @@
 import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext } from 'react-admin'
 import { useState } from 'react'
-import Form from '@rjsf/core'
 import { RJSFSchema } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
+import { withTheme } from '@rjsf/core'
+import { Theme as AntdTheme } from '@rjsf/antd'
+
+// Create the Ant Design themed form
+const Form = withTheme(AntdTheme)
 
 interface BoldNameFieldProps {
   source: string
@@ -25,19 +29,31 @@ const FormPreview = () => {
   const record = useRecordContext()
   if (!record) return null
   
+  // Create a merged UI schema with Ant Design specific options
+  const enhancedUiSchema = {
+    ...record.uiSchema,
+    'ui:submitButtonOptions': {
+      props: {
+        className: 'ant-btn ant-btn-primary'
+      },
+      norender: false,
+    }
+  }
+  
   return (
     <div style={{ marginTop: '1rem', border: '1px solid #eee', padding: '1.5rem', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
       <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#333' }}>Form Preview - {record.name}</h3>
       <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '4px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <Form
           schema={record.schema as RJSFSchema}
-          uiSchema={record.uiSchema}
+          uiSchema={enhancedUiSchema}
           validator={validator}
           onSubmit={(e) => {
             console.log('Form submitted with data:', e.formData)
           }}
           formData={{}}
           liveValidate
+          className='ant-form ant-form-vertical'
         />
       </div>
     </div>
