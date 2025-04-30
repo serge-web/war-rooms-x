@@ -18,22 +18,6 @@
   max-width: calc(100% - 140px);
 }
 
-/* Number field styles */
-.number-field {
-  margin-bottom: 24px;
-}
-
-.number-widget-container {
-  padding: 8px 0;
-  width: 100%;
-}
-
-/* Slider specific styles */
-.number-field .ant-slider {
-  margin: 12px 0;
-  width: 100%;
-}
-
 /* Ensure slider track is visible and interactive */
 .ant-slider-rail, .ant-slider-track {
   height: 4px !important;

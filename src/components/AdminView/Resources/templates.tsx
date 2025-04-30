@@ -42,7 +42,7 @@ const FormPreview = () => {
   }
 
   function CustomFieldTemplate(props: FieldTemplateProps) {
-    const { id, label, children, schema, uiSchema } = props
+    const { id, label, children } = props
     const isRoot = id === 'root'
     
     // Root level container gets special treatment
@@ -53,21 +53,7 @@ const FormPreview = () => {
         </div>
       )
     }
-    
-    // Check if this is a number field with any special widget
-    const isNumberField = schema.type === 'number' || schema.type === 'integer'
-    const hasNumberWidget = isNumberField && uiSchema?.['ui:widget'] !== undefined
-    
-    // Special handling for number fields with widgets (sliders, range inputs, etc.)
-    if (isNumberField && hasNumberWidget) {
-      return (
-        <div className='form-item number-field' id={id}>
-          <label htmlFor={id}>{label}</label>
-          <div className='field-container number-widget-container'>{children}</div>
-        </div>
-      )
-    }
-    
+
     // Standard field with label on the left
     return (
       <div className='form-item' id={id}>
