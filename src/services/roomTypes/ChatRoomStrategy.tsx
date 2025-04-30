@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 import { RoomTypeStrategy } from './RoomTypeStrategy'
-import { ChatRoomConfig } from '../types/rooms-d'
+import { ChatRoomConfig } from '../../types/rooms-d'
 
 /**
  * Strategy implementation for standard chat rooms

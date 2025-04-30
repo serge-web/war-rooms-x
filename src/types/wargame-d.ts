@@ -2,7 +2,7 @@ import { DataProvider } from "react-admin"
 import { XMPPService } from "../services/XMPPService"
 import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
 import { ThemeConfig } from "antd"
-import { RoomTypeFactory } from "../roomTypes/RoomTypeFactory"
+import { RoomTypeFactory } from "../services/roomTypes/RoomTypeFactory"
 
 export interface GamePropertiesType {
   name: string
