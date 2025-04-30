@@ -202,14 +202,8 @@ const templates: Template[] = [
       required: ['title', 'description']
     },
     uiSchema: {
-      urgency: {
-        'ui:widget': 'range'
-      },
       description: {
         'ui:widget': 'textarea',
-        'ui:options': {
-          rows: 5
-        }
       }
     }
   },
@@ -261,21 +255,6 @@ const templates: Template[] = [
         }
       },
     uiSchema: {
-      "integer": {
-        "ui:widget": "updown"
-      },
-      "numberEnumRadio": {
-        "ui:widget": "radio",
-        "ui:options": {
-          "inline": true
-        }
-      },
-      "integerRange": {
-        "ui:widget": "range"
-      },
-      "integerRangeSteps": {
-        "ui:widget": "range"
-      }
     }
   }
 ]
