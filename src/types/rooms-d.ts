@@ -74,6 +74,7 @@ export interface MapRoomConfig extends CustomRoomConfig {
 }
 
 export interface Template {
+  id: string
   name: string
   schema: RJSFSchema
   uiSchema: UiSchema

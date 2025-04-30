@@ -1,11 +1,12 @@
 import { RGameState, RGroup, RRoom, RUser } from "../components/AdminView/raTypes-d"
-import { ChatMessage, GameMessage, MessageDetails } from "../types/rooms-d"
+import { ChatMessage, GameMessage, MessageDetails, Template } from "../types/rooms-d"
 
 interface MockBackend {
   wargames: RGameState[],
   users: RUser[],
   groups: RGroup[],
   chatrooms: RRoom[]
+  templates: Template[]
 }
 
 const admin: RUser = {id: 'admin', name: 'Game Control', email: 'admin'}
@@ -152,6 +153,28 @@ const chatrooms: RRoom[] = [
   {id: 'logs-chat', name: 'Logistics Debate', description: 'Logistics Debate, across forces, discussing logistic issues', members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
   {id: '__admin', name: '__admin', description: 'Game administration', public: true, dummyMessages: adminMessages}
 ]
+
+const templates: Template[] = [
+  {
+    id: 'chat',
+    name: 'Chat',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          title: 'Message'
+        }
+      }
+    },
+    uiSchema: {
+      message: {
+        'ui:widget': 'textarea'
+      }
+    }
+  }
+]
+
 export const mockBackend: MockBackend = {
   wargames: [wargame],
   users: [admin, blueCo, redCo, greenCo, blueLogs, redLogs, greenLogs],
@@ -161,5 +184,6 @@ export const mockBackend: MockBackend = {
     greenForce,
     umpires
   ],
-  chatrooms
+  chatrooms,
+  templates
 }
