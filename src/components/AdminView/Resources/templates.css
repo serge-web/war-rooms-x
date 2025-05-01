@@ -38,10 +38,6 @@ div.show, div.collapsing {
   margin: 0px !important;
 }
 
-.form-builder span.toggle-collapse {
-  display: inline-block !important;
-}
-
 .form-builder h4 {
   display: inline !important;
 }
@@ -50,35 +46,42 @@ div.show, div.collapsing {
   padding: 2px !important;
   width: 100% !important;
 }
-/*
+
 .form-builder .card-container {
   width: 100% !important;
 }
 
-.form-builder .d-flex {
-  color: #0b0 !important;
+div.collapse > div > div {
+  margin: 0px !important;
 }
 
-.form-builder .toggle-collapse span {
+.form-builder .card-entry > h5, .form-builder .card-entry > div {
   display: inline !important;
 }
 
+.form-builder .card-entry > h5, .form-builder .card-entry > .card-select {
+  display: block !important;
+}
 
-.form-builder .card-entry-row {
-  display: inline !important;
-  width: 100% !important;
+
+.form-builder .card-entry {
+  padding: 0px !important;
 }
-.form-builder .card-entry h5, .form-builder .card-entry div {
-  display: inline !important;
+
+/** drop the info buttons */
+.form-builder .card-entry > h5 span {
+  display: none;
 }
+
+
 
 .form-builder .card-entry-row {
   display: flex !important;
 }
 
-.form-builder .card-entry-row > * {
+.form-builder .card-entry-row > .card-entry {
   display: inline !important;
 }
-
+/*
 
    */
