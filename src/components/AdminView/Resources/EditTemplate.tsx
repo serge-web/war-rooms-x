@@ -7,7 +7,7 @@ import { withTheme } from '@rjsf/core'
 import { Theme as AntdTheme } from '@rjsf/antd'
 import { FormBuilder } from '@ginkgo-bioworks/react-json-schema-form-builder'
 import DraggableContainer from '../../common/DraggableContainer'
-import './templates.css'
+import './edit-templates.css'
 
 // Create the Ant Design themed form
 const Form = withTheme(AntdTheme)
