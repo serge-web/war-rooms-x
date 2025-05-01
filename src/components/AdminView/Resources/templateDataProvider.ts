@@ -1,6 +1,6 @@
 import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
-import { XMPPService } from "../../services/XMPPService"
-import { Template } from "../../types/rooms-d"
+import { XMPPService } from "../../../services/XMPPService"
+import { Template } from "../../../types/rooms-d"
 
 const TEMPLATE_COLLECTION = 'templates'
 const TEMPLATE_PREFIX = 'template:'

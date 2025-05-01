@@ -3,9 +3,9 @@ import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameS
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
-import WargameDataProvider from "./wargameDataProvider"
 import { Template } from "../../types/rooms-d"
-import TemplateDataProvider from "./templateDataProvider"
+import { TemplateDataProvider } from "./Resources/templateDataProvider"
+import { WargameDataProvider } from "./Resources/wargameDataProvider"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
