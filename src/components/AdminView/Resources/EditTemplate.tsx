@@ -8,6 +8,7 @@ import { Theme as AntdTheme } from '@rjsf/antd'
 import { FormBuilder } from '@ginkgo-bioworks/react-json-schema-form-builder'
 import DraggableContainer from '../../common/DraggableContainer'
 import './edit-templates.css'
+import { Template } from '../../../types/rooms-d'
 
 // Create the Ant Design themed form
 const Form = withTheme(AntdTheme)
@@ -85,7 +86,7 @@ const TemplateEditorForm = ({
 }: TemplateEditorFormProps) => {
   const redirect = useRedirect()
   const notify = useNotify()
-  const record = useRecordContext()
+  const record = useRecordContext() as Template
   
   // Local state for the form data
   const [schema, setSchema] = useState<RJSFSchema>(initialSchema || { type: 'object', properties: {} })
@@ -96,7 +97,6 @@ const TemplateEditorForm = ({
 
   const doSave = useCallback(() => {
     const insertId = { id: record?.id, ...localState }
-    console.log('about to save', insertId)
     if (save) {
       save(insertId)
     }
@@ -190,13 +190,16 @@ const TemplateEditorForm = ({
 
 // This component will be rendered inside the Edit context
 const EditForm: React.FC = () => {
-  const record = useRecordContext()
+  const record = useRecordContext() as Template
+  if (!record) {
+    return null
+  }
 
   return (
     <div data-testid="edit-form">
       <TemplateEditorForm 
-        initialSchema={record?.schema} 
-        initialUiSchema={record?.uiSchema}
+        initialSchema={record.schema} 
+        initialUiSchema={record.uiSchema}
       />
     </div>
   )

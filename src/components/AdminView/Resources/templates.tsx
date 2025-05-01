@@ -1,32 +1,19 @@
-import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext, EditButton, TopToolbar, Create, SimpleForm, TextInput } from 'react-admin'
+import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext, EditButton, TopToolbar, Create, SimpleForm, TextInput, FunctionField } from 'react-admin'
 import React, { useState } from 'react'
 import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
 import { Theme as AntdTheme } from '@rjsf/antd'
 import './templates.css'
+import { Template } from '../../../types/rooms-d'
+import { Typography } from 'antd'
 
 // Create the Ant Design themed form
 const Form = withTheme(AntdTheme)
 
-interface BoldNameFieldProps {
-  selectedId: string | null
-}
-
-const BoldNameField = ({ selectedId }: BoldNameFieldProps) => {
-  const record = useRecordContext()
-  if (!record) return null
-  
-  return (
-    <span style={{ fontWeight: record.id === selectedId ? 'bold' : 'normal' }}>
-      {record.schema.title || 'Pending'}
-    </span>
-  )
-}
-
 // Form preview component that uses useRecordContext
 const FormPreview = () => {
-  const record = useRecordContext()
+  const record = useRecordContext() as Template
   if (!record) return null
   
   // Create a merged UI schema with Ant Design specific options
@@ -64,7 +51,7 @@ const FormPreview = () => {
   
   return (
     <div style={{ marginTop: '1rem', border: '1px solid #eee', padding: '1.5rem', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
-      <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#333' }}>Form Preview - {record.name}</h3>
+      <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#333' }}>Form Preview - {record.schema.title || 'Pending'}</h3>
       <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '4px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <Form
           schema={record.schema as RJSFSchema}
@@ -120,8 +107,9 @@ export const CreateTemplates: React.FC = () => {
   return (
     <Create title=" - Create new template" transform={transform}>
       <SimpleForm>
-        <TextInput source="id" />
-        <TextInput source="name" />
+        <Typography.Title level={4}>Create new template</Typography.Title>
+        <TextInput source="id" helperText="id values cannot be changed after creation" />
+        <TextInput source="name" helperText="human-readable name for template"/>
       </SimpleForm>
     </Create>
   )
@@ -141,8 +129,11 @@ export const ListTemplates: React.FC = () => {
               return false // Prevent default navigation
             }}
           >
-            <BoldNameField selectedId={selectedTemplateId} />
-            <TextField source='id' />
+            <TextField source='id'/>
+            <FunctionField source='schema.title' label='Name' render={(record: Template) => {
+            return     <span style={{ fontWeight: record.id === selectedTemplateId ? 'bold' : 'normal' }}>
+            {record.schema.title || 'Pending'}
+          </span>}}/>
             <EditButton />
           </Datagrid>
         </List>

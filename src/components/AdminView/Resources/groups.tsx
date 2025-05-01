@@ -1,5 +1,6 @@
 import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SaveButton, Toolbar, useRecordContext, useInput } from 'react-admin'
 import { useState } from 'react'
+import { RGroup } from '../raTypes-d'
 
 interface BoldDescriptionFieldProps {
   source: string
@@ -36,7 +37,7 @@ const ColorPicker = ({ source, label = 'Color', ...props }: ColorPickerProps) =>
 }
 
 const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps) => {
-  const record = useRecordContext()
+  const record = useRecordContext() as RGroup
   if (!record) return null
   
   return (

@@ -1,6 +1,7 @@
 import { Typography } from "antd";
 import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, SaveButton, Toolbar, useRecordContext } from "react-admin";
 import { useState } from 'react'
+import { RUser } from "../raTypes-d";
 
 interface BoldNameFieldProps {
   source: string
@@ -8,7 +9,7 @@ interface BoldNameFieldProps {
 }
 
 const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
-  const record = useRecordContext()
+  const record = useRecordContext() as RUser
   if (!record) return null
   
   return (

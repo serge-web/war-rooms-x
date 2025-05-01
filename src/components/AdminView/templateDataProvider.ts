@@ -1,7 +1,6 @@
-import { CreateParams, CreateResult, DataProvider, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
+import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
 import { XMPPService } from "../../services/XMPPService"
 import { Template } from "../../types/rooms-d"
-import { RTemplate } from "./raTypes-d"
 
 const TEMPLATE_COLLECTION = 'templates'
 const TEMPLATE_PREFIX = 'template:'
@@ -42,9 +41,7 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
       throw new Error('getManyReference not supported for templates')
     },
     update: async (_resource: string, params: UpdateParams<Template>): Promise<UpdateResult> => {
-      console.log('about to update', params)
       const updated = await xmppClient.updatePubSubDocument(TEMPLATE_PREFIX + params.data.id, params.data)
-      console.log('node updated', updated)
       if (!updated.success) {
         throw new Error('Failed to update template.' + updated.error)
       }
@@ -54,32 +51,17 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
       throw new Error('updateMany not supported for templates')
     },
     create: async (_resource: string, params: CreateParams<Template>): Promise<CreateResult> => {
-      // check for collection
-      console.log('creating', params.data)
-      const doc = await xmppClient.checkPubSubNodeExists(TEMPLATE_COLLECTION)
-      console.log('collection', doc)
-      if (!doc) {
-        // create collection
-        const res = await xmppClient.createPubSubCollection(TEMPLATE_COLLECTION)
-        console.log('create collection', res)
-        if (!res.success) {
-          throw new Error('Failed to create templates collection.' + res.error)
-        }
-      }
-
-      // ok, now the node]
+      // check node valid
       if (!params.data.id) {
         throw new Error('Template must have an id')
       }
-      console.log('about to publish template')
       const newNode = await xmppClient.publishPubSubLeaf(TEMPLATE_PREFIX + params.data.id, TEMPLATE_COLLECTION, params.data)
-      console.log('new node', newNode)
       if (!newNode.success) {
         throw new Error('Failed to create template.' + newNode.error)
       }
       return { data: params.data }    
     },
-    delete: async (_resource: string, params: DeleteParams<RTemplate>) => {
+    delete: async (_resource: string, params: DeleteParams): Promise<DeleteResult>=> {
       const deleted = await xmppClient.deletePubSubDocument(TEMPLATE_PREFIX + params.id)
       console.log('node deleted', deleted)
       if (!deleted.success) {
@@ -87,7 +69,13 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
       }
       return { data: null }
     },
-    deleteMany: async (): Promise<DeleteManyResult> => {
+    deleteMany: async (_resource: string, params: DeleteManyParams): Promise<DeleteManyResult> => {
+      const deleteItems = params.ids.map((id: string) => xmppClient.deletePubSubDocument(TEMPLATE_PREFIX + id))
+      const deleted = await Promise.all(deleteItems)
+      console.log('node deleted', deleted)
+      if (!deleted.some(d => d.success)) {
+        throw new Error('Failed to delete template:' + deleted.filter(d => !d.success).map(d => d.error).join(', '))
+      }
       return { data: [] }
     },
   }
