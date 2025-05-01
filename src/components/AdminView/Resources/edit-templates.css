@@ -1,8 +1,8 @@
 
 /** necessary for form item cards to be able to be collapsed */
-.show, .collapsing {
-  isplay: none;
-}
+/* .show, .collapsing {
+  display: none;
+} */
 
 div.add-details.show {
   display: block !important;
