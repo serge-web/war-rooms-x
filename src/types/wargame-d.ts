@@ -34,6 +34,7 @@ export interface WargameContextType {
   setRaDataProvider: (value: DataProvider | undefined) => void
   mockPlayerId: MockId | null
   setMockPlayerId: (value: MockId | null) => void
+  getForce: (forceId: string) => Promise<ForceConfigType>
 }
 
 /**
