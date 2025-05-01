@@ -1,6 +1,6 @@
 import { RaRecord } from "react-admin"
 import { GamePropertiesType, GameStateType } from "../../types/wargame-d"
-import { GameMessage, Template } from "../../types/rooms-d"
+import { GameMessage, RoomDetails, Template } from "../../types/rooms-d"
 import { ThemeConfig } from "antd"
 
 /**
@@ -44,7 +44,7 @@ export interface XRoom extends XRecord {
 export interface RRoom extends RaRecord {
   id: string
   name: string
-  description?: string
+  description?: RoomDetails
   members?: string[]
   memberForces?: string[]
   owners?: string[]

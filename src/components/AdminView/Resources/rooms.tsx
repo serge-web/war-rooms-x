@@ -28,13 +28,23 @@ const NotOwnerDropdown = ({ source, reference }: { source: string; reference: st
   )
 }
 
+const RoomSpecifics = () => {
+  const record = useRecordContext() as RRoom
+  console.log('room description UI', record.description)
+  return (
+    <>
+      <TextInput source="description" />
+    </>
+  )
+}
+
 export const EditRoom = ({ id }: { id?: string }) => {
   return (
     <Edit title='> Edit room' id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
         <TextInput helperText="id values cannot be changed" source="id" />
         <TextInput source="name" />
-        <TextInput source="description" />
+        <RoomSpecifics />
         <NotOwnerDropdown source="members" reference="users" />
         <ReferenceArrayInput source="memberForces" reference="groups">
           <AutocompleteArrayInput optionText="id" />          
