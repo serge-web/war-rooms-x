@@ -79,11 +79,22 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
   }
 }
 
+const isJson = (str: string): boolean => {
+  try {
+      JSON.parse(str);
+  } catch {
+      return false;
+  }
+  return true;
+}
+
 const roomXtoR = (result: XRoom): RRoom => {
+  const desc = result.description
+  const details = desc && isJson(desc) ? JSON.parse(desc) : undefined
   return {
     id: result.roomName,
     name: result.naturalName || 'pending',
-    description: result.description,
+    description: details,
     members: result.members?.map(trimHost) || [],
     memberForces: result.memberGroups,
     owners: result.owners?.map(trimHost) || [],
@@ -92,15 +103,18 @@ const roomXtoR = (result: XRoom): RRoom => {
 }
 
 const roomRtoX = (result: RRoom): XRoom => {
-  return {
+  const details = result.description as unknown as string
+  const description = details && !isJson(details) ? JSON.stringify(result.description) : undefined
+  const res = {
     roomName: result.id as string,
     naturalName: result.name,
-    description: result.description,
+    description:  description,
     members: result.members?.map(formatMemberWithHost) || [],
     memberGroups: result.memberForces,
     persistent: true,
     publicRoom: result.public
   }
+  return res
 }
 
 
