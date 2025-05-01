@@ -16,10 +16,10 @@ const greenCo: RUser = {id: 'green-co', name: 'Green CO', email: 'green-co'}
 const blueLogs: RUser = {id: 'blue-logs', name: 'Blue Logs', email: 'blue-logs'}
 const redLogs: RUser = {id: 'red-logs', name: 'Red Logs', email: 'red-logs'}
 const greenLogs: RUser = {id: 'green-logs', name: 'Green Logs', email: 'green-logs'}
-const blueForce: RGroup = {id: 'blue', name: 'Blue', description: 'Own forces', members: [blueCo.id, blueLogs.id]}  
-const redForce: RGroup = {id: 'red', name: 'Red', description: 'Opponent forces', members: [redCo.id, redLogs.id]}
-const greenForce: RGroup = {id: 'green', name: 'Green', description: 'Friendly forces', members: [greenCo.id, greenLogs.id]}
-const umpires: RGroup = {id: 'umpire', name: 'Umpire', description: 'Umpire Force (adjudicators)', members: [admin.id]}
+const blueForce: RGroup = {id: 'blue', name: 'Blue', description: 'Own forces', members: [blueCo.id, blueLogs.id], color: '#00F '}  
+const redForce: RGroup = {id: 'red', name: 'Red', description: 'Opponent forces', members: [redCo.id, redLogs.id], color: '#F00'}
+const greenForce: RGroup = {id: 'green', name: 'Green', description: 'Friendly forces', members: [greenCo.id, greenLogs.id], color: '#0F0'}
+const umpires: RGroup = {id: 'umpire', name: 'Umpire', description: 'Umpire Force (adjudicators)', members: [admin.id], color: '#CCC'}
 const wargame: RGameState ={
   id: '1',
   name: 'Catch that pigeon!',
