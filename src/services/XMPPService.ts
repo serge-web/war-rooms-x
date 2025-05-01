@@ -19,7 +19,7 @@ const pubsubEvent = publishedName
  * Service for handling XMPP connections and communications
  */
 export class XMPPService {
-  private client: Agent | null = null
+  public client: Agent | null = null
   private connected = false
   private jid = ''
   public bareJid = ''
@@ -584,6 +584,7 @@ export class XMPPService {
       // Look for pubsub service in items
       for (const item of items.items) {
         if (item.jid && item.jid.includes('pubsub')) {
+          console.log('disco features', await this.client.getDiscoInfo(item.jid))
           return item.jid
         }
       }

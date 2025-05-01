@@ -1,5 +1,5 @@
-import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext, EditButton, TopToolbar } from 'react-admin'
-import { useState } from 'react'
+import { Datagrid, List, Show, SimpleShowLayout, TextField, useRecordContext, EditButton, TopToolbar, Create, SimpleForm, TextInput } from 'react-admin'
+import React, { useState } from 'react'
 import { FieldTemplateProps, RJSFSchema } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
@@ -109,6 +109,24 @@ export const ShowTemplates = ({ id }: { id?: string }) => {
   )
 }
 
+export const CreateTemplates: React.FC = () => {
+  const transform = (data: { id: string, name: string }) => {
+    const res = { 
+      id: data.id, schema: { title: data.name, type: 'object', properties: {} }, uiSchema: {}
+    }
+    console.log('storing', res)
+    return res
+  }
+  return (
+    <Create title=" - Create new template" transform={transform}>
+      <SimpleForm>
+        <TextInput source="id" />
+        <TextInput source="name" />
+      </SimpleForm>
+    </Create>
+  )
+}
+
 export const ListTemplates: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
 
@@ -130,9 +148,9 @@ export const ListTemplates: React.FC = () => {
         </List>
       </div>
       <div style={{ flex: '1', marginLeft: '1rem' }}>
-        {selectedTemplateId && (
+        {selectedTemplateId ? (
           <ShowTemplates id={selectedTemplateId} />
-        )}
+        ) : <CreateTemplates />}
       </div>
     </div>
   )

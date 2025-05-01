@@ -1,6 +1,6 @@
 import { RaRecord } from "react-admin"
 import { GamePropertiesType, GameStateType } from "../../types/wargame-d"
-import { GameMessage } from "../../types/rooms-d"
+import { GameMessage, Template } from "../../types/rooms-d"
 import { ThemeConfig } from "antd"
 
 /**
@@ -93,5 +93,9 @@ export interface XGameState extends XRecord {
 }
 
 export interface RGameState extends RaRecord, GamePropertiesType, GameStateType {
+  id: string
+}
+
+export interface XTemplate extends XRecord, Template {
   id: string
 }

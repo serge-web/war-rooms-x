@@ -1,9 +1,11 @@
 import { DataProvider, RaRecord } from "react-admin"
-import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameState } from "./raTypes-d"
+import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameState, XTemplate } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
 import WargameDataProvider from "./wargameDataProvider"
+import { Template } from "../../types/rooms-d"
+import TemplateDataProvider from "./templateDataProvider"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -219,16 +221,23 @@ const WargameMapper: ResourceHandler<XGameState, RGameState> = {
   provider: (xmppClient: XMPPService) => WargameDataProvider(xmppClient)
 }
 
+const TemplateMapper: ResourceHandler<XTemplate, Template> = {
+  resource: 'templates',
+  provider: (xmppClient: XMPPService) => TemplateDataProvider(xmppClient)
+}
+
 // Use a type that can represent any of our resource handlers
 export type AnyResourceHandler = 
   | ResourceHandler<XGroup, RGroup>
   | ResourceHandler<XRoom, RRoom>
   | ResourceHandler<XUser, RUser>
   | ResourceHandler<XGameState, RGameState>
+  | ResourceHandler<XTemplate, Template>
 
 export const mappers: AnyResourceHandler[] = [
   GroupMapper,
   RoomMapper,
   UserMapper,
-  WargameMapper
+  WargameMapper,
+  TemplateMapper
 ]

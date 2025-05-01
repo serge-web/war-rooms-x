@@ -1,9 +1,12 @@
 
 /** necessary for form item cards to be able to be collapsed */
-div.show, div.collapsing {
-  display: none;
+.show, .collapsing {
+  isplay: none;
 }
 
+div.add-details.show {
+  display: block !important;
+}
 
 /* Special case for root level form items 
 .form-item.root-item {

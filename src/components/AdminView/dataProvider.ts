@@ -1,8 +1,9 @@
 import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyParams, UpdateParams } from "react-admin"
 import { XMPPRestService } from "../../services/XMPPRestService"
 import { AnyResourceHandler, mappers } from "./raHelpers"
-import { RGroup, RUser, RRoom, XGroup, XRoom, XUser, RGameState, XGameState } from "./raTypes-d"
+import { RGroup, RUser, RRoom, XGroup, XRoom, XUser, RGameState, XGameState, XTemplate } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
+import { Template } from "../../types/rooms-d"
 
 const mapResourceToResults = (resource: string): string => {
   switch(resource) {
@@ -18,8 +19,8 @@ const customRoute = (resource :string): string => {
   }
 }
 
-type AllRTypes = RGroup & RUser & RRoom & RGameState
-type AllXTypes = XGroup & XUser & XRoom & XGameState
+type AllRTypes = RGroup & RUser & RRoom & RGameState & Template
+type AllXTypes = XGroup & XUser & XRoom & XGameState & XTemplate
 
 const customMapper = (mappers: AnyResourceHandler[], resource: string,xmppClient: XMPPService): null | DataProvider => {
   const mapper = mappers.find(m => m.resource === resource)
