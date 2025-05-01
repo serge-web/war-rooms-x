@@ -25,18 +25,21 @@ export const trimHost = (member: string): string => {
 
 // Define mapper functions for each resource type
 export const userXtoR = async (result: XUser, id?: string, xmppClient?: XMPPService): Promise<RUser> => {
+  const idToUse = id || result.username
+  // strip suffix, if present
+  const idToUseStripped = trimHost(idToUse)
   // look for user pubsub doc
-  const doc = await xmppClient?.getPubSubDocument('users:' + id)
+  const doc = await xmppClient?.getPubSubDocument('users:' + idToUseStripped)
   if (doc) {
     const userConfig = doc.content?.json as UserConfigType
     const res : RUser = {
-      id: id || result.username,
+      id: idToUse,
       name: userConfig.name
     }
     return res
   }
   return {
-    id: id || result.username,
+    id: idToUse,
     name: result.name
   }
 }
