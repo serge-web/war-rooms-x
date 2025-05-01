@@ -2,9 +2,11 @@ import { ThemeConfig } from 'antd'
 import { RJSFSchema, UiSchema } from '@rjsf/utils'
 
 export interface RoomDetails {
-  roomType: 'chat' | 'map'
+  roomType: 'chat' | 'map' | 'form'
   theme?: ThemeConfig
+  description?: string
 }
+
 /**
  * OpenFire room
  */
