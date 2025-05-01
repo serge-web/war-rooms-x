@@ -740,7 +740,7 @@ export class XMPPService {
    * @param content The new content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async updatePubSubDocument(nodeId: string, content: object): Promise<PubSubDocumentResult> {
+  public async updatePubSubDocument(nodeId: string, content: object): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -1041,6 +1041,7 @@ export class XMPPService {
     } catch (error) {
       // check for item not found
       const sError = error as { error: { condition: string } }
+      console.log('get docs error:', sError)
       if(sError && sError.error?.condition === 'item-not-found') {
         return null
       } else {

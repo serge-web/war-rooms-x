@@ -95,10 +95,12 @@ const TemplateEditorForm = ({
   const { save } = useSaveContext()
 
   const doSave = useCallback(() => {
+    const insertId = { id: record?.id, ...localState }
+    console.log('about to save', insertId)
     if (save) {
-      save(localState)
+      save(insertId)
     }
-  }, [save, localState])
+  }, [save, localState, record])
 
   const performUpdate = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
     const newSchema = JSON.stringify(schema)

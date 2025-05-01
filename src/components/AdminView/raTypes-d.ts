@@ -99,3 +99,7 @@ export interface RGameState extends RaRecord, GamePropertiesType, GameStateType 
 export interface XTemplate extends XRecord, Template {
   id: string
 }
+
+export interface RTemplate extends RaRecord, Template {
+  id: string
+}
