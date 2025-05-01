@@ -584,7 +584,6 @@ export class XMPPService {
       // Look for pubsub service in items
       for (const item of items.items) {
         if (item.jid && item.jid.includes('pubsub')) {
-          console.log('disco features', await this.client.getDiscoInfo(item.jid))
           return item.jid
         }
       }
