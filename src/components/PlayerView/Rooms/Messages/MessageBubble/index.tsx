@@ -31,10 +31,14 @@ const MessageBubble: React.FC<{
     <div 
       data-testid={`message-${message.id}`} 
       className={`message-bubble ${isSelf ? 'self' : 'other'}`}
+      style={forceColor ? {
+        borderLeft: `5px solid ${forceColor}`,
+        paddingLeft: '10px'
+      } : undefined}
     >
       {!isSelf && <div className="sender-name">{from}</div>}
     <div className="message-content" data-testid="message-content">
-      [{forceColor}]{renderMessage(message.details.messageType,message.content)}</div>
+      {renderMessage(message.details.messageType,message.content)}</div>
     <div className="message-timestamp">{message.details.timestamp}</div>
   </div>
 )
