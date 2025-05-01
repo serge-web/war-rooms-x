@@ -35,6 +35,7 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   getList:  async  (resource: string, params: GetListParams & QueryFunctionContext): Promise<GetListResult> => {
     const custom = customMapper(mappers, resource, xmppClient)
     if (custom) {
+      console.log('Handling custom get list for', resource)
       return custom.getList(resource, params)
     }
     const res = await restClient.getClient()?.get('/' + customRoute(resource))
@@ -46,10 +47,10 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
-    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => (mapper.toRRecord && mapper.toRRecord(r as AllXTypes, undefined, xmppClient, false)) || null)
+    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => (mapper.toRRecord && mapper.toRRecord(r as AllXTypes, undefined, xmppClient, true)) || null)
     // whether a promise or a record was returned, we can resolve it
     const results = await Promise.all(mapped)
-    console.log('got list complete', resource, params, res, results)
+    console.log('got list complete', resource, results)
     return { data: results, total: results.length }
   },
   // get a single record by id
