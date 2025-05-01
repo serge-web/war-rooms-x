@@ -35,7 +35,6 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
   getList:  async  (resource: string, params: GetListParams & QueryFunctionContext): Promise<GetListResult> => {
     const custom = customMapper(mappers, resource, xmppClient)
     if (custom) {
-      console.log('Handling custom get list for', resource)
       return custom.getList(resource, params)
     }
     const res = await restClient.getClient()?.get('/' + customRoute(resource))
