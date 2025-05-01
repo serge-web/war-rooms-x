@@ -1,5 +1,6 @@
 import { Create, Datagrid, Edit, List, SimpleForm, TextField, TextInput, ReferenceArrayInput, AutocompleteArrayInput, SaveButton, Toolbar, useRecordContext, useInput } from 'react-admin'
 import { useState } from 'react'
+import { RGroup } from '../raTypes-d'
 
 interface BoldDescriptionFieldProps {
   source: string
@@ -36,7 +37,7 @@ const ColorPicker = ({ source, label = 'Color', ...props }: ColorPickerProps) =>
 }
 
 const BoldDescriptionField = ({ source, selectedId }: BoldDescriptionFieldProps) => {
-  const record = useRecordContext()
+  const record = useRecordContext() as RGroup
   if (!record) return null
   
   return (
@@ -72,7 +73,7 @@ export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
     }}
   >
       <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-          <TextInput required source="id" />
+          <TextInput required source="id" helperText="id values cannot be changed, once created" />
           <TextInput required source="name" />
           <TextInput source="objectives" multiline />
           <ColorPicker required source='color' label='Color' />
@@ -97,8 +98,9 @@ export const ListGroup = () => {
               return false // Prevent default navigation
             }}
           >
-            <TextField source="id" label="Name" />
-            <BoldDescriptionField source="description" selectedId={selectedGroupId} />
+            <TextField source="id" label="ID" />
+            <TextField source="name" label="Name" />
+            <BoldDescriptionField source="objectives" selectedId={selectedGroupId} />
           </Datagrid>
         </List>
       </div>

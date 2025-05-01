@@ -1,11 +1,12 @@
 import { RGameState, RGroup, RRoom, RUser } from "../components/AdminView/raTypes-d"
-import { ChatMessage, GameMessage, MessageDetails } from "../types/rooms-d"
+import { ChatMessage, GameMessage, MessageDetails, Template } from "../types/rooms-d"
 
 interface MockBackend {
   wargames: RGameState[],
   users: RUser[],
   groups: RGroup[],
   chatrooms: RRoom[]
+  templates: Template[]
 }
 
 const admin: RUser = {id: 'admin', name: 'Game Control', email: 'admin'}
@@ -152,6 +153,112 @@ const chatrooms: RRoom[] = [
   {id: 'logs-chat', name: 'Logistics Debate', description: 'Logistics Debate, across forces, discussing logistic issues', members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
   {id: '__admin', name: '__admin', description: 'Game administration', public: true, dummyMessages: adminMessages}
 ]
+
+const templates: Template[] = [
+  {
+    id: 'chat',
+    schema: {
+      type: 'object',
+      title: 'Chat',
+      properties: {
+        message: {
+          type: 'string',
+          title: 'Message'
+        }
+      }
+    },
+    uiSchema: {
+      message: {
+        'ui:widget': 'textarea'
+      }
+    }
+  },
+  {
+    id: 'sitrep',
+    schema: {
+      type: 'object',
+      title: 'Situation Report',
+      properties: {
+        title: {
+          type: 'string',
+          title: 'Report Title'
+        },
+        urgency: {
+          type: 'number',
+          title: 'Urgency Level',
+          minimum: 1,
+          maximum: 10,
+          default: 5
+        },
+        description: {
+          type: 'string',
+          title: 'Situation Description'
+        },
+        location: {
+          type: 'string',
+          title: 'Location'
+        }
+      },
+      required: ['title', 'description']
+    },
+    uiSchema: {
+      description: {
+        'ui:widget': 'textarea',
+      }
+    }
+  },
+  {
+    id: 'demo-numbers',
+    schema: {
+        "type": "object",
+        "title": "Number fields & widgets",
+        "properties": {
+          "number": {
+            "title": "Number",
+            "type": "number"
+          },
+          "integer": {
+            "title": "Integer",
+            "type": "integer"
+          },
+          "numberEnum": {
+            "type": "number",
+            "title": "Number enum",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          },
+          "numberEnumRadio": {
+            "type": "number",
+            "title": "Number enum",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          },
+          "integerRange": {
+            "title": "Integer range",
+            "type": "integer",
+            "minimum": -50,
+            "maximum": 50
+          },
+          "integerRangeSteps": {
+            "title": "Integer range (by 10)",
+            "type": "integer",
+            "minimum": 50,
+            "maximum": 100,
+            "multipleOf": 10
+          }
+        }
+      },
+    uiSchema: {
+    }
+  }
+]
+
 export const mockBackend: MockBackend = {
   wargames: [wargame],
   users: [admin, blueCo, redCo, greenCo, blueLogs, redLogs, greenLogs],
@@ -161,5 +268,6 @@ export const mockBackend: MockBackend = {
     greenForce,
     umpires
   ],
-  chatrooms
+  chatrooms,
+  templates
 }

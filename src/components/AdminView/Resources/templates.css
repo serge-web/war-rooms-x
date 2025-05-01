@@ -1,0 +1,14 @@
+/* General form item layout */
+.form-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.form-item label {
+  padding-right: 16px;
+  font-weight: bold;
+  min-width: 120px;
+  text-align: right;
+  padding-top: 4px; /* Align with input fields */
+}

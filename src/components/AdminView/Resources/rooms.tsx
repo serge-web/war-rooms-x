@@ -1,5 +1,5 @@
 import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
-import { RUser } from '../raTypes-d';
+import { RRoom, RUser } from '../raTypes-d';
 import { useState } from 'react';
 
 interface BoldNameFieldProps {
@@ -8,7 +8,7 @@ interface BoldNameFieldProps {
 }
 
 const BoldNameField = ({ source, selectedId }: BoldNameFieldProps) => {
-  const record = useRecordContext()
+  const record = useRecordContext() as RRoom
   if (!record) return null
   
   return (

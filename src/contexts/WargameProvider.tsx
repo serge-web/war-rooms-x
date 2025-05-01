@@ -3,6 +3,7 @@ import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
 import { DataProvider } from 'react-admin'
 import { MockId } from '../types/wargame-d'
+import { roomTypeFactory } from '../services/roomTypes'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -44,7 +45,8 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     raDataProvider,
     setRaDataProvider,
     mockPlayerId,
-    setMockPlayerId
+    setMockPlayerId,
+    roomTypeFactory
   }
 
   return (

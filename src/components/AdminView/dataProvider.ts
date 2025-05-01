@@ -1,8 +1,9 @@
 import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteParams, GetListParams, GetListResult, GetManyParams, GetManyReferenceParams, GetOneParams, GetOneResult, QueryFunctionContext, RaRecord, UpdateManyParams, UpdateParams } from "react-admin"
 import { XMPPRestService } from "../../services/XMPPRestService"
 import { AnyResourceHandler, mappers } from "./raHelpers"
-import { RGroup, RUser, RRoom, XGroup, XRoom, XUser, RGameState, XGameState } from "./raTypes-d"
+import { RGroup, RUser, RRoom, XGroup, XRoom, XUser, RGameState, XGameState, XTemplate } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
+import { Template } from "../../types/rooms-d"
 
 const mapResourceToResults = (resource: string): string => {
   switch(resource) {
@@ -18,8 +19,8 @@ const customRoute = (resource :string): string => {
   }
 }
 
-type AllRTypes = RGroup & RUser & RRoom & RGameState
-type AllXTypes = XGroup & XUser & XRoom & XGameState
+type AllRTypes = RGroup & RUser & RRoom & RGameState & Template
+type AllXTypes = XGroup & XUser & XRoom & XGameState & XTemplate
 
 const customMapper = (mappers: AnyResourceHandler[], resource: string,xmppClient: XMPPService): null | DataProvider => {
   const mapper = mappers.find(m => m.resource === resource)
@@ -45,10 +46,10 @@ export default (restClient: XMPPRestService, xmppClient: XMPPService): DataProvi
       return { data: [], total: 0 }
     }
     const resourceTidied = mapResourceToResults(resource)
-    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => (mapper.toRRecord && mapper.toRRecord(r as AllXTypes, undefined, xmppClient, false)) || null)
+    const mapped: (RaRecord | Promise<RaRecord>)[] = res?.data[resourceTidied].map((r: XGroup | XUser | XRoom) => (mapper.toRRecord && mapper.toRRecord(r as AllXTypes, undefined, xmppClient, true)) || null)
     // whether a promise or a record was returned, we can resolve it
     const results = await Promise.all(mapped)
-    console.log('got list complete', resource, params, res, results)
+    console.log('got list complete', resource, results)
     return { data: results, total: results.length }
   },
   // get a single record by id

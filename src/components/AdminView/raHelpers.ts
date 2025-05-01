@@ -1,9 +1,11 @@
 import { DataProvider, RaRecord } from "react-admin"
-import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameState } from "./raTypes-d"
+import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameState, XTemplate } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
 import { PubSubDocument } from "../../services/types"
 import WargameDataProvider from "./wargameDataProvider"
+import { Template } from "../../types/rooms-d"
+import TemplateDataProvider from "./templateDataProvider"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -23,18 +25,21 @@ export const trimHost = (member: string): string => {
 
 // Define mapper functions for each resource type
 export const userXtoR = async (result: XUser, id?: string, xmppClient?: XMPPService): Promise<RUser> => {
+  const idToUse = id || result.username
+  // strip suffix, if present
+  const idToUseStripped = trimHost(idToUse)
   // look for user pubsub doc
-  const doc = await xmppClient?.getPubSubDocument('users:' + id)
+  const doc = await xmppClient?.getPubSubDocument('users:' + idToUseStripped)
   if (doc) {
     const userConfig = doc.content?.json as UserConfigType
     const res : RUser = {
-      id: id || result.username,
+      id: idToUse,
       name: userConfig.name
     }
     return res
   }
   return {
-    id: id || result.username,
+    id: idToUse,
     name: result.name
   }
 }
@@ -219,16 +224,23 @@ const WargameMapper: ResourceHandler<XGameState, RGameState> = {
   provider: (xmppClient: XMPPService) => WargameDataProvider(xmppClient)
 }
 
+const TemplateMapper: ResourceHandler<XTemplate, Template> = {
+  resource: 'templates',
+  provider: (xmppClient: XMPPService) => TemplateDataProvider(xmppClient)
+}
+
 // Use a type that can represent any of our resource handlers
 export type AnyResourceHandler = 
   | ResourceHandler<XGroup, RGroup>
   | ResourceHandler<XRoom, RRoom>
   | ResourceHandler<XUser, RUser>
   | ResourceHandler<XGameState, RGameState>
+  | ResourceHandler<XTemplate, Template>
 
 export const mappers: AnyResourceHandler[] = [
   GroupMapper,
   RoomMapper,
   UserMapper,
-  WargameMapper
+  WargameMapper,
+  TemplateMapper
 ]
