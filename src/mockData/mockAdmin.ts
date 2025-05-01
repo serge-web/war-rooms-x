@@ -144,14 +144,14 @@ const adminMessages: GameMessage[] = [
 ]
 
 const chatrooms: RRoom[] = [
-  {id: 'blue-chat', name: 'blue chat', description: 'Blue Force discussions', memberForces:[blueForce.id], dummyMessages: blueMessages},
-  {id: 'blue-c2', name: 'blue c2', description: 'Blue command and control discussions', memberForces:[blueForce.id], dummyMessages: blueC2Messages},
-  {id: 'red-chat', name: 'red chat', description: 'Red force discussions', memberForces:[redForce.id], dummyMessages: redMessages},
-  {id: 'red-c2', name: 'red c2', description: 'Red command and control discussions', memberForces:[redForce.id], dummyMessages: redC2Messages},
-  {id: 'green-chat', name: 'green chat', description: 'Green force discussions', memberForces:[greenForce.id], dummyMessages: greenMessages},
-  {id: 'umpire-chat', name: 'umpire chat', description: 'Umpire force discussions, about game-play and rules', memberForces:[umpires.id], dummyMessages: umpireMessages},
-  {id: 'logs-chat', name: 'Logistics Debate', description: 'Logistics Debate, across forces, discussing logistic issues', members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
-  {id: '__admin', name: '__admin', description: 'Game administration', public: true, dummyMessages: adminMessages}
+  {id: 'blue-chat', name: 'blue chat', description:{roomType: 'chat', description: 'Blue Force discussions'}, memberForces:[blueForce.id], dummyMessages: blueMessages},
+  {id: 'blue-c2', name: 'blue c2', description:{roomType: 'chat', description: 'Blue command and control discussions'}, memberForces:[blueForce.id], dummyMessages: blueC2Messages},
+  {id: 'red-chat', name: 'red chat', description:{roomType: 'chat', description: 'Red force discussions'}, memberForces:[redForce.id], dummyMessages: redMessages},
+  {id: 'red-c2', name: 'red c2', description:{roomType: 'chat', description: 'Red command and control discussions'}, memberForces:[redForce.id], dummyMessages: redC2Messages},
+  {id: 'green-chat', name: 'green chat', description:{roomType: 'chat', description: 'Green force discussions'}, memberForces:[greenForce.id], dummyMessages: greenMessages},
+  {id: 'umpire-chat', name: 'umpire chat', description:{roomType: 'chat', description: 'Umpire force discussions, about game-play and rules'}, memberForces:[umpires.id], dummyMessages: umpireMessages},
+  {id: 'logs-chat', name: 'Logistics Debate', description:{roomType: 'chat', description: 'Logistics Debate, across forces, discussing logistic issues'}, members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
+  {id: '__admin', name: '__admin', description:{roomType: 'chat', description: 'Game administration'}, public: true, dummyMessages: adminMessages}
 ]
 
 const templates: Template[] = [
