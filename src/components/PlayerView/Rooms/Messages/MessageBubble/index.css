@@ -8,8 +8,8 @@
 
 .message-bubble.self {
   align-self: flex-end;
-  background-color: #3498db;
-  color: white;
+  background-color: #d5d5df;
+  color: #000;
   margin-left: auto;
 }
 
