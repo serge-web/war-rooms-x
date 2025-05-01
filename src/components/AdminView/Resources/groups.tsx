@@ -73,7 +73,7 @@ export const CreateGroup = ({ embedded = false }: { embedded?: boolean }) => (
     }}
   >
       <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-          <TextInput required source="id" />
+          <TextInput required source="id" helperText="id values cannot be changed, once created" />
           <TextInput required source="name" />
           <TextInput source="objectives" multiline />
           <ColorPicker required source='color' label='Color' />
@@ -98,8 +98,9 @@ export const ListGroup = () => {
               return false // Prevent default navigation
             }}
           >
-            <TextField source="id" label="Name" />
-            <BoldDescriptionField source="description" selectedId={selectedGroupId} />
+            <TextField source="id" label="ID" />
+            <TextField source="name" label="Name" />
+            <BoldDescriptionField source="objectives" selectedId={selectedGroupId} />
           </Datagrid>
         </List>
       </div>
