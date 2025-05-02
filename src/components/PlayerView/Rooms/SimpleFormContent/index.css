@@ -1,5 +1,5 @@
-/* Room content styling */
-.room-content {
+/* Simple form content styling */
+.simple-form-content {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -8,4 +8,16 @@
   right: 0;
   bottom: 0;
   overflow: hidden;
+}
+
+/* Make sure the message list takes available space and scrolls */
+.simple-form-content .message-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0; /* Important for Firefox */
+}
+
+/* Keep the form builder fixed at the bottom */
+.simple-form-content .form-message-builder {
+  flex: 0 0 auto;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import './index.css'
 import { Button, Select } from 'antd'
 import { FormMessage, MessageDetails, Template } from '../../../../../types/rooms-d'
@@ -24,12 +24,8 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [formData, setFormData] = useState<object>({})
 
-  // Select the first template by default when templates are loaded or changed
-  useEffect(() => {
-    if (templates && templates.length > 0 && !selectedTemplate) {
-      setSelectedTemplate(templates[0])
-    }
-  }, [templates, selectedTemplate])
+  // We no longer auto-select the first template
+  // The user will need to explicitly select a template
 
   // Custom field template for horizontal layout with labels on the left
   function CustomFieldTemplate(props: FieldTemplateProps) {
@@ -85,23 +81,26 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
     )
   }
 
-  console.log('builder templates', templates)
-
   return (
     <div className='form-message-builder'>
       <div className='template-selector'>
-        <label>Select Template:</label>
         <Select
-          placeholder='Choose a template'
+          placeholder='Select a template to create a message'
           disabled={disabled}
           style={{ width: '100%' }}
           onChange={(value) => {
-            const template = templates.find(t => t.id === value)
-            setSelectedTemplate(template || null)
-            setFormData({})
+            if (value) {
+              const template = templates?.find(t => t.id === value)
+              setSelectedTemplate(template || null)
+              setFormData({})
+            } else {
+              setSelectedTemplate(null)
+              setFormData({})
+            }
           }}
-          value={selectedTemplate?.id}
-          options={templates.map(template => ({
+          value={selectedTemplate?.id || undefined}
+          allowClear
+          options={templates?.map(template => ({
             value: template.id,
             label: template.schema.title || template.id
           }))}
@@ -118,7 +117,6 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
             liveValidate={true}
             onChange={handleChange}
             onSubmit={(data) => {
-              console.log('about to handle submit', data)
               // Update formData state with the final form data when submitting
               if (data.formData) {
                 setFormData(data.formData)
@@ -134,6 +132,12 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
                 disabled={disabled}
               >
                 Send
+              </Button>
+              <Button 
+                style={{ marginLeft: '8px' }}
+                onClick={() => setSelectedTemplate(null)}
+              >
+                Cancel
               </Button>
             </div>
           </Form>
