@@ -143,6 +143,33 @@ const adminMessages: GameMessage[] = [
   createMessage('admin-msg-5', admin.id, admin.name, umpires.id, 'Next game session will begin tomorrow at 09:00. All participants must be logged in by 08:45.', timestamps[8], '__admin')
 ]
 
+const mapMessages: GameMessage[] = [{
+  id: 'map-msg-1',
+  details: {
+    messageType: 'map',
+    senderId: admin.id,
+    senderName: admin.name,
+    senderForce: admin.id,
+    turn: '1',
+    phase: 'Planning',
+    timestamp: timestamps[0],
+    channel: 'main-map'
+  },
+  content: {
+    type: 'FeatureCollection',
+    features: [{
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [0, 0]
+      },
+      properties: {
+        name: 'Test Point'
+      }
+    }]
+  }
+}]
+
 const chatrooms: RRoom[] = [
   {id: 'blue-chat', name: 'blue chat', details:{description: 'Blue Force discussions', specifics: {roomType: 'chat'}}, memberForces:[blueForce.id], dummyMessages: blueMessages},
   {id: 'blue-c2', name: 'blue c2', details:{description: 'Blue command and control discussions', specifics: {roomType: 'chat'}}, memberForces:[blueForce.id], dummyMessages: blueC2Messages},
@@ -151,8 +178,8 @@ const chatrooms: RRoom[] = [
   {id: 'red-c2', name: 'red c2', details:{description: 'Red command and control discussions', specifics: {roomType: 'chat'}}, memberForces:[redForce.id], dummyMessages: redC2Messages},
   {id: 'green-chat', name: 'green chat', details:{description: 'Green force discussions', specifics: {roomType: 'chat'}}, memberForces:[greenForce.id], dummyMessages: greenMessages},
   {id: 'umpire-chat', name: 'umpire chat', details:{description: 'Umpire force discussions, about game-play and rules', specifics: {roomType: 'chat'}}, memberForces:[umpires.id], dummyMessages: umpireMessages},
+  {id: 'main-map', name: 'Main Map', details:{description: 'Main map', specifics: {roomType: 'map', backdropUrl: 'https://example.com/map.png'}}, public: false, members: ['blue-logs'], dummyMessages: mapMessages},
   {id: 'logs-chat', name: 'Logistics Debate', details:{description: 'Logistics Debate, across forces, discussing logistic issues', specifics: {roomType: 'form', templateIds: ['sitrep', 'chat']}}, members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
-  {id: 'main-map', name: 'Main Map', details:{description: 'Main map', specifics: {roomType: 'map', backdropUrl: 'https://example.com/map.png'}}, public: true, dummyMessages: adminMessages},
   {id: '__admin', name: 'Admin', details:{description: 'Game administration', specifics: {roomType: 'chat'}}, public: true, dummyMessages: adminMessages}
 ]
 
