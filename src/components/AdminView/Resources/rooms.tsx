@@ -140,8 +140,8 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
       <Stack direction='row' spacing={2}>
-        <TextInput source="id" />
-        <TextInput source="name" />
+        <TextInput source="id" required />
+        <TextInput source="name" required />
       </Stack>
       <RoomSpecifics/>
       <Box style={roundBox}>
