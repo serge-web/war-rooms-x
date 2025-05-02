@@ -18,7 +18,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     if (!room.description) 
       return undefined
     const data= JSON.parse(room.description)
-    console.log('parsed data', data)
     return data
   }, [room])
   

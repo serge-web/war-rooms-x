@@ -43,6 +43,7 @@ export const useRoom = (room: RoomType) => {
       },
       content
     }
+    console.log('new message', message)
     if (xmppClient && xmppClient.mucService) {
       const sendMessage = async (message: GameMessage) => {
         const res: SendMessageResult = (await xmppClient.sendRoomMessage(message))
@@ -52,28 +53,13 @@ export const useRoom = (room: RoomType) => {
       }
       sendMessage(message)
     } else if (xmppClient === null) {
-      // mock the data
-      const mockMessage: GameMessage = {
-        id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        details: {
-          messageType,
-          senderId: playerDetails?.id || '',
-          senderName: playerDetails?.role || '',
-          senderForce: playerDetails?.forceName || '',
-          turn: gameState?.turn || '',
-          phase: gameState?.currentPhase || '',
-          timestamp: new Date().toISOString(),
-          channel: room.roomName
-        },
-        content
-      }
-      setMessages(prev => [...prev, mockMessage])
+      setMessages(prev => [...prev, message])
       // also save to indexed db.  The db root is in useIndexedDBData
       // get the room object from indexed
       const mockRoom = mockRooms?.find(r => r.id === room.roomName)
       if (mockRoom) {
         const existingMessages = mockRoom.dummyMessages || []
-        mockRoom.dummyMessages = [...existingMessages, mockMessage]
+        mockRoom.dummyMessages = [...existingMessages, message]
         // save the room object back to indexed db
         localforage.setItem(`${prefixKey}chatrooms`, mockRooms)
       }

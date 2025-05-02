@@ -18,7 +18,7 @@ export interface RoomType {
 }
 
 export interface MessageDetails {
-  messageType: 'chat' | 'map'
+  messageType: 'chat' | 'map' | 'form'
   senderId: string
   senderName: string
   senderForce: string

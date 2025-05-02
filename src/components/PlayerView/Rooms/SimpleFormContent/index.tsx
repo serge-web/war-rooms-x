@@ -27,11 +27,13 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
       return templates.find(t => t.id === id)
     }).filter((t: Template | undefined): boolean => t !== undefined)
   }, [room, templates])
+  if (!myTemplates || myTemplates.length === 0) {
+    return null
+  }
   return (
     <ConfigProvider
     theme={theme}>
-    <div className='map-content' data-testid={`room-content-${room.roomName}`}>
-      SIMPLE FORM SHOWN HERE
+    <div className='simple-form-content' data-testid={`simple-form-content-${room.roomName}`}>
       <ErrorModal error={error} clearError={clearError} />
       <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
       { canSubmit && myTemplates && <FormMessageBuilder 

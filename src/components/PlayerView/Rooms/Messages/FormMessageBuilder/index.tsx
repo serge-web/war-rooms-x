@@ -54,29 +54,25 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
     )
   }
 
-  const handleSubmit = () => {
-    if (selectedTemplate && formData) {
+  const handleSubmit = (data: object) => {
+    console.log('about to submit', data)
+    if (selectedTemplate && data) {
       // Use 'chat' as the messageType since that's what the API expects
-      onSendMessage('chat', {
+      onSendMessage('form', {
         templateId: selectedTemplate.id,
-        formData
+        data
       })
       // Reset form after submission
       setFormData({})
+      setSelectedTemplate(null)
     }
   }
 
-  // Define a type for the form change event
-  interface FormChangeEvent {
-    formData?: object
-    errors?: Array<object>
-    errorSchema?: object
-  }
-
-  const handleChange = (data: FormChangeEvent) => {
-    if (data && data.formData) {
-      setFormData(data.formData)
-    }
+  // Only update formData when the form is submitted, not on every change
+  // This prevents losing focus when typing
+  const handleChange = () => {
+    // We're intentionally not updating state on every change to prevent focus loss
+    // The form will maintain its own internal state until submission
   }
 
   // If no templates are available, show a message
@@ -116,14 +112,22 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
             uiSchema={selectedTemplate.uiSchema || {}}
             validator={validator}
             formData={formData}
+            liveValidate={true}
             onChange={handleChange}
-            onSubmit={handleSubmit}
+            onSubmit={(data) => {
+              console.log('about to handle submit', data)
+              // Update formData state with the final form data when submitting
+              if (data.formData) {
+                setFormData(data.formData)
+                handleSubmit(data.formData)
+              }
+            }}
             templates={{ FieldTemplate: CustomFieldTemplate }}
           >
             <div className='form-actions'>
               <Button 
                 type='primary' 
-                onClick={handleSubmit} 
+                htmlType='submit'
                 disabled={disabled}
               >
                 Send
