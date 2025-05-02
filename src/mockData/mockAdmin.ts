@@ -182,9 +182,9 @@ const mapMessages: GameMessage[] = [{
 }]
 
 const chatrooms: RRoom[] = [
+  {id: 'blue-orders', name: 'Blue Orders', details:{description: 'Blue Orders', specifics: {roomType: 'form', templateIds: ['sitrep', 'demo-numbers']}}, memberForces:[blueForce.id], dummyMessages: blueC2Messages},
   {id: 'blue-chat', name: 'blue chat', details:{description: 'Blue Force discussions', specifics: {roomType: 'chat'}}, memberForces:[blueForce.id], dummyMessages: blueMessages},
   {id: 'blue-c2', name: 'blue c2', details:{description: 'Blue command and control discussions', specifics: {roomType: 'chat'}}, memberForces:[blueForce.id], dummyMessages: blueC2Messages},
-  {id: 'blue-orders', name: 'Blue Orders', details:{description: 'Blue Orders', specifics: {roomType: 'form', templateIds: ['sitrep', 'demo-numbers']}}, memberForces:[blueForce.id], dummyMessages: blueC2Messages},
   {id: 'red-chat', name: 'red chat', details:{description: 'Red force discussions', specifics: {roomType: 'chat'}}, memberForces:[redForce.id], dummyMessages: redMessages},
   {id: 'red-c2', name: 'red c2', details:{description: 'Red command and control discussions', specifics: {roomType: 'chat'}}, memberForces:[redForce.id], dummyMessages: redC2Messages},
   {id: 'green-chat', name: 'green chat', details:{description: 'Green force discussions', specifics: {roomType: 'chat'}}, memberForces:[greenForce.id], dummyMessages: greenMessages},
