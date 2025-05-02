@@ -36,24 +36,26 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
 
   /**
    * Returns a component for displaying the chat room configuration in read-only mode
-   * @returns React component that accepts ShowComponentProps<ChatRoomConfig>
+   * @returns React component for displaying the configuration
    */
-  public getShowComponent(): ComponentType {
-    return () => (
+  public showComponent: ComponentType = () => {
+    return (
       <div>
         <h3>Chat Room Configuration</h3>
+        <p>No additional configuration needed for basic chat rooms.</p>
       </div>
     )
   }
 
   /**
    * Returns a component for editing the chat room configuration
-   * @returns React component that accepts EditComponentProps<ChatRoomConfig>
+   * @returns React component for editing the configuration
    */
-  public getEditComponent(): ComponentType {
-    return () => (
+  public editComponent: ComponentType = () => {
+    return (
       <div>
         <h3>Edit Chat Room Configuration</h3>
+        <p>No additional configuration needed for basic chat rooms.</p>
       </div>
     )
   }

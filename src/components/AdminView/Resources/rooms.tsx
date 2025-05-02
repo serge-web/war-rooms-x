@@ -1,7 +1,7 @@
-import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SelectInput, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin'
+import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, FunctionField, List, ReferenceArrayInput, SaveButton, SelectInput, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin'
 import { RRoom, RUser } from '../raTypes-d'
 import { Box } from '@mui/material'
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {  RoomDetails } from '../../../types/rooms-d'
 import { roomTypeFactory } from '../../../services/roomTypes'
 
@@ -44,7 +44,7 @@ const RoomSpecifics = () => {
   // This is a bit complex due to the generic nature of the components
   const renderStrategyComponent = useMemo(() => {
     if (!strategy) return null
-    const EditComponent = strategy.getEditComponent()
+    const EditComponent = strategy.editComponent
     return <EditComponent/>
   }, [strategy])
 
@@ -69,11 +69,10 @@ const RoomSpecifics = () => {
 
 export const EditRoom = ({ id }: { id?: string }) => {
   return (
-    <Edit title='> Edit room' id={id} mutationMode='pessimistic' undoable={false}>
+    <Edit title='> Edit room' key={id} id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
-        <TextInput helperText="id values cannot be changed" source="id" />
         <TextInput source="name" />
-        <RoomSpecifics />
+        <RoomSpecifics/>
         <NotOwnerDropdown source="members" reference="users" />
         <ReferenceArrayInput source="memberForces" reference="groups">
           <AutocompleteArrayInput optionText="id" />          
@@ -110,6 +109,18 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
 export const ListRoom = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
 
+  const renderRoomType = (record: RRoom): React.ReactNode => {
+    const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
+    if(!strategy) return <span>Unknown</span>
+    return <span>{strategy.label}</span>
+  }
+
+  const renderRoomSpecifics = (record: RRoom): React.ReactNode => {
+    const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
+    if(!strategy) return <></>
+    return <span>{strategy.showComponent}</span>
+  }
+
   return (
     <div style={{ display: 'flex', width: '100%' }}>
       <div style={{ flex: '1' }}>
@@ -122,6 +133,8 @@ export const ListRoom = () => {
             }}
           >
             <BoldNameField source="name" selectedId={selectedRoomId} />
+            <FunctionField render={renderRoomType} label="Room Type" />
+            <FunctionField render={renderRoomSpecifics} label="Room Specifics" />
             <BooleanField source="public" />
           </Datagrid>
         </List>

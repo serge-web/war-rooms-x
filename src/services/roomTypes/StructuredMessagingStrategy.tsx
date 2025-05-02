@@ -39,26 +39,23 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomCon
 
   /**
    * Returns a component for displaying the structured messaging room configuration in read-only mode
-   * @returns React component that accepts ShowComponentProps<FormRoomConfig>
+   * @returns React component for displaying the configuration
    */
-  public getShowComponent(): ComponentType {
-    return () => (
-        <ReferenceArrayField source="details.specifics.templateIds" reference="templates" />
-      )
-    }
-  
+  public showComponent: ComponentType = () => {
+    return (
+      <ReferenceArrayField source="details.specifics.templateIds" reference="templates" />
+    )
+  }
 
   /**
    * Returns a component for editing the structured messaging room configuration
-   * @returns React component that accepts EditComponentProps<FormRoomConfig>
+   * @returns React component for editing the configuration
    */
-  public getEditComponent(): ComponentType {
-    return  () => {
-      return (
-          <ReferenceArrayInput source="details.specifics.templateIds"  reference="templates">
-            <AutocompleteArrayInput optionText="schema.title" optionValue="id" label="Templates" />
-          </ReferenceArrayInput>
-      )
-    }
+  public editComponent: ComponentType = () => {
+    return (
+      <ReferenceArrayInput source="details.specifics.templateIds" reference="templates">
+        <AutocompleteArrayInput optionText="schema.title" optionValue="id" label="Templates" />
+      </ReferenceArrayInput>
+    )
   }
 }

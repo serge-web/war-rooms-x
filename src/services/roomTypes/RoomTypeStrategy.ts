@@ -1,21 +1,6 @@
 import { ComponentType } from 'react'
 
 /**
- * Props for the read-only view component
- */
-export interface ShowComponentProps<T> {
-  config: T
-}
-
-/**
- * Props for the editable view component
- */
-export interface EditComponentProps<T> {
-  config: T
-  onChange: (config: T) => void
-}
-
-/**
  * Interface for room type strategies
  * Each room type implements this interface to provide specific behavior
  */
@@ -44,11 +29,11 @@ export interface RoomTypeStrategy<T = unknown> {
    * Returns a component for displaying the room configuration in read-only mode
    * @returns React component that accepts ShowComponentProps<T>
    */
-  getShowComponent(): ComponentType
+  showComponent: ComponentType
 
   /**
    * Returns a component for editing the room configuration
    * @returns React component that accepts EditComponentProps<T>
    */
-  getEditComponent(): ComponentType
+  editComponent: ComponentType
 }
