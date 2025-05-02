@@ -83,5 +83,5 @@ export interface Template {
 
 export interface FormRoomConfig extends CustomRoomConfig {
   roomType: 'form'
-  templates: Template[]
+  templateIds: Array<Template['id']>
 }

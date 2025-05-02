@@ -1,22 +1,15 @@
 import { ReactElement } from 'react'
 import { RoomTypeStrategy } from './RoomTypeStrategy'
-
-/**
- * Configuration interface for structured messaging rooms
- */
-export interface StructuredMessagingConfig {
-  roomType: 'structured'
-  templateIds: string[]
-}
+import { FormRoomConfig } from '../../types/rooms-d'
 
 /**
  * Strategy implementation for structured messaging rooms
  */
-export class StructuredMessagingStrategy implements RoomTypeStrategy<StructuredMessagingConfig> {
+export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomConfig> {
   /**
    * Unique identifier for structured messaging room type
    */
-  public id = 'structured'
+  public id = 'form'
 
   /**
    * Human-readable label for structured messaging room type
@@ -28,11 +21,11 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<StructuredM
    * @param config Configuration to validate
    * @returns Type guard for StructuredMessagingConfig
    */
-  public isConfigValid(config: StructuredMessagingConfig): config is StructuredMessagingConfig {
+  public isConfigValid(config: FormRoomConfig): config is FormRoomConfig {
     return (
       config !== null &&
       typeof config === 'object' &&
-      config.roomType === 'structured' &&
+      config.roomType === 'form' &&
       Array.isArray(config.templateIds)
     )
   }
@@ -42,7 +35,7 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<StructuredM
    * @param config Structured messaging room configuration
    * @returns React element for displaying the configuration
    */
-  public renderShow(config: StructuredMessagingConfig): ReactElement {
+  public renderShow(config: FormRoomConfig): ReactElement {
     return (
       <div>
         <h3>Structured Messaging Configuration</h3>
@@ -64,8 +57,8 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<StructuredM
    * @returns React element for editing the configuration
    */
   public renderEdit(
-    config: StructuredMessagingConfig,
-    onChange: (config: StructuredMessagingConfig) => void
+    config: FormRoomConfig,
+    onChange: (config: FormRoomConfig) => void
   ): ReactElement {
     // In a real implementation, this would include a dropdown or multi-select
     // to choose from available templates
