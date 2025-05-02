@@ -43,7 +43,6 @@ export const useRoom = (room: RoomType) => {
       },
       content
     }
-    console.log('new message', message)
     if (xmppClient && xmppClient.mucService) {
       const sendMessage = async (message: GameMessage) => {
         const res: SendMessageResult = (await xmppClient.sendRoomMessage(message))
