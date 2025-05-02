@@ -22,7 +22,6 @@ const RoomsList: React.FC = () => {
   const model = useMemo((): FlexLayout.Model => {
     const normalRooms = rooms.filter((room: RoomType) => !specialRoom(room))
     const convertedRooms = normalRooms.map(room => {
-      console.log('room', room)
       const details = JSON.parse(room.description || '{}')
       return {
       type: 'tab',

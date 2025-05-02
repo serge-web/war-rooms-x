@@ -3,7 +3,7 @@ import './index.css'
 import FormMessageBuilder from '../Messages/FormMessageBuilder'
 import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
-import { RoomType } from '../../../../types/rooms-d'
+import { RoomType, Template } from '../../../../types/rooms-d'
 import { ConfigProvider } from 'antd'
 import ErrorModal from '../../../Utilities/ErrorModal'
 import { usePlayerDetails } from '../../UserDetails/usePlayerDetails'
@@ -25,9 +25,8 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
       return undefined
     return config.specifics.templateIds.map((id: string) => {
       return templates.find(t => t.id === id)
-    })
+    }).filter((t: Template | undefined): boolean => t !== undefined)
   }, [room, templates])
-  console.log('my templates', myTemplates)
   return (
     <ConfigProvider
     theme={theme}>
@@ -35,7 +34,7 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
       SIMPLE FORM SHOWN HERE
       <ErrorModal error={error} clearError={clearError} />
       <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
-      { canSubmit && <FormMessageBuilder 
+      { canSubmit && myTemplates && <FormMessageBuilder 
         onSendMessage={sendMessage} 
         disabled={false} 
         templates={myTemplates}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './index.css'
 import { Button, Select } from 'antd'
 import { MessageDetails, Template } from '../../../../../types/rooms-d'
@@ -23,6 +23,13 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
 }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [formData, setFormData] = useState<object>({})
+
+  // Select the first template by default when templates are loaded or changed
+  useEffect(() => {
+    if (templates && templates.length > 0 && !selectedTemplate) {
+      setSelectedTemplate(templates[0])
+    }
+  }, [templates, selectedTemplate])
 
   // Custom field template for horizontal layout with labels on the left
   function CustomFieldTemplate(props: FieldTemplateProps) {
