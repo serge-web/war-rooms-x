@@ -2,9 +2,9 @@ import { ThemeConfig } from 'antd'
 import { RJSFSchema, UiSchema } from '@rjsf/utils'
 
 export interface RoomDetails {
-  roomType: 'chat' | 'map' | 'form'
   theme?: ThemeConfig
-  description?: string
+  description: string
+  specifics?: ChatRoomConfig | MapRoomConfig | FormRoomConfig
 }
 
 /**

@@ -94,7 +94,7 @@ const roomXtoR = (result: XRoom): RRoom => {
   return {
     id: result.roomName,
     name: result.naturalName || 'pending',
-    description: details,
+    details: details,
     members: result.members?.map(trimHost) || [],
     memberForces: result.memberGroups,
     owners: result.owners?.map(trimHost) || [],
@@ -103,8 +103,8 @@ const roomXtoR = (result: XRoom): RRoom => {
 }
 
 const roomRtoX = (result: RRoom): XRoom => {
-  const details = result.description as unknown as string
-  const description = details && !isJson(details) ? JSON.stringify(result.description) : undefined
+  const details = result.details as unknown as string
+  const description = details && !isJson(details) ? JSON.stringify(result.details) : undefined
   const res = {
     roomName: result.id as string,
     naturalName: result.name,

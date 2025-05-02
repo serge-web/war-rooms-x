@@ -1,4 +1,19 @@
-import { ReactElement } from 'react'
+import { ComponentType } from 'react'
+
+/**
+ * Props for the read-only view component
+ */
+export interface ShowComponentProps<T> {
+  config: T
+}
+
+/**
+ * Props for the editable view component
+ */
+export interface EditComponentProps<T> {
+  config: T
+  onChange: (config: T) => void
+}
 
 /**
  * Interface for room type strategies
@@ -23,17 +38,14 @@ export interface RoomTypeStrategy<T = unknown> {
   isConfigValid(config: T): config is T
 
   /**
-   * Renders a read-only view of the room configuration for admin UI
-   * @param config Room configuration
-   * @returns React element for displaying the configuration
+   * Returns a component for displaying the room configuration in read-only mode
+   * @returns React component that accepts ShowComponentProps<T>
    */
-  renderShow(config: T): ReactElement
+  getShowComponent(): ComponentType<ShowComponentProps<T>>
 
   /**
-   * Renders an editable view of the room configuration for admin UI
-   * @param config Room configuration
-   * @param onChange Callback for when the configuration changes
-   * @returns React element for editing the configuration
+   * Returns a component for editing the room configuration
+   * @returns React component that accepts EditComponentProps<T>
    */
-  renderEdit(config: T, onChange: (config: T) => void): ReactElement
+  getEditComponent(): ComponentType<EditComponentProps<T>>
 }

@@ -1,6 +1,43 @@
-import { ReactElement } from 'react'
-import { RoomTypeStrategy } from './RoomTypeStrategy'
+import React, { ComponentType } from 'react'
+import { EditComponentProps, RoomTypeStrategy, ShowComponentProps } from './RoomTypeStrategy'
 import { ChatRoomConfig } from '../../types/rooms-d'
+
+/**
+ * Read-only component for chat room configuration
+ */
+const ChatRoomShow: React.FC<ShowComponentProps<ChatRoomConfig>> = ({ config }) => {
+  return (
+    <div>
+      <h3>Chat Room Configuration</h3>
+      <p>Room Type: {config.roomType}</p>
+    </div>
+  )
+}
+
+/**
+ * Editable component for chat room configuration
+ */
+const ChatRoomEdit: React.FC<EditComponentProps<ChatRoomConfig>> = ({ config, onChange }) => {
+  return (
+    <div>
+      <h3>Edit Chat Room Configuration</h3>
+      <p>Room Type: {config.roomType}</p>
+      <button
+        onClick={() => {
+          // Example of using onChange
+          onChange({
+            ...config,
+            // This is just a placeholder to show we're using onChange
+            roomType: 'chat'
+          })
+        }}
+      >
+        Update Configuration
+      </button>
+      <p>No additional configuration needed for basic chat rooms.</p>
+    </div>
+  )
+}
 
 /**
  * Strategy implementation for standard chat rooms
@@ -30,51 +67,18 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
   }
 
   /**
-   * Renders a read-only view of the chat room configuration for admin UI
-   * @param config Chat room configuration
-   * @returns React element for displaying the configuration
+   * Returns a component for displaying the chat room configuration in read-only mode
+   * @returns React component that accepts ShowComponentProps<ChatRoomConfig>
    */
-  public renderShow(config: ChatRoomConfig): ReactElement {
-    // Simple display for chat room configuration
-    // This would be expanded in a real implementation
-    return (
-      <div>
-        <h3>Chat Room Configuration</h3>
-        <p>Room Type: {config.roomType}</p>
-      </div>
-    )
+  public getShowComponent(): ComponentType<ShowComponentProps<ChatRoomConfig>> {
+    return ChatRoomShow
   }
 
   /**
-   * Renders an editable view of the chat room configuration for admin UI
-   * @param config Chat room configuration
-   * @param onChange Callback for when the configuration changes
-   * @returns React element for editing the configuration
+   * Returns a component for editing the chat room configuration
+   * @returns React component that accepts EditComponentProps<ChatRoomConfig>
    */
-  public renderEdit(
-    config: ChatRoomConfig,
-    onChange: (config: ChatRoomConfig) => void
-  ): ReactElement {
-    // Simple editor for chat room configuration
-    // This would be expanded in a real implementation
-    return (
-      <div>
-        <h3>Edit Chat Room Configuration</h3>
-        <p>Room Type: {config.roomType}</p>
-        <button
-          onClick={() => {
-            // Example of using onChange
-            onChange({
-              ...config,
-              // This is just a placeholder to show we're using onChange
-              roomType: 'chat'
-            })
-          }}
-        >
-          Update Configuration
-        </button>
-        <p>No additional configuration needed for basic chat rooms.</p>
-      </div>
-    )
+  public getEditComponent(): ComponentType<EditComponentProps<ChatRoomConfig>> {
+    return ChatRoomEdit
   }
 }

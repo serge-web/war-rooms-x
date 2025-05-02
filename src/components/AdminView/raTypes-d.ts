@@ -44,7 +44,7 @@ export interface XRoom extends XRecord {
 export interface RRoom extends RaRecord {
   id: string
   name: string
-  description?: RoomDetails
+  details?: RoomDetails
   members?: string[]
   memberForces?: string[]
   owners?: string[]
