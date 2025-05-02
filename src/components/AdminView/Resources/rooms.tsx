@@ -1,9 +1,24 @@
 import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, FunctionField, List, ReferenceArrayInput, SaveButton, SelectInput, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin'
 import { RRoom, RUser } from '../raTypes-d'
-import { Box } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import React, { useMemo, useState } from 'react'
 import {  RoomDetails } from '../../../types/rooms-d'
 import { roomTypeFactory } from '../../../services/roomTypes'
+
+const renderRoomType = (record: RRoom): React.ReactNode => {
+  const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
+  if(!strategy) return <span>Unknown</span>
+  return <span>{strategy.label}</span>
+}
+
+const renderRoomSpecifics = (record: RRoom): React.ReactNode => {
+  const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
+  if(!strategy) return <></>
+  return <strategy.showComponent />
+}
+
+const roundBox: React.CSSProperties = { marginTop: '15px', padding: '6px', borderRadius: '6px', border: '1px solid #ccc' }
+const legendStyle: React.CSSProperties = { position: 'relative', top: '-0.8rem', left: '0.5rem', backgroundColor: '#fff', padding: '0 0.5rem', display: 'inline-block', zIndex: 1, color: 'rgba(0, 0, 0, 0.6)' }
 
 interface BoldNameFieldProps {
   source: string
@@ -58,8 +73,8 @@ const RoomSpecifics = () => {
   return (
     <>
       <TextInput source="details.description" label="Description" />
-      <Box component='fieldset'>
-        <legend>Custom room properties</legend>
+      <Box style={roundBox}>
+        <span style={legendStyle}>Custom room properties</span>
         <SelectInput source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
         {renderStrategyComponent}
       </Box>
@@ -73,11 +88,16 @@ export const EditRoom = ({ id }: { id?: string }) => {
       <SimpleForm>
         <TextInput source="name" />
         <RoomSpecifics/>
-        <NotOwnerDropdown source="members" reference="users" />
-        <ReferenceArrayInput source="memberForces" reference="groups">
-          <AutocompleteArrayInput optionText="id" />          
-        </ReferenceArrayInput>  
-        <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+        <Box style={roundBox}>
+          <span style={legendStyle}>Access Control</span>
+          <NotOwnerDropdown source="members" reference="users" />
+          <Stack direction='row' spacing={2}>
+            <ReferenceArrayInput source="memberForces" reference="groups">
+              <AutocompleteArrayInput optionText="id" />          
+            </ReferenceArrayInput>  
+            <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+          </Stack>
+        </Box>
       </SimpleForm>
     </Edit>
   )
@@ -86,6 +106,13 @@ export const EditRoom = ({ id }: { id?: string }) => {
 export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
   <Create
     title='> Create new room'
+    record={{
+      details: {
+        specifics: {
+          roomType: 'chat'
+        }
+      }
+    }}
     mutationOptions={{
       onSuccess: () => {
         // When embedded is true, don't navigate away
@@ -94,36 +121,28 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
     }}
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-      <TextInput source="id" />
-      <TextInput source="name" />
+      <Stack direction='row' spacing={2}>
+        <TextInput source="id" />
+        <TextInput source="name" />
+      </Stack>
       <TextInput source="description" />
-      <NotOwnerDropdown source="members" reference="users" />
-      <ReferenceArrayInput source="memberForces" reference="groups">
-        <AutocompleteArrayInput optionText="id" />          
-      </ReferenceArrayInput>
-      <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+      <RoomSpecifics/>
+      <Box style={roundBox}>
+          <span style={legendStyle}>Access Control</span>
+          <NotOwnerDropdown source="members" reference="users" />
+          <Stack direction='row' spacing={2}>
+            <ReferenceArrayInput source="memberForces" reference="groups">
+              <AutocompleteArrayInput optionText="id" />          
+            </ReferenceArrayInput>  
+            <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+          </Stack>
+        </Box>
     </SimpleForm>
   </Create>
 )
 
 export const ListRoom = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
-
-  const renderRoomType = (record: RRoom): React.ReactNode => {
-    const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
-    if(!strategy) return <span>Unknown</span>
-    return <span>{strategy.label}</span>
-  }
-
-  const renderRoomSpecifics = (record: RRoom): React.ReactNode => {
-    const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
-    if(!strategy) return <></>
-    
-    // Create an instance of the component
-    const ShowComponent = strategy.showComponent
-    // Render the component
-    return <ShowComponent />
-  }
 
   return (
     <div style={{ display: 'flex', width: '100%' }}>
