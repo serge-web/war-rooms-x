@@ -6,6 +6,8 @@ import './index.css'
 import { useRooms } from './useRooms'
 import { RoomType } from '../../../../types/rooms-d'
 import { Typography } from 'antd'
+import MapContent from '../MapContent'
+import SimpleFormContent from '../SimpleFormContent'
 
 const { Text } = Typography
 
@@ -19,12 +21,15 @@ const RoomsList: React.FC = () => {
   // Create a FlexLayout model for the rooms
   const model = useMemo((): FlexLayout.Model => {
     const normalRooms = rooms.filter((room: RoomType) => !specialRoom(room))
-    const convertedRooms = normalRooms.map(room => ({
+    const convertedRooms = normalRooms.map(room => {
+      console.log('room', room)
+      const details = JSON.parse(room.description || '{}')
+      return {
       type: 'tab',
       name: room.naturalName,
-      component: 'room',
+      component: details.specifics?.roomType || 'room',
       config: room
-    }))
+    }})
     // split convertedRooms into two equally sized lists
     const midPoint = Math.ceil(convertedRooms.length / 2)
     const leftChildren = convertedRooms.slice(0, midPoint)
@@ -57,12 +62,16 @@ const RoomsList: React.FC = () => {
   const factory = (node: FlexLayout.TabNode) => {
     const component = node.getComponent()
     const room = node.getConfig() as RoomType
-    
-    if (component === 'room') {
-        return <RoomContent room={room} />
-    }
-    
-    return <div>Component not found</div>
+    switch (component) {
+    case 'chat': 
+    return <RoomContent room={room} />  
+    case 'map':
+    return <MapContent room={room} />
+    case 'form':
+    return <SimpleFormContent room={room} />
+    default:
+      return <div>Component not found:{component}</div>
+  }
   }
 
   // Custom tab renderer to use Ant Design Text component

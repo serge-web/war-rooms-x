@@ -23,10 +23,8 @@ const MessageBubble: React.FC<{
   const from = message.details.senderName
   const fromForce = message.details.senderForce
   useWargame().getForce(fromForce).then((force) => {
-    console.log('force', force)
     setForceColor(force.color)
   })
-  console.log('message', message, fromForce)
   return (
     <div 
       data-testid={`message-${message.id}`} 
