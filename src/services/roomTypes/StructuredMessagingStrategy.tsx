@@ -16,7 +16,9 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomCon
   /**
    * Human-readable label for structured messaging room type
    */
-  public label = 'Structured Messaging'
+  public label = 'Simple Forms'
+
+  public description = 'A room that uses forms to create messages'
 
   /**
    * Validates if the provided configuration is valid for a structured messaging room

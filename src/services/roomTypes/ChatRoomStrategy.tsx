@@ -16,6 +16,8 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
    */
   public label = 'Chat Room'
 
+  public description = 'A standard chat room'
+
   /**
    * Validates if the provided configuration is valid for a chat room
    * @param config Configuration to validate
@@ -47,11 +49,6 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
    * @returns React component for editing the configuration
    */
   public editComponent: ComponentType = () => {
-    return (
-      <div>
-        <h3>Edit Chat Room Configuration</h3>
-        <p>No additional configuration needed for basic chat rooms.</p>
-      </div>
-    )
+    return <span>No additional config.</span>
   }
 }

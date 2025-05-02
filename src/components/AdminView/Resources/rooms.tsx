@@ -36,7 +36,7 @@ const RoomSpecifics = () => {
   const [roomType, setRoomType] = useState<string>(record.details?.specifics?.roomType || 'chat')
   const strategy = useMemo(() => roomTypeFactory.get(roomType), [roomType])
   const roomTypes = roomTypeFactory.list()
-  const roomTypeNames = roomTypes.map((roomType) => ({ name: roomType.label, id: roomType.id }))
+  const roomTypeNames = roomTypes.map((roomType) => ({ name: roomType.label + ' - ' + roomType.description, id: roomType.id }))
   const details = record.details as RoomDetails
   console.log('room type', roomType, details)
   

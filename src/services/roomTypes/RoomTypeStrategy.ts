@@ -15,6 +15,9 @@ export interface RoomTypeStrategy<T = unknown> {
    */
   label: string
 
+  /** description of this room type */
+  description: string
+
   /**
    * Validates if the provided configuration is valid for this room type
    * @param config Configuration to validate
