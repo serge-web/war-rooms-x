@@ -161,12 +161,23 @@ const mapMessages: GameMessage[] = [{
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: [0, 0]
+        coordinates: [-0.09, 51.505]
       },
       properties: {
         name: 'Test Point'
       }
-    }]
+    },
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: [[-0.29, 51.605], [-0.3, 51.805], [-0.4, 51.905], [-0.5, 52.005]]
+      },
+      properties: {
+        name: 'Test Line'
+      }
+    }
+  ]
   }
 }]
 
