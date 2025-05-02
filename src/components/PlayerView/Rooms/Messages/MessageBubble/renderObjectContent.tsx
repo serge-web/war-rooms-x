@@ -1,7 +1,7 @@
 
 
-const fieldsToOmit = ['tempateId']
-const labelsToOmit = ['data']
+const fieldsToOmit: string[] = []
+const labelsToOmit: string[] = ['data', 'templateId']
 
 const camelNameToLabel = (name: string) => {
   if (labelsToOmit.includes(name)) {

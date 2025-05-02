@@ -86,7 +86,7 @@ export const useRoom = (room: RoomType) => {
         if (thisRoom && thisRoom.dummyTheme) {
           setTheme(thisRoom.dummyTheme)
         }
-        setCanSubmit(Math.random() > 0.5)
+        setCanSubmit(true)
       }
     } else {
       // TODO: handle room theme, if present
