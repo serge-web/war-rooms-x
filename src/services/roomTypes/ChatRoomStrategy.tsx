@@ -39,12 +39,7 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
    * @returns React component for displaying the configuration
    */
   public showComponent: ComponentType = () => {
-    return (
-      <div>
-        <h3>Chat Room Configuration</h3>
-        <p>No additional configuration needed for basic chat rooms.</p>
-      </div>
-    )
+    return <span>n/a</span>
   }
 
   /**

@@ -1,7 +1,8 @@
 import { ComponentType } from 'react'
 import { RoomTypeStrategy } from './RoomTypeStrategy'
-import { FormRoomConfig } from '../../types/rooms-d'
-import { AutocompleteArrayInput, ReferenceArrayField, ReferenceArrayInput } from 'react-admin'
+import { FormRoomConfig, Template } from '../../types/rooms-d'
+import { AutocompleteArrayInput, ListControllerResult, ReferenceArrayField, ReferenceArrayInput, WithListContext } from 'react-admin'
+import { Chip } from '@mui/material'
 
 /**
  * Strategy implementation for structured messaging rooms
@@ -42,8 +43,16 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomCon
    * @returns React component for displaying the configuration
    */
   public showComponent: ComponentType = () => {
+    const renderTemplate = (template: Template) => {
+      return <Chip size="small" label={template.schema?.title || template.id} />
+    }
+    const renderTemplates = (context: ListControllerResult<Template>) => {
+      return <span>{context.data?.map(renderTemplate)}</span>
+    }
     return (
-      <ReferenceArrayField source="details.specifics.templateIds" reference="templates" />
+      <ReferenceArrayField source="details.specifics.templateIds" reference="templates" >
+        <WithListContext render={renderTemplates} />
+      </ReferenceArrayField>
     )
   }
 

@@ -118,7 +118,11 @@ export const ListRoom = () => {
   const renderRoomSpecifics = (record: RRoom): React.ReactNode => {
     const strategy = roomTypeFactory.get(record.details?.specifics?.roomType || 'chat')
     if(!strategy) return <></>
-    return <span>{strategy.showComponent}</span>
+    
+    // Create an instance of the component
+    const ShowComponent = strategy.showComponent
+    // Render the component
+    return <ShowComponent />
   }
 
   return (
