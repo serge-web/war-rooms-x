@@ -1,6 +1,8 @@
-import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
+import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SelectInput, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin';
 import { RRoom, RUser } from '../raTypes-d';
 import { useState } from 'react';
+import { RoomDetails } from '../../../types/rooms-d';
+import { roomTypeFactory } from '../../../services/roomTypes';
 
 interface BoldNameFieldProps {
   source: string
@@ -30,10 +32,23 @@ const NotOwnerDropdown = ({ source, reference }: { source: string; reference: st
 
 const RoomSpecifics = () => {
   const record = useRecordContext() as RRoom
+  const roomTypes = roomTypeFactory.list()
+  const roomTypeNames = roomTypes.map((roomType) => ({ name: roomType.label, id: roomType.id }))
+  console.log('room types', roomTypes)
   console.log('room description UI', record.description)
+  const details = record.description as RoomDetails
+  const roomType = details.roomType
+  console.log('room details', details)
+  // get strategy from factory
+  const strategy = roomTypeFactory.get(roomType)
+  console.log('strategy', strategy?.label)
   return (
     <>
-      <TextInput source="description" />
+      <TextInput source="description.description" label="Description" />
+      <SelectInput source="description.roomType" label="Room Type" choices={roomTypeNames} />
+      {strategy?.renderEdit(details, (newDetails) => {
+        console.log('new details', newDetails)
+      })}
     </>
   )
 }
