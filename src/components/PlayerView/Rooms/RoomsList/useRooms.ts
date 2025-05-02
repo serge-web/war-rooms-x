@@ -23,7 +23,7 @@ export const useRooms = () => {
         const isAdminRoom = (r: RRoom) => r.id === '__admin'
         const myRooms = mockRooms.filter(r => imAdmin || isAdminRoom(r) || isMyForce(r) || isMyId(r))
         // filter rooms for those for my role/force
-        setRooms(myRooms.map((room): RoomType => {
+        setRooms(myRooms.map((room: RRoom): RoomType => {
           return {
             roomName: room.id,
             naturalName: room.name,
