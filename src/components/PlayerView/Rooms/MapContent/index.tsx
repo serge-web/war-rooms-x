@@ -1,11 +1,9 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import './index.css'
-import MessageInputForm from '../Messages/MessageInputForm'
 import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
 import { RoomType } from '../../../../types/rooms-d'
 import { ConfigProvider } from 'antd'
-import ErrorModal from '../../../Utilities/ErrorModal'
 import { usePlayerDetails } from '../../UserDetails/usePlayerDetails'
 
 interface MapProps {
@@ -13,19 +11,27 @@ interface MapProps {
 }
 
 const MapContent: React.FC<MapProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
+  const { messages, theme } = useRoom(room)
   const { playerDetails } = usePlayerDetails()
+  const lastMessage = useMemo(() => {
+    return messages[messages.length - 1]
+  }, [messages])
+  if (!lastMessage) {
+    return (
+      <ConfigProvider
+      theme={theme}>
+      <div className='map-content' data-testid={`map-content-${room.roomName}`}>
+        PENDING MAP
+      </div>
+      </ConfigProvider>
+    )
+  }
   return (
     <ConfigProvider
     theme={theme}>
-    <div className='map-content' data-testid={`room-content-${room.roomName}`}>
+    <div className='map-content' data-testid={`map-content-${room.roomName}`}>
       MAP SHOWN HERE
-      <ErrorModal error={error} clearError={clearError} />
-      <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
-      { canSubmit && <MessageInputForm 
-        onSendMessage={sendMessage} 
-        disabled={false} 
-      />}
+      <MessageList messages={[lastMessage]} currentUser={playerDetails?.id || ''} />
     </div>
     </ConfigProvider>
   )

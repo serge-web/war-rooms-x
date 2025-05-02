@@ -149,7 +149,7 @@ const mapMessages: GameMessage[] = [{
     messageType: 'map',
     senderId: admin.id,
     senderName: admin.name,
-    senderForce: 'umpire',
+    senderForce: umpires.id,
     turn: '1',
     phase: 'Planning',
     timestamp: timestamps[0],

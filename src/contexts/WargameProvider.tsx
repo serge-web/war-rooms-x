@@ -32,7 +32,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
       // get the mock force data
       const rForce = mockBackend.groups.find(g => g.id === forceId)
       if (!rForce) {
-        throw new Error('Force not found' + forceId)
+        throw new Error('Force not found: ' + forceId)
       } else {
         const force: ForceConfigType = {
           type: 'force-config-type-v1',
