@@ -32,6 +32,11 @@ export interface ChatMessage {
   value: string
 }
 
+export interface FormMessage {
+  templateId: string
+  data: object
+}
+
 export interface GameMessage {
   id: string
   details: MessageDetails

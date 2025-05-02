@@ -35,7 +35,7 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
     theme={theme}>
     <div className='simple-form-content' data-testid={`simple-form-content-${room.roomName}`}>
       <ErrorModal error={error} clearError={clearError} />
-      <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
+      <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={templates || []} />
       { canSubmit && myTemplates && <FormMessageBuilder 
         onSendMessage={sendMessage} 
         disabled={false} 

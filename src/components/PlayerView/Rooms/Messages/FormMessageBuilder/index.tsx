@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './index.css'
 import { Button, Select } from 'antd'
-import { MessageDetails, Template } from '../../../../../types/rooms-d'
+import { FormMessage, MessageDetails, Template } from '../../../../../types/rooms-d'
 import { withTheme } from '@rjsf/core'
 import { Theme as AntdTheme } from '@rjsf/antd'
 import validator from '@rjsf/validator-ajv8'
@@ -58,10 +58,11 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
     console.log('about to submit', data)
     if (selectedTemplate && data) {
       // Use 'chat' as the messageType since that's what the API expects
-      onSendMessage('form', {
+      const message: FormMessage = {
         templateId: selectedTemplate.id,
         data
-      })
+      }
+      onSendMessage('form', message)
       // Reset form after submission
       setFormData({})
       setSelectedTemplate(null)
@@ -83,6 +84,8 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
       </div>
     )
   }
+
+  console.log('builder templates', templates)
 
   return (
     <div className='form-message-builder'>
