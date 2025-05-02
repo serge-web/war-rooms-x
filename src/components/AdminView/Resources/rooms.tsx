@@ -1,10 +1,9 @@
 import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, List, ReferenceArrayInput, SaveButton, SelectInput, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin'
 import { RRoom, RUser } from '../raTypes-d'
 import { Box } from '@mui/material'
-import { useState } from 'react'
-import { ChatRoomConfig, FormRoomConfig, RoomDetails } from '../../../types/rooms-d'
+import { useMemo, useState } from 'react'
+import {  RoomDetails } from '../../../types/rooms-d'
 import { roomTypeFactory } from '../../../services/roomTypes'
-import { RoomTypeStrategy } from '../../../services/roomTypes/RoomTypeStrategy'
 
 interface BoldNameFieldProps {
   source: string
@@ -34,54 +33,26 @@ const NotOwnerDropdown = ({ source, reference }: { source: string; reference: st
 
 const RoomSpecifics = () => {
   const record = useRecordContext() as RRoom
+  const [roomType, setRoomType] = useState<string>(record.details?.specifics?.roomType || 'chat')
+  const strategy = useMemo(() => roomTypeFactory.get(roomType), [roomType])
   const roomTypes = roomTypeFactory.list()
   const roomTypeNames = roomTypes.map((roomType) => ({ name: roomType.label, id: roomType.id }))
   const details = record.details as RoomDetails
-  const roomType = details?.specifics?.roomType || 'chat' // Default to chat if no room type
   console.log('room type', roomType, details)
-  // Get strategy from factory
-  const strategy = roomTypeFactory.get(roomType)
   
   // We need to handle the component rendering in a type-safe way
   // This is a bit complex due to the generic nature of the components
-  const renderStrategyComponent = () => {
+  const renderStrategyComponent = useMemo(() => {
     if (!strategy) return null
-    
-    // We need to handle each room type specifically to maintain type safety
-    switch (roomType) {
-      case 'chat': {
-        // For chat rooms - we know this is a ChatRoomStrategy
-        // Using type assertion here, but to a specific type rather than 'any'
-        const chatStrategy = strategy as RoomTypeStrategy<ChatRoomConfig>
-        const EditComponent = chatStrategy.getEditComponent()
-        return (
-          <EditComponent 
-            config={details.specifics as ChatRoomConfig}
-            onChange={(newConfig: ChatRoomConfig) => {
-              console.log('new chat config', newConfig)
-              // Here you would update the record with the new config
-            }} 
-          />
-        )
-      }
-      case 'form': {
-        // For form rooms - we know this is a StructuredMessagingStrategy
-        // Using type assertion here, but to a specific type rather than 'any'
-        const formStrategy = strategy as RoomTypeStrategy<FormRoomConfig>
-        const EditComponent = formStrategy.getEditComponent()
-        return (
-          <EditComponent 
-            config={details.specifics as FormRoomConfig}
-            onChange={(newConfig: FormRoomConfig) => {
-              console.log('new form config', newConfig)
-              // Here you would update the record with the new config
-            }} 
-          />
-        )
-      }
-      default:
-        return null
-    }
+    const EditComponent = strategy.getEditComponent()
+    return <EditComponent/>
+  }, [strategy])
+
+  const updateRoomType = (newType: string) => {
+    // get a new default config for the room type
+    const defaultConfig = strategy?.defaultConfig as RoomDetails['specifics']
+    record.details = { specifics: defaultConfig, ...record.details } as RoomDetails
+    setRoomType(newType)
   }
   
   return (
@@ -89,8 +60,8 @@ const RoomSpecifics = () => {
       <TextInput source="details.description" label="Description" />
       <Box component='fieldset'>
         <legend>Custom room properties</legend>
-        <SelectInput source="details.roomType" label="Room Type" choices={roomTypeNames} />
-        {renderStrategyComponent()}
+        <SelectInput source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
+        {renderStrategyComponent}
       </Box>
     </>
   )

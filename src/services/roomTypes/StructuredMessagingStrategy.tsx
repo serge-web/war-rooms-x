@@ -1,7 +1,7 @@
 import { ComponentType } from 'react'
-import { EditComponentProps, RoomTypeStrategy, ShowComponentProps } from './RoomTypeStrategy'
+import { RoomTypeStrategy } from './RoomTypeStrategy'
 import { FormRoomConfig } from '../../types/rooms-d'
-import { AutocompleteArrayInput, ReferenceArrayInput } from 'react-admin'
+import { AutocompleteArrayInput, ReferenceArrayField, ReferenceArrayInput } from 'react-admin'
 
 /**
  * Strategy implementation for structured messaging rooms
@@ -31,20 +31,19 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomCon
     )
   }
 
+  /** default (bare) config for this room type */
+  public defaultConfig: FormRoomConfig = {
+    roomType: 'form',
+    templateIds: []
+  }
+
   /**
    * Returns a component for displaying the structured messaging room configuration in read-only mode
    * @returns React component that accepts ShowComponentProps<FormRoomConfig>
    */
-  public getShowComponent(): ComponentType<ShowComponentProps<FormRoomConfig>> {
-    return ({ config }) => (
-        <div>
-          <p>Templates:</p>
-          <ul>
-            {config.templateIds.map((templateId) => (
-              <li key={templateId}>{templateId}</li>
-            ))}
-          </ul>
-        </div>
+  public getShowComponent(): ComponentType {
+    return () => (
+        <ReferenceArrayField source="details.specifics.templateIds" reference="templates" />
       )
     }
   
@@ -53,7 +52,7 @@ export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomCon
    * Returns a component for editing the structured messaging room configuration
    * @returns React component that accepts EditComponentProps<FormRoomConfig>
    */
-  public getEditComponent(): ComponentType<EditComponentProps<FormRoomConfig>> {
+  public getEditComponent(): ComponentType {
     return  () => {
       return (
           <ReferenceArrayInput source="details.specifics.templateIds"  reference="templates">

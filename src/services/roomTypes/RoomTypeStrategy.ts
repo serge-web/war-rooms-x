@@ -37,15 +37,18 @@ export interface RoomTypeStrategy<T = unknown> {
    */
   isConfigValid(config: T): config is T
 
+  /** default (bare) config for this room type */
+  defaultConfig: T
+
   /**
    * Returns a component for displaying the room configuration in read-only mode
    * @returns React component that accepts ShowComponentProps<T>
    */
-  getShowComponent(): ComponentType<ShowComponentProps<T>>
+  getShowComponent(): ComponentType
 
   /**
    * Returns a component for editing the room configuration
    * @returns React component that accepts EditComponentProps<T>
    */
-  getEditComponent(): ComponentType<EditComponentProps<T>>
+  getEditComponent(): ComponentType
 }
