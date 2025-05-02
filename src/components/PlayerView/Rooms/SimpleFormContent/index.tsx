@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import './index.css'
-import MessageInputForm from '../Messages/MessageInputForm'
+import FormMessageBuilder from '../Messages/FormMessageBuilder'
 import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
 import { RoomType } from '../../../../types/rooms-d'
@@ -35,9 +35,10 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
       SIMPLE FORM SHOWN HERE
       <ErrorModal error={error} clearError={clearError} />
       <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
-      { canSubmit && <MessageInputForm 
+      { canSubmit && <FormMessageBuilder 
         onSendMessage={sendMessage} 
         disabled={false} 
+        templates={myTemplates}
       />}
     </div>
     </ConfigProvider>
