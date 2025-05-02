@@ -152,6 +152,7 @@ const chatrooms: RRoom[] = [
   {id: 'green-chat', name: 'green chat', details:{description: 'Green force discussions', specifics: {roomType: 'chat'}}, memberForces:[greenForce.id], dummyMessages: greenMessages},
   {id: 'umpire-chat', name: 'umpire chat', details:{description: 'Umpire force discussions, about game-play and rules', specifics: {roomType: 'chat'}}, memberForces:[umpires.id], dummyMessages: umpireMessages},
   {id: 'logs-chat', name: 'Logistics Debate', details:{description: 'Logistics Debate, across forces, discussing logistic issues', specifics: {roomType: 'form', templateIds: ['sitrep', 'chat']}}, members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
+  {id: 'main-map', name: 'Main Map', details:{description: 'Main map', specifics: {roomType: 'map', backdropUrl: 'https://example.com/map.png'}}, public: true, dummyMessages: adminMessages},
   {id: '__admin', name: 'Admin', details:{description: 'Game administration', specifics: {roomType: 'chat'}}, public: true, dummyMessages: adminMessages}
 ]
 

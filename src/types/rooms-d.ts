@@ -73,6 +73,7 @@ export interface ChatRoomConfig  extends CustomRoomConfig {
 
 export interface MapRoomConfig extends CustomRoomConfig {
   roomType: 'map'
+  backdropUrl?: string
 }
 
 export interface Template {

@@ -143,7 +143,6 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
         <TextInput source="id" />
         <TextInput source="name" />
       </Stack>
-      <TextInput source="description" />
       <RoomSpecifics/>
       <Box style={roundBox}>
           <LegendLabel>Access Control</LegendLabel>

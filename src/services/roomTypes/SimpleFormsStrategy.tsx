@@ -7,7 +7,7 @@ import { Chip } from '@mui/material'
 /**
  * Strategy implementation for structured messaging rooms
  */
-export class StructuredMessagingStrategy implements RoomTypeStrategy<FormRoomConfig> {
+export class SimpleFormsStrategy implements RoomTypeStrategy<FormRoomConfig> {
   /**
    * Unique identifier for structured messaging room type
    */
