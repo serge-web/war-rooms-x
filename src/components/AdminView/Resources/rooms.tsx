@@ -162,31 +162,31 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
 export const ListRoom = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
 
-  return (
-    <div style={{ display: 'flex', width: '100%' }}>
-      <div style={{ flex: '1' }}>
-        <List>
-          <Datagrid
-            rowSx={(record) => record.id === selectedRoomId ? { backgroundColor: '#f5f5f5' } : {}}
-            rowClick={(id) => {
-              setSelectedRoomId(id === selectedRoomId ? null : id as string)
-              return false // Prevent default navigation
-            }}
-          >
-            <BoldNameField source="name" selectedId={selectedRoomId} />
-            <FunctionField render={renderRoomType} label="Room Type" />
-            <FunctionField render={renderRoomSpecifics} label="Room Specifics" />
-            <BooleanField source="public" />
-          </Datagrid>
-        </List>
-      </div>
-      <div style={{ flex: '1', marginLeft: '1rem' }}>
-        {selectedRoomId ? (
-          <EditRoom id={selectedRoomId} />
-        ) : (
-          <CreateRoom embedded={true} />
-        )}
-      </div>
+  // Define the aside component that will show either the edit or create form
+  const Aside = () => (
+    <div style={{ width: '80%', marginLeft: '1rem' }}>
+      {selectedRoomId ? (
+        <EditRoom id={selectedRoomId} />
+      ) : (
+        <CreateRoom embedded={true} />
+      )}
     </div>
+  )
+
+  return (
+    <List aside={<Aside />}>
+      <Datagrid
+        rowSx={(record) => record.id === selectedRoomId ? { backgroundColor: '#f5f5f5' } : {}}
+        rowClick={(id) => {
+          setSelectedRoomId(id === selectedRoomId ? null : id as string)
+          return false // Prevent default navigation
+        }}
+      >
+        <BoldNameField source="name" selectedId={selectedRoomId} />
+        <FunctionField render={renderRoomType} label="Room Type" />
+        <FunctionField render={renderRoomSpecifics} label="Room Specifics" />
+        <BooleanField source="public" />
+      </Datagrid>
+    </List>
   )
 }
