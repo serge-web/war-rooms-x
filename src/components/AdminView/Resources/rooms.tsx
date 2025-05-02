@@ -1,6 +1,6 @@
 import { AutocompleteArrayInput, BooleanField, BooleanInput, Create, Datagrid, Edit, FunctionField, List, ReferenceArrayInput, SaveButton, SelectInput, SimpleForm, TextInput, Toolbar, useGetList, useRecordContext } from 'react-admin'
 import { RRoom, RUser } from '../raTypes-d'
-import { Box, Stack } from '@mui/material'
+import { Box, Stack, useTheme } from '@mui/material'
 import React, { useMemo, useState } from 'react'
 import {  RoomDetails } from '../../../types/rooms-d'
 import { roomTypeFactory } from '../../../services/roomTypes'
@@ -18,7 +18,25 @@ const renderRoomSpecifics = (record: RRoom): React.ReactNode => {
 }
 
 const roundBox: React.CSSProperties = { marginTop: '15px', padding: '6px', borderRadius: '6px', border: '1px solid #ccc' }
-const legendStyle: React.CSSProperties = { position: 'relative', top: '-0.8rem', left: '0.5rem', backgroundColor: '#fff', padding: '0 0.5rem', display: 'inline-block', zIndex: 1, color: 'rgba(0, 0, 0, 0.6)' }
+
+// Component that uses theme colors for proper dark mode support
+const LegendLabel = ({ children }: { children: React.ReactNode }) => {
+  const theme = useTheme()
+  
+  // Use theme background color and text color
+  const style: React.CSSProperties = { 
+    position: 'relative', 
+    top: '-0.8rem', 
+    left: '0.5rem', 
+    backgroundColor: theme.palette.background.paper, 
+    padding: '0 0.5rem', 
+    display: 'inline-block', 
+    zIndex: 1, 
+    color: theme.palette.text.secondary
+  }
+  
+  return <span style={style}>{children}</span>
+}
 
 interface BoldNameFieldProps {
   source: string
@@ -74,7 +92,7 @@ const RoomSpecifics = () => {
     <>
       <TextInput source="details.description" label="Description" />
       <Box style={roundBox}>
-        <span style={legendStyle}>Custom room properties</span>
+        <LegendLabel>Custom room properties</LegendLabel>
         <SelectInput source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
         {renderStrategyComponent}
       </Box>
@@ -89,7 +107,7 @@ export const EditRoom = ({ id }: { id?: string }) => {
         <TextInput source="name" />
         <RoomSpecifics/>
         <Box style={roundBox}>
-          <span style={legendStyle}>Access Control</span>
+          <LegendLabel>Access Control</LegendLabel>
           <NotOwnerDropdown source="members" reference="users" />
           <Stack direction='row' spacing={2}>
             <ReferenceArrayInput source="memberForces" reference="groups">
@@ -128,7 +146,7 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
       <TextInput source="description" />
       <RoomSpecifics/>
       <Box style={roundBox}>
-          <span style={legendStyle}>Access Control</span>
+          <LegendLabel>Access Control</LegendLabel>
           <NotOwnerDropdown source="members" reference="users" />
           <Stack direction='row' spacing={2}>
             <ReferenceArrayInput source="memberForces" reference="groups">
