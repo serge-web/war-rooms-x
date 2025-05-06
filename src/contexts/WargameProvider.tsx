@@ -53,7 +53,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
         return force
       }
     } else {
-      const force = await xmppClient.getPubSubDocument('force:' + forceId)
+      const force = await xmppClient.getPubSubDocument('forces:' + forceId)
       if (force) {
         forceCache[forceId] = force.content?.json as ForceConfigType
         return force.content?.json as ForceConfigType
