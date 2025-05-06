@@ -36,11 +36,18 @@ export const useRooms = () => {
       if (xmppClient.mucService) {
         const fetchRooms = async () => {
           const rooms = await xmppClient.listRooms()
+          // get the room description
+          const getInfoActions = rooms.map((room) => {
+            return xmppClient.client?.getDiscoInfo(room.jid)
+          })
+          const infos = await Promise.all(getInfoActions)
           if (rooms) {
-            setRooms(rooms.map((room): RoomType => {
+            setRooms(rooms.map((room, i): RoomType => {
+              const info = infos[i]?.extensions[0].fields?.find((f) => f.name === 'muc#roominfo_description')
               return {
                 roomName: room.jid,
                 naturalName: room.name,
+                description: info?.value as string || ''
               }
             }))
           }

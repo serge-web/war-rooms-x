@@ -15,18 +15,26 @@ const specialRoom = (room: RoomType): boolean => {
   return room.roomName.startsWith('__')
 }
 
+/** parse block of text that may not actually be JSON */
+const parseJson = (json: string | undefined): { [key: string]: { [key: string]: string } } | null => {
+  try {
+    return JSON.parse(json || '{}')
+  } catch {
+    return null
+  }
+}
+
 const RoomsList: React.FC = () => {
   const { rooms } = useRooms()
-  
   // Create a FlexLayout model for the rooms
   const model = useMemo((): FlexLayout.Model => {
     const normalRooms = rooms.filter((room: RoomType) => !specialRoom(room))
     const convertedRooms = normalRooms.map(room => {
-      const details = JSON.parse(room.description || '{}')
+      const details = parseJson(room.description) || {}
       return {
       type: 'tab',
       name: room.naturalName,
-      component: details.specifics?.roomType || 'room',
+      component: details.specifics?.roomType || 'chat',
       config: room
     }})
     // split convertedRooms into two equally sized lists
