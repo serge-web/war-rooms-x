@@ -11,6 +11,20 @@ interface MapProps {
   room: RoomType
 }
 
+const mockFeatureCollection: GeoJSON.GeoJSON = {
+  type: 'FeatureCollection',
+  features: [{
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [-0.29, 51.505]
+    },
+    properties: {
+      name: 'Test Point'
+    }
+  }
+]}
+
 const MapContent: React.FC<MapProps> = ({ room }) => {
   const { theme, messages } = useRoom(room)
 
@@ -40,17 +54,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     }
   }, [messages])
 
-  if (!featureCollection) {
-    return (
-      <ConfigProvider
-      theme={theme}>
-      <div className='map-content' data-testid={`map-content-${room.roomName}`}>
-        PENDING MAP
-      </div>
-      </ConfigProvider>
-    )
-  }
-
   return (
     <ConfigProvider
     theme={theme}>
@@ -64,7 +67,7 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url={mapConfig?.backdropUrl}
         />}
-        <GeoJSON data={featureCollection} />
+        <GeoJSON data={featureCollection || mockFeatureCollection} />
 
       </MapContainer>
     </div>
