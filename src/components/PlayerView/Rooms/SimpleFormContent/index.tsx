@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import './index.css'
-import FormMessageBuilder from '../Messages/FormMessageBuilder'
+import FormMessageBuilder from './FormMessageBuilder'
 import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
 import { RoomType, Template } from '../../../../types/rooms-d'
