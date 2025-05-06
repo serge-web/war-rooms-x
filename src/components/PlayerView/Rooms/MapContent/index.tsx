@@ -45,6 +45,8 @@ type GeomanLayer = L.Layer & {
   remove: () => void
   toGeoJSON: () => GeoJSON.Feature
   pm: Record<string, unknown>
+  feature?: GeoJSON.Feature
+  options?: any
 }
 
 // Define type for Geoman create event
@@ -74,13 +76,11 @@ const GeomanControls: React.FC<{
     const geomanMap = map as unknown as GeomanMap
     if (!geomanMap.pm) return
     
-    // Configure Geoman
+    // Configure Geoman - don't use layerGroup to allow individual layer manipulation
     geomanMap.pm.setGlobalOptions({
-      // Add features to our GeoJSON layer instead of creating new layers
-      layerGroup: geoJsonLayerRef.current as unknown as L.LayerGroup,
-      // Ensure features are added to our layer
-      syncLayersOnEdit: true,
-      syncLayersOnDrag: true
+      // Keep each feature as a separate layer for individual editing
+      syncLayersOnEdit: false,
+      syncLayersOnDrag: false
     })
     
     geomanMap.pm.addControls({
@@ -97,31 +97,22 @@ const GeomanControls: React.FC<{
       removalMode: true,
     })
     
-    // Handle the pm:create event to ensure features are added to our layer
+    // Handle the pm:create event to track map modifications
     const handleCreate = (e: L.LeafletEvent) => {
+      // Mark the layer as a Geoman-created layer to identify it when saving
       const geomanEvent = e as GeomanCreateEvent
       const layer = geomanEvent.layer
       
-      // Remove the layer from the map as Geoman adds it directly
-      layer.remove()
-      
-      // Add the feature to our GeoJSON layer
-      if (geoJsonLayerRef.current) {
-        try {
-          const feature = layer.toGeoJSON()
-          const currentData = geoJsonLayerRef.current.toGeoJSON()
-
-          // Add the new feature to our GeoJSON data
-          if (currentData.type === 'FeatureCollection') {
-            currentData.features.push(feature)
-            
-            // Update the GeoJSON layer with the new data
-            geoJsonLayerRef.current.clearLayers()
-            geoJsonLayerRef.current.addData(currentData)
-          }
-        } catch (error) {
-          console.error('Error adding feature to GeoJSON layer:', error)
+      // Store the original feature for identification
+      try {
+        // Add a property to identify this as a Geoman-created layer
+        layer.feature = layer.toGeoJSON()
+        if (layer.feature.properties) {
+          layer.feature.properties.geomanCreated = true
+          layer.feature.properties.id = `geoman-${Date.now()}-${Math.floor(Math.random() * 1000)}`
         }
+      } catch (error) {
+        console.error('Error setting layer properties:', error)
       }
       
       // Notify that the map has been modified
@@ -192,12 +183,35 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   
   const currentFeatures: GeoJSON.GeoJSON | undefined = useMemo(() => {
     if (latestMessage) {
-      const latest = latestMessage.content as GeoJSON.GeoJSON
+      const latest = latestMessage.content as GeoJSON.FeatureCollection
+      // clear any `geomanCreated properties on new data, since we wish to delete old data
+      latest.features.forEach((feature) => {
+        if (feature.properties && feature.properties.geomanCreated) {
+          delete feature.properties.geomanCreated
+        }
+      })
       return latest
     } else {
       return undefined
     }
   }, [latestMessage])
+
+  useEffect(() => {
+    // manually created features get added to the map.  But, once user has `saved`, when
+    // they get a new message (with all features) there will be both the manually added one, 
+    // and the new instance of ot.  So, when we get a new message ,delete any manually
+    // created features.
+    // TODO: this could break if multiple people editing map, since local edits could be lost 
+    // if someone else edits map
+    mapRef.current?.eachLayer((layer: L.Layer) => {
+        const geoJSONLayer = layer as L.GeoJSON
+        const feature = geoJSONLayer.feature as GeoJSON.Feature
+        if (feature && feature.properties && feature.properties.geomanCreated) {
+          layer.remove()
+        }
+    })
+
+  }, [currentFeatures])
   
   
   // Function to handle map modifications
@@ -210,19 +224,28 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     if (!mapRef.current) return
     
     const features: GeoJSON.Feature[] = []
+    const processedIds = new Set<string>()
     
     // Get all layers from the map, including Geoman-created layers
     mapRef.current.eachLayer((layer) => {
-      // Use type assertion to handle the GeoJSON layer
       const geoJSONLayer = layer as unknown as GeoJSONLayer
       
       // Check if this layer has the toGeoJSON method (is a feature layer)
       if (layer && 'toGeoJSON' in layer) {
         try {
           const feature = geoJSONLayer.toGeoJSON()
-          // Skip the base tile layer which might also have toGeoJSON
+          
+          // Skip the base tile layer and avoid duplicates
           if (feature.type === 'Feature') {
-            features.push(feature)
+            // Check if this feature has an ID and hasn't been processed yet
+            const featureId = feature.properties?.id
+            if (featureId && !processedIds.has(featureId)) {
+              processedIds.add(featureId)
+              features.push(feature)
+            } else if (!featureId) {
+              // For features without IDs (like initial features)
+              features.push(feature)
+            }
           }
         } catch (e) {
           console.error('Error converting layer to GeoJSON', e)
@@ -261,6 +284,19 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             key={latestMessage?.id}
             data={currentFeatures} 
             ref={geoJsonLayerRef}
+            // Ensure each feature is a separate interactive layer
+            onEachFeature={(feature, layer) => {
+              // Store the original feature ID for identification
+              if (!feature.properties) {
+                feature.properties = {}
+              }
+              if (!feature.properties.id) {
+                feature.properties.id = `feature-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+              }
+              
+              // Store the feature on the layer for reference
+              (layer as any).feature = feature
+            }}
           /> }
           <GeomanControls 
             onMapModified={handleMapModified} 
