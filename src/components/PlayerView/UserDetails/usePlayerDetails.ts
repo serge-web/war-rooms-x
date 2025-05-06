@@ -4,6 +4,7 @@ import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import { RGroup, RUser } from '../../AdminView/raTypes-d';
 import { ForceConfigType, GamePlayerDetails, MockId, UserConfigType } from '../../../types/wargame-d';
 import { XMPPService } from '../../../services/XMPPService';
+import { FORCES_PREFIX, USERS_PREFIX } from '../../../types/constants';
 
 export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => {
   const [playerDetails, setPlayerDetails] = useState<GamePlayerDetails | null>(null)
@@ -35,7 +36,7 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
         }
       } else {
         // get the pubsub doc for this user
-        const userId = 'users:' + trimHost(xmppClient.bareJid)
+        const userId = USERS_PREFIX + trimHost(xmppClient.bareJid)
         const doc = await xmppClient.getPubSubDocument(userId)
         if (doc) {
           const userConfig = doc.content?.json as UserConfigType
@@ -52,7 +53,7 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
             const forceId = userConfig.forceId
             if (forceId) {
               // get the force document
-              const forceDoc = await xmppClient.getPubSubDocument('forces:' + forceId)
+              const forceDoc = await xmppClient.getPubSubDocument(FORCES_PREFIX + forceId)
               if (forceDoc) {
                 const forceConfig = forceDoc.content?.json as ForceConfigType
                 if (forceConfig) {

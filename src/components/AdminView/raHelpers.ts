@@ -6,6 +6,7 @@ import { PubSubDocument } from "../../services/types"
 import { Template } from "../../types/rooms-d"
 import { TemplateDataProvider } from "./Resources/templateDataProvider"
 import { WargameDataProvider } from "./Resources/wargameDataProvider"
+import { FORCES_COLLECTION, FORCES_PREFIX, USERS_COLLECTION, USERS_PREFIX } from "../../types/constants"
 
 // Static method to ensure members have proper host format
 export const formatMemberWithHost = (member: string): string => {
@@ -29,7 +30,7 @@ export const userXtoR = async (result: XUser, id?: string, xmppClient?: XMPPServ
   // strip suffix, if present
   const idToUseStripped = trimHost(idToUse)
   // look for user pubsub doc
-  const doc = await xmppClient?.getPubSubDocument('users:' + idToUseStripped)
+  const doc = await xmppClient?.getPubSubDocument(USERS_PREFIX + idToUseStripped)
   if (doc) {
     const userConfig = doc.content?.json as UserConfigType
     const res : RUser = {
@@ -50,11 +51,11 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
     type: 'user-config-type-v1',
     name: result.name
   }
-  const nodeId = 'users:' + id
+  const nodeId = USERS_PREFIX + id
   // check if this node exists
   if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
     // create the node
-    const res = await xmppClient.publishPubSubLeaf(nodeId, 'users', newDoc)
+    const res = await xmppClient.publishPubSubLeaf(nodeId, USERS_COLLECTION, newDoc)
     if (!res) {
       console.error('problem creating user document', res)
     }
@@ -67,7 +68,7 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
         name: result.name,
         type: existingUserConfig.type
       }
-      const res = await xmppClient.publishPubSubLeaf(nodeId, 'users', mergedNode)
+      const res = await xmppClient.publishPubSubLeaf(nodeId, USERS_COLLECTION, mergedNode)
       if (!res.success) {
         console.error('problem publishing document', id)
       } 
@@ -130,7 +131,7 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   // if a member is lacking the host, append it
   const members = result.members || []
   // ok, we have to get the pubsub document for this force
-  const doc = verbose && (await xmppClient?.getPubSubDocument('forces:' + result.name)) as PubSubDocument
+  const doc = verbose && (await xmppClient?.getPubSubDocument(FORCES_PREFIX + result.name)) as PubSubDocument
   const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
   const res: RGroup = {
     id: result.name,
@@ -151,8 +152,8 @@ const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPService, pr
     color: result.color,
     objectives: result.objectives
   }
-  const nodeId = 'forces:' + id
-  const res = await xmppClient?.publishPubSubLeaf(nodeId, 'forces', newDoc)
+  const nodeId = FORCES_PREFIX + id
+  const res = await xmppClient?.publishPubSubLeaf(nodeId, FORCES_COLLECTION, newDoc)
   if (!res.success) {
     console.error('problem publishing document', id)
   }

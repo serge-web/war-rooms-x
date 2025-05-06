@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Template } from '../types/rooms-d';
 import { useWargame } from '../contexts/WargameContext';
 import { useIndexedDBData } from '../hooks/useIndexedDBData';
+import { TEMPLATES_COLLECTION } from '../types/constants';
 
 export const useTemplates = () => {
   const [templates, setTemplates] = useState<Template[]>([])  
@@ -19,7 +20,7 @@ export const useTemplates = () => {
       return
     } else {
       const getPubSubItems = async () => {
-        const templateDocs = await xmppClient.getPubSubCollectionItems('templates') as Template[]
+        const templateDocs = await xmppClient.getPubSubCollectionItems(TEMPLATES_COLLECTION) as Template[]
         setTemplates(templateDocs)
       }      
       getPubSubItems()

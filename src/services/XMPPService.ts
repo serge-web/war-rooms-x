@@ -5,6 +5,7 @@ import { GameMessage, User } from '../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 import { NS_JSON_0 } from 'stanza/Namespaces'
 import { UserConfigType } from '../types/wargame-d'
+import { USERS_COLLECTION, USERS_PREFIX } from '../types/constants'
 
 /**
  * Special constant for registering handlers that listen to messages from all rooms
@@ -1206,7 +1207,7 @@ export class XMPPService {
     if (!this.client || !this.connected) {
       throw new Error('Not connected')
     }
-    const userDocName = 'users:' + bareJid
+    const userDocName = USERS_PREFIX + bareJid
     // do we have pubsub document with this jid?
     const doc = await this.getPubSubDocument(userDocName)
     if (!doc) {
@@ -1222,14 +1223,14 @@ export class XMPPService {
         json: userDoc
       }
       // do we have users collection?
-      const users = await this.checkPubSubNodeExists('users')
+      const users = await this.checkPubSubNodeExists(USERS_COLLECTION)
       if (!users) {
-        const res = await this.createPubSubCollection('users')
+        const res = await this.createPubSubCollection(USERS_COLLECTION)
         if (!res || !res.id) {
           console.error('problem creating users collection', res)
         }
       }
-      await this.publishPubSubLeaf(userDocName, 'users', jsonDoc)
+      await this.publishPubSubLeaf(userDocName, USERS_COLLECTION, jsonDoc)
     } else {
       const json = doc.content as JSONItem
       const userDoc = json.json as UserConfigType

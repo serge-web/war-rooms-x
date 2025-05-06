@@ -8,6 +8,7 @@ import { mockBackend } from '../mockData/mockAdmin'
 import { useGameProperties } from '../components/PlayerView/GameState/useGameSetup'
 import { useGameState } from '../components/PlayerView/GameState/useGameState'
 import { usePlayerDetails } from '../components/PlayerView/UserDetails/usePlayerDetails'
+import { FORCES_PREFIX } from '../types/constants'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -53,7 +54,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
         return force
       }
     } else {
-      const force = await xmppClient.getPubSubDocument('forces:' + forceId)
+      const force = await xmppClient.getPubSubDocument(FORCES_PREFIX + forceId)
       if (force) {
         forceCache[forceId] = force.content?.json as ForceConfigType
         return force.content?.json as ForceConfigType
