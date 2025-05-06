@@ -29,8 +29,37 @@ interface MapProps {
   room: RoomType
 }
 
+// Define types for Geoman functionality
+interface GeomanControls {
+  addControls: (options: Record<string, boolean | string>) => void
+  removeControls: () => void
+  setGlobalOptions: (options: Record<string, unknown>) => void
+}
+
+interface GeomanMap {
+  pm: GeomanControls
+}
+
+// Define type for Geoman layer
+type GeomanLayer = L.Layer & {
+  remove: () => void
+  toGeoJSON: () => GeoJSON.Feature
+  pm: Record<string, unknown>
+}
+
+// Define type for Geoman create event
+type GeomanCreateEvent = L.LeafletEvent & {
+  layer: GeomanLayer
+  shape: string
+  layerType: string
+}
+
 // Geoman Controls component to add drawing functionality to the map
-const GeomanControls: React.FC<{ onMapModified: () => void, mapRef: React.MutableRefObject<L.Map | null> }> = ({ onMapModified, mapRef }) => {
+const GeomanControls: React.FC<{ 
+  onMapModified: () => void, 
+  mapRef: React.RefObject<L.Map | null>,
+  geoJsonLayerRef: React.RefObject<LeafletGeoJSON | null>
+}> = ({ onMapModified, mapRef, geoJsonLayerRef }) => {
   const map = useMap()
   
   // Store the map reference for use in the parent component
@@ -44,6 +73,15 @@ const GeomanControls: React.FC<{ onMapModified: () => void, mapRef: React.Mutabl
     // Initialize Geoman controls
     const geomanMap = map as unknown as GeomanMap
     if (!geomanMap.pm) return
+    
+    // Configure Geoman
+    geomanMap.pm.setGlobalOptions({
+      // Add features to our GeoJSON layer instead of creating new layers
+      layerGroup: geoJsonLayerRef.current as unknown as L.LayerGroup,
+      // Ensure features are added to our layer
+      syncLayersOnEdit: true,
+      syncLayersOnDrag: true
+    })
     
     geomanMap.pm.addControls({
       position: 'topleft',
@@ -59,8 +97,39 @@ const GeomanControls: React.FC<{ onMapModified: () => void, mapRef: React.Mutabl
       removalMode: true,
     })
     
+    // Handle the pm:create event to ensure features are added to our layer
+    const handleCreate = (e: L.LeafletEvent) => {
+      const geomanEvent = e as GeomanCreateEvent
+      const layer = geomanEvent.layer
+      
+      // Remove the layer from the map as Geoman adds it directly
+      layer.remove()
+      
+      // Add the feature to our GeoJSON layer
+      if (geoJsonLayerRef.current) {
+        try {
+          const feature = layer.toGeoJSON()
+          const currentData = geoJsonLayerRef.current.toGeoJSON()
+
+          // Add the new feature to our GeoJSON data
+          if (currentData.type === 'FeatureCollection') {
+            currentData.features.push(feature)
+            
+            // Update the GeoJSON layer with the new data
+            geoJsonLayerRef.current.clearLayers()
+            geoJsonLayerRef.current.addData(currentData)
+          }
+        } catch (error) {
+          console.error('Error adding feature to GeoJSON layer:', error)
+        }
+      }
+      
+      // Notify that the map has been modified
+      onMapModified()
+    }
+    
     // Add event listeners for map modifications
-    map.on('pm:create', onMapModified)
+    map.on('pm:create', handleCreate)
     map.on('pm:remove', onMapModified)
     map.on('pm:edit', onMapModified)
     map.on('pm:dragend', onMapModified)
@@ -73,13 +142,13 @@ const GeomanControls: React.FC<{ onMapModified: () => void, mapRef: React.Mutabl
       }
       
       // Remove event listeners
-      map.off('pm:create', onMapModified)
+      map.off('pm:create', handleCreate)
       map.off('pm:remove', onMapModified)
       map.off('pm:edit', onMapModified)
       map.off('pm:dragend', onMapModified)
       map.off('pm:cut', onMapModified)
     }
-  }, [map, onMapModified])
+  }, [map, onMapModified, geoJsonLayerRef])
   
   return null
 }
@@ -189,11 +258,15 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             url={mapConfig?.backdropUrl}
           />}
           { currentFeatures && <GeoJSON 
-          key={latestMessage?.id }
+            key={latestMessage?.id}
             data={currentFeatures} 
             ref={geoJsonLayerRef}
           /> }
-          <GeomanControls onMapModified={handleMapModified} mapRef={mapRef} />
+          <GeomanControls 
+            onMapModified={handleMapModified} 
+            mapRef={mapRef} 
+            geoJsonLayerRef={geoJsonLayerRef}
+          />
         </MapContainer>
         <div className="map-controls">
           <Space>
