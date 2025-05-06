@@ -626,6 +626,28 @@ export class XMPPService {
     }
   }
 
+  async getPubSubCollectionItems(nodeId: string): Promise<PubSubDocument[]> {
+    if (!this.client || !this.connected) {
+      return []
+    }
+    if (!this.pubsubService) {
+      throw new Error('PubSub service not available')
+    }
+    try {
+      const items = await this.client.getDiscoItems(this.pubsubService!, nodeId)
+      const itemNodes = items.items.map((item) => item.node)
+      const getItems = itemNodes.map((node) => this.client?.getItems(this.pubsubService!, node as string))
+      const results = await Promise.all(getItems)
+      const contents = results.map((result) => result?.items?.[0].content) as JSONItem[]
+      const jsonDocs = contents.map((content) => content.json)
+      return jsonDocs.filter((result) => result !== null) as PubSubDocument[]
+    } catch (error) {
+      console.error('Error getting PubSub collection items:', error)
+      return []
+    }
+  }
+
+
   /**
    * Create a new PubSub document (node)
    * @param nodeId The ID for the new node

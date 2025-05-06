@@ -11,13 +11,18 @@ export const useTemplates = () => {
   useEffect(() => {
     if (xmppClient === undefined) {
       // waiting for login
+      return
     } else if (xmppClient === null) {
       if (!loading && mockTemplates) {
         setTemplates(mockTemplates)
       }
+      return
     } else {
-      // TODO: use real data
-      throw new Error('not yet getting xmpp templates')
+      const getPubSubItems = async () => {
+        const templateDocs = await xmppClient.getPubSubCollectionItems('templates') as Template[]
+        setTemplates(templateDocs)
+      }      
+      getPubSubItems()
     }
   }, [xmppClient, loading, mockTemplates]);
 
