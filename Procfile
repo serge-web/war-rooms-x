@@ -1,1 +1,1 @@
-yarn vite
+web: yarn start
