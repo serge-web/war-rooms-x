@@ -3,7 +3,6 @@ import { trimHost } from '../../AdminView/raHelpers';
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import { RGroup, RUser } from '../../AdminView/raTypes-d';
 import { ForceConfigType, GamePlayerDetails, MockId, UserConfigType } from '../../../types/wargame-d';
-import { JSONItem } from 'stanza/protocol';
 import { XMPPService } from '../../../services/XMPPService';
 
 export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => {
@@ -15,7 +14,8 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
   useEffect(() => {
     const fetchPlayerDetails = async () => {
       if (xmppClient === undefined) {
-        // waiting for login
+        // waiting for login, clear details
+        setPlayerDetails(null)
       } else if (xmppClient === null) {
         if (!usersLoading && !forcesLoading) {
           // do we have player id?
@@ -38,9 +38,7 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
         const userId = 'users:' + trimHost(xmppClient.bareJid)
         const doc = await xmppClient.getPubSubDocument(userId)
         if (doc) {
-          console.log('player doc', doc)
-          const userConfigDoc = doc.content?.json as JSONItem
-          const userConfig = userConfigDoc.json as UserConfigType
+          const userConfig = doc.content?.json as UserConfigType
           if (userConfig) {
             // set the initial player details
             setPlayerDetails({
