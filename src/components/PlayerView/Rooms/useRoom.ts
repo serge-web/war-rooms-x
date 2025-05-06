@@ -3,7 +3,6 @@ import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../..
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
-import { useGameState } from '../GameState/useGameState';
 import { usePlayerDetails } from '../UserDetails/usePlayerDetails';
 import { ReceivedMessage } from 'stanza/protocol';
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
@@ -12,13 +11,12 @@ import { prefixKey } from '../../../types/constants';
 import { RRoom } from '../../AdminView/raTypes-d';
 
 export const useRoom = (room: RoomType) => {
+  const { xmppClient, gameState } = useWargame()
   const [messages, setMessages] = useState<GameMessage[]>([])
-  const { gameState } = useGameState()
   const { playerDetails } = usePlayerDetails()
   const [users, setUsers] = useState<User[]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
-  const { xmppClient } = useWargame()
   const messagesReceived = useRef<boolean | null>(null)
   const [error, setError] = useState<UserError | null>(null)
   const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')

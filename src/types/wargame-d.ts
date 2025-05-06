@@ -35,6 +35,9 @@ export interface WargameContextType {
   mockPlayerId: MockId | null
   setMockPlayerId: (value: MockId | null) => void
   getForce: (forceId: string) => Promise<ForceConfigType>
+  gameProperties: GamePropertiesType | null
+  gameState: GameStateType | null
+  nextTurn: (gameProperties: GamePropertiesType | null) => Promise<void> 
 }
 
 /**

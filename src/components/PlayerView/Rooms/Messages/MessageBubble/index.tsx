@@ -30,11 +30,14 @@ const MessageBubble: React.FC<{
   templates: Template[]
 }> = ({ message, isSelf, templates }) => {
   const [forceColor, setForceColor] = useState<string | undefined>(undefined)
+  const { getForce } = useWargame()
   const from = message.details.senderName
   const fromForce = message.details.senderForce
-  useWargame().getForce(fromForce).then((force) => {
-    setForceColor(force.color)
-  })
+  if (fromForce) {
+    getForce(fromForce).then((force) => {
+      setForceColor(force.color)
+    })
+  }
   return (
     <div 
       data-testid={`message-${message.id}`} 

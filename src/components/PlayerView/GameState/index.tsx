@@ -1,14 +1,12 @@
 import React from 'react'
 import { Card, Typography, Space, Tag, Button, Tooltip } from 'antd'
 import { AimOutlined, ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
-import { useGameState } from './useGameState'
-import { useGameProperties } from '../GameState/useGameSetup'
+import { useWargame } from '../../../contexts/WargameContext'
 
 const { Text } = Typography
 
 const GameState: React.FC = () => {
-  const { gameState, nextTurn } = useGameState()
-  const { name, description } = useGameProperties()
+  const { gameProperties, gameState, nextTurn } = useWargame()
 
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
@@ -37,8 +35,8 @@ const GameState: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
               <AimOutlined style={{ marginRight: 8, color: '#1677ff' }} />
-              <Tooltip title={description}> 
-                <Text strong data-testid='turn-number'>{name}</Text>
+              <Tooltip title={gameProperties?.description}> 
+                <Text strong data-testid='turn-number'>{gameProperties?.name}</Text>
               </Tooltip>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -59,7 +57,7 @@ const GameState: React.FC = () => {
           </div>
           <Button
             type="primary"
-            onClick={nextTurn}
+            onClick={() => nextTurn(gameProperties)}
             style={{ marginTop: 8 }}
           >
             Next Turn

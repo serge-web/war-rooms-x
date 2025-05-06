@@ -1,46 +1,46 @@
 import { useMemo } from 'react'
 import { GamePropertiesType } from '../../../types/wargame-d'
 import { usePubSub } from '../../../hooks/usePubSub'
-import { useWargame } from '../../../contexts/WargameContext'
 import { splitGameState } from '../../../helpers/split-game-state'
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData'
 import { RGameState } from '../../AdminView/raTypes-d'
+import { XMPPService } from '../../../services/XMPPService'
 
-export const useGameProperties = () => {
-  const { document: gamePropertiesDocument } = usePubSub<GamePropertiesType>('game-setup')
-  const { xmppClient } = useWargame()
+export const useGameProperties = (xmppClient: XMPPService | null | undefined) => {
+  const { document: gamePropertiesDocument } = usePubSub<GamePropertiesType>('game-setup', xmppClient)
   const { data: mockWargame, loading } = useIndexedDBData<RGameState[]>('wargames')
 
-  const effectiveGameProperties = useMemo(() => {
+  const gameProperties: GamePropertiesType | null = useMemo(() => {
     if (xmppClient === undefined) {
       // ignore
+      return null
     } else if (xmppClient === null) {
       if (!loading && mockWargame) {
         const state =  mockWargame[0]
-        const { gameProperties } = splitGameState(state)
-        // split the state into two parts
-        return gameProperties
+        const { gameProperties: gamePropertiesPub } = splitGameState(state)
+        return gamePropertiesPub
       }
+      return null
     } else {
       return gamePropertiesDocument
     }
   }, [gamePropertiesDocument, xmppClient, loading, mockWargame])
 
   const name = useMemo(() => {
-    return effectiveGameProperties?.name
-  }, [effectiveGameProperties])
+    return gameProperties?.name
+  }, [gameProperties])
 
   const description = useMemo(() => {
-    return effectiveGameProperties?.description
-  }, [effectiveGameProperties])  
+    return gameProperties?.description
+  }, [gameProperties])  
 
   const playerTheme = useMemo(() => {
-    return effectiveGameProperties?.playerTheme
-  }, [effectiveGameProperties])
+    return gameProperties?.playerTheme
+  }, [gameProperties])
 
   const adminTheme = useMemo(() => {
-    return effectiveGameProperties?.adminTheme
-  }, [effectiveGameProperties])
+    return gameProperties?.adminTheme
+  }, [gameProperties])
 
-  return { playerTheme, adminTheme, name, description }
+  return { playerTheme, adminTheme, name, description, gameProperties }
 }

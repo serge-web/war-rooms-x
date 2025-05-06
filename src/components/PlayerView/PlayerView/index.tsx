@@ -5,12 +5,12 @@ import GameState from '../GameState'
 import AdminRoom from '../Rooms/AdminRoom'
 import UserDetails from '../UserDetails'
 import RoomsList from '../Rooms/RoomsList'
-import { useGameProperties } from '../GameState/useGameSetup'
+import { useWargame } from '../../../contexts/WargameContext'
 
 const { Sider, Content } = Layout
 
 const PlayerView: React.FC = () => {
-  const { playerTheme, adminTheme } = useGameProperties()
+  const { gameProperties } = useWargame()
   const gameStateStyle: React.CSSProperties = {
     height: '170px',
     backgroundColor: '#ccc',
@@ -50,12 +50,12 @@ const PlayerView: React.FC = () => {
   return (
     <Layout style={layoutStyle}>
       <Content style={roomsStyle}>
-        <ConfigProvider theme={playerTheme}>
+        <ConfigProvider theme={gameProperties?.playerTheme}>
           <RoomsList />
         </ConfigProvider>
       </Content>
       <Sider width="25%" style={controlPanelStyle}>
-        <ConfigProvider theme={adminTheme}>
+        <ConfigProvider theme={gameProperties?.adminTheme}>
           <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Header style={gameStateStyle}>
               <GameState/>

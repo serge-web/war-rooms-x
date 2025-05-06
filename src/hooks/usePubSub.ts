@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useWargame } from '../contexts/WargameContext'
 import { PubSubDocumentChangeHandler, PubSubDocumentResult } from '../services/types'
+import { XMPPService } from '../services/XMPPService'
 
 /**
  * Hook for interacting with XMPP PubSub capabilities
  * Provides functionality to subscribe to, get, and update PubSub documents
  */
-export const usePubSub = <T extends object>(nodeId: string) => {
+export const usePubSub = <T extends object>(nodeId: string, xmppClient: XMPPService | null | undefined) => {
   const [document, setDocument] = useState<T | null>(null)
-  const { xmppClient } = useWargame()
   
   /**
    * Update the PubSub document with new content

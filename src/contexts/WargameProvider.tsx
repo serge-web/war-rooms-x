@@ -5,6 +5,8 @@ import { DataProvider } from 'react-admin'
 import { ForceConfigType, MockId } from '../types/wargame-d'
 import { roomTypeFactory } from '../services/roomTypes'
 import { mockBackend } from '../mockData/mockAdmin'
+import { useGameProperties } from '../components/PlayerView/GameState/useGameSetup'
+import { useGameState } from '../components/PlayerView/GameState/useGameState'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -19,8 +21,13 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     return xmppClient !== undefined
   }, [xmppClient])
   const [forceCache] = useState<Record<string, ForceConfigType>>({})
+  const { gameProperties } = useGameProperties(xmppClient)
+  const { gameState, nextTurn } = useGameState(xmppClient)
 
   const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => {
+    if (!forceId) {
+      console.warn('force id missing', forceId)
+    }
     // see if we have it cached
     const cached = forceCache[forceId]
     if (cached) {
@@ -83,7 +90,10 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     mockPlayerId,
     setMockPlayerId,
     roomTypeFactory,
-    getForce
+    getForce,
+    gameProperties,
+    gameState,
+    nextTurn
   }
 
   return (
