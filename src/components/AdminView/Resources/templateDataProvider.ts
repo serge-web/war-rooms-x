@@ -1,4 +1,4 @@
-import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
+import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyParams, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
 import { XMPPService } from "../../../services/XMPPService"
 import { Template } from "../../../types/rooms-d"
 
@@ -34,8 +34,14 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
       const template: Template = doc && doc.content?.json ? doc.content.json : emptyTemplate
       return { data: template }
     },
-    getMany: async (): Promise<GetManyResult> => {
-      throw new Error('getMany not supported for templates')
+    getMany: async (_resource: string, params: GetManyParams): Promise<GetManyResult> => {
+      const getActions = params.ids.map(async (id: string) => {
+        const doc = await xmppClient.getPubSubDocument(TEMPLATE_PREFIX + id)
+        const template: Template = doc && doc.content?.json ? doc.content.json : emptyTemplate
+        return template
+      })
+      const templates = await Promise.all(getActions)
+      return { data: templates }
     },
     getManyReference: async (): Promise<GetManyReferenceResult> => {
       throw new Error('getManyReference not supported for templates')
