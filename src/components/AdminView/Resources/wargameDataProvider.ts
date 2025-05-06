@@ -1,8 +1,8 @@
 import { CreateParams, CreateResult, DataProvider, DeleteManyResult, DeleteResult, GetListResult, GetManyReferenceResult, GetManyResult, GetOneResult, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
-import { XMPPService } from "../../services/XMPPService"
-import { GameStateType, GamePropertiesType } from "../../types/wargame-d"
-import { RGameState } from "./raTypes-d"
-import { splitGameState, mergeGameState } from "../../helpers/split-game-state"
+import { mergeGameState, splitGameState } from "../../../helpers/split-game-state"
+import { XMPPService } from "../../../services/XMPPService"
+import { GameStateType, GamePropertiesType } from "../../../types/wargame-d"
+import { RGameState } from "../raTypes-d"
 
 const STATE_DOC = 'game-state'
 const SETUP_DOC = 'game-setup'

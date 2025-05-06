@@ -1,0 +1,29 @@
+/* Room content styling */
+.room-content {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* Map content styling */
+.map-content {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* Ensure the Leaflet map container takes up the full space */
+.map-content .leaflet-container {
+  height: 100%;
+  width: 100%;
+}

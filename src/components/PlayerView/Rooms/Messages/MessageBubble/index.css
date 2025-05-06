@@ -61,18 +61,6 @@
   align-items: center;
 }
 
-.message-value.message-string {
-  color: #16a34a;
-}
-
-.message-value.message-number {
-  color: #2563eb;
-}
-
-.message-value.message-boolean {
-  color: #9333ea;
-}
-
 .message-value.message-null {
   color: #dc2626;
   font-style: italic;

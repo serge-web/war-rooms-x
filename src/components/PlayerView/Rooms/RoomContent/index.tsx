@@ -20,7 +20,7 @@ const RoomContent: React.FC<RoomProps> = ({ room }) => {
     theme={theme}>
     <div className='room-content' data-testid={`room-content-${room.roomName}`}>
       <ErrorModal error={error} clearError={clearError} />
-      <MessageList messages={messages} currentUser={playerDetails?.id || ''} />
+      <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={[]} />
       { canSubmit && <MessageInputForm 
         onSendMessage={sendMessage} 
         disabled={false} 

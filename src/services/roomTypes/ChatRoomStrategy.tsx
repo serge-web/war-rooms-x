@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import { ComponentType } from 'react'
 import { RoomTypeStrategy } from './RoomTypeStrategy'
 import { ChatRoomConfig } from '../../types/rooms-d'
 
@@ -16,6 +16,8 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
    */
   public label = 'Chat Room'
 
+  public description = 'A standard chat room'
+
   /**
    * Validates if the provided configuration is valid for a chat room
    * @param config Configuration to validate
@@ -29,52 +31,24 @@ export class ChatRoomStrategy implements RoomTypeStrategy<ChatRoomConfig> {
     )
   }
 
-  /**
-   * Renders a read-only view of the chat room configuration for admin UI
-   * @param config Chat room configuration
-   * @returns React element for displaying the configuration
-   */
-  public renderShow(config: ChatRoomConfig): ReactElement {
-    // Simple display for chat room configuration
-    // This would be expanded in a real implementation
-    return (
-      <div>
-        <h3>Chat Room Configuration</h3>
-        <p>Room Type: {config.roomType}</p>
-      </div>
-    )
+  /** default (bare) config for this room type */
+  public defaultConfig: ChatRoomConfig = {
+    roomType: 'chat'
   }
 
   /**
-   * Renders an editable view of the chat room configuration for admin UI
-   * @param config Chat room configuration
-   * @param onChange Callback for when the configuration changes
-   * @returns React element for editing the configuration
+   * Returns a component for displaying the chat room configuration in read-only mode
+   * @returns React component for displaying the configuration
    */
-  public renderEdit(
-    config: ChatRoomConfig,
-    onChange: (config: ChatRoomConfig) => void
-  ): ReactElement {
-    // Simple editor for chat room configuration
-    // This would be expanded in a real implementation
-    return (
-      <div>
-        <h3>Edit Chat Room Configuration</h3>
-        <p>Room Type: {config.roomType}</p>
-        <button
-          onClick={() => {
-            // Example of using onChange
-            onChange({
-              ...config,
-              // This is just a placeholder to show we're using onChange
-              roomType: 'chat'
-            })
-          }}
-        >
-          Update Configuration
-        </button>
-        <p>No additional configuration needed for basic chat rooms.</p>
-      </div>
-    )
+  public showComponent: ComponentType = () => {
+    return <span>n/a</span>
+  }
+
+  /**
+   * Returns a component for editing the chat room configuration
+   * @returns React component for editing the configuration
+   */
+  public editComponent: ComponentType = () => {
+    return <span>No additional config.</span>
   }
 }

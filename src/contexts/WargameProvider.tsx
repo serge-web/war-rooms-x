@@ -21,7 +21,6 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   const [forceCache] = useState<Record<string, ForceConfigType>>({})
 
   const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => {
-    console.log('getForce', forceId, forceCache, xmppClient)
     // see if we have it cached
     const cached = forceCache[forceId]
     if (cached) {
@@ -32,9 +31,8 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     } else if (xmppClient === null) {
       // get the mock force data
       const rForce = mockBackend.groups.find(g => g.id === forceId)
-      console.log('mock force', forceId, rForce, mockBackend.groups)
       if (!rForce) {
-        throw new Error('Force not found')
+        throw new Error('Force not found: ' + forceId)
       } else {
         const force: ForceConfigType = {
           type: 'force-config-type-v1',

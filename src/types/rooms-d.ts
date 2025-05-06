@@ -2,9 +2,11 @@ import { ThemeConfig } from 'antd'
 import { RJSFSchema, UiSchema } from '@rjsf/utils'
 
 export interface RoomDetails {
-  roomType: 'chat' | 'map'
   theme?: ThemeConfig
+  description: string
+  specifics?: ChatRoomConfig | MapRoomConfig | FormRoomConfig
 }
+
 /**
  * OpenFire room
  */
@@ -16,7 +18,7 @@ export interface RoomType {
 }
 
 export interface MessageDetails {
-  messageType: 'chat' | 'map'
+  messageType: 'chat' | 'map' | 'form'
   senderId: string
   senderName: string
   senderForce: string
@@ -28,6 +30,11 @@ export interface MessageDetails {
 
 export interface ChatMessage {
   value: string
+}
+
+export interface FormMessage {
+  templateId: string
+  data: object
 }
 
 export interface GameMessage {
@@ -71,6 +78,7 @@ export interface ChatRoomConfig  extends CustomRoomConfig {
 
 export interface MapRoomConfig extends CustomRoomConfig {
   roomType: 'map'
+  backdropUrl?: string
 }
 
 export interface Template {
@@ -81,5 +89,5 @@ export interface Template {
 
 export interface FormRoomConfig extends CustomRoomConfig {
   roomType: 'form'
-  templates: Template[]
+  templateIds: Array<Template['id']>
 }

@@ -1,4 +1,4 @@
-import { ReactElement } from 'react'
+import { ComponentType } from 'react'
 
 /**
  * Interface for room type strategies
@@ -15,6 +15,9 @@ export interface RoomTypeStrategy<T = unknown> {
    */
   label: string
 
+  /** description of this room type */
+  description: string
+
   /**
    * Validates if the provided configuration is valid for this room type
    * @param config Configuration to validate
@@ -22,18 +25,18 @@ export interface RoomTypeStrategy<T = unknown> {
    */
   isConfigValid(config: T): config is T
 
-  /**
-   * Renders a read-only view of the room configuration for admin UI
-   * @param config Room configuration
-   * @returns React element for displaying the configuration
-   */
-  renderShow(config: T): ReactElement
+  /** default (bare) config for this room type */
+  defaultConfig: T
 
   /**
-   * Renders an editable view of the room configuration for admin UI
-   * @param config Room configuration
-   * @param onChange Callback for when the configuration changes
-   * @returns React element for editing the configuration
+   * Returns a component for displaying the room configuration in read-only mode
+   * @returns React component that accepts ShowComponentProps<T>
    */
-  renderEdit(config: T, onChange: (config: T) => void): ReactElement
+  showComponent: ComponentType
+
+  /**
+   * Returns a component for editing the room configuration
+   * @returns React component that accepts EditComponentProps<T>
+   */
+  editComponent: ComponentType
 }

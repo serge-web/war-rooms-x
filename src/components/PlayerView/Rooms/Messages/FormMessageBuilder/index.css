@@ -1,0 +1,56 @@
+.form-message-builder {
+  width: 100%;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-top: 1px solid #e8e8e8;
+}
+
+.template-selector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.template-selector label {
+  margin-right: 12px;
+  font-weight: bold;
+  min-width: 120px;
+}
+
+.form-container {
+  margin-top: 16px;
+}
+
+/* General form item layout */
+.form-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.form-item label {
+  padding-right: 16px;
+  font-weight: bold;
+  min-width: 120px;
+  text-align: right;
+  padding-top: 4px; /* Align with input fields */
+}
+
+.field-container {
+  flex: 1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Root form container */
+.root-item {
+  display: block;
+}
+
+.root-form-container {
+  width: 100%;
+}
