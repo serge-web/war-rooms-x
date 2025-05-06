@@ -124,7 +124,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   const currentFeatures: GeoJSON.GeoJSON | undefined = useMemo(() => {
     if (latestMessage) {
       const latest = latestMessage.content as GeoJSON.GeoJSON
-      console.log('latest', latest)
       return latest
     } else {
       return undefined
@@ -147,7 +146,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     mapRef.current.eachLayer((layer) => {
       // Use type assertion to handle the GeoJSON layer
       const geoJSONLayer = layer as unknown as GeoJSONLayer
-      console.log('geoJSONLayer', geoJSONLayer)
       
       // Check if this layer has the toGeoJSON method (is a feature layer)
       if (layer && 'toGeoJSON' in layer) {
@@ -162,8 +160,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
         }
       }
     })
-    
-    console.log('Captured features:', features)
     
     // Create a GeoJSON FeatureCollection
     const newFeatureCollection: GeoJSON.GeoJSON = {
