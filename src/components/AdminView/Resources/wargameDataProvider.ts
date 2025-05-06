@@ -27,20 +27,20 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
   return {
     getList: async (): Promise<GetListResult> => {      // get the state doc
       const doc = await xmppClient.getPubSubDocument(STATE_DOC)
-      const gameState: GameStateType = doc && doc.content?.json ? doc.content.json : DEFAULT_STATE
+      const gameState: GameStateType = doc as GameStateType || DEFAULT_STATE
       // get the setup doc
       const setupDoc = await xmppClient.getPubSubDocument(SETUP_DOC)
-      const setup: GamePropertiesType = setupDoc && setupDoc.content?.json ? setupDoc.content.json : DEFAULT_SETUP
+      const setup: GamePropertiesType = setupDoc as GamePropertiesType || DEFAULT_SETUP
       const merged: RGameState = mergeGameState(setup, gameState)
       return { data: [merged], total: 1 }
     },
     getOne: async (): Promise<GetOneResult> => {
       // get the state doc
       const doc = await xmppClient.getPubSubDocument(STATE_DOC)
-      const gameState: GameStateType = doc && doc.content?.json ? doc.content.json : DEFAULT_STATE
+      const gameState: GameStateType = doc as GameStateType || DEFAULT_STATE
       // get the setup doc
       const setupDoc = await xmppClient.getPubSubDocument(SETUP_DOC)
-      const setup: GamePropertiesType = setupDoc && setupDoc.content?.json ? setupDoc.content.json : DEFAULT_SETUP
+      const setup: GamePropertiesType = setupDoc as GamePropertiesType || DEFAULT_SETUP
       const merged: RGameState = mergeGameState(setup, gameState)
       return { data: merged }
     },

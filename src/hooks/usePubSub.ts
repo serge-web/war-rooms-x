@@ -19,7 +19,7 @@ export const usePubSub = <T extends object>(nodeId: string, xmppClient: XMPPServ
       return { success: false, id: nodeId, error: 'XMPP client or PubSub service not available' }
     }
     
-    const res = await xmppClient.updatePubSubDocument(nodeId, content as object)
+    const res = await xmppClient.publishJsonToPubSubNode(nodeId, content)
     return res
   }, [nodeId, xmppClient])
   
