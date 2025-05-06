@@ -29,23 +29,16 @@ interface MapProps {
   room: RoomType
 }
 
-const mockFeatureCollection: GeoJSON.GeoJSON = {
-  type: 'FeatureCollection',
-  features: [{
-    type: 'Feature',
-    geometry: {
-      type: 'Point',
-      coordinates: [-0.29, 51.505]
-    },
-    properties: {
-      name: 'Test Point'
-    }
-  }]
-}
-
 // Geoman Controls component to add drawing functionality to the map
-const GeomanControls: React.FC = () => {
+const GeomanControls: React.FC<{ onMapModified: () => void, mapRef: React.MutableRefObject<L.Map | null> }> = ({ onMapModified, mapRef }) => {
   const map = useMap()
+  
+  // Store the map reference for use in the parent component
+  useEffect(() => {
+    if (mapRef) {
+      mapRef.current = map
+    }
+  }, [map, mapRef])
   
   useEffect(() => {
     // Initialize Geoman controls
@@ -66,21 +59,36 @@ const GeomanControls: React.FC = () => {
       removalMode: true,
     })
     
+    // Add event listeners for map modifications
+    map.on('pm:create', onMapModified)
+    map.on('pm:remove', onMapModified)
+    map.on('pm:edit', onMapModified)
+    map.on('pm:dragend', onMapModified)
+    map.on('pm:cut', onMapModified)
+    
     return () => {
       // Cleanup
       if (geomanMap.pm) {
         geomanMap.pm.removeControls()
       }
+      
+      // Remove event listeners
+      map.off('pm:create', onMapModified)
+      map.off('pm:remove', onMapModified)
+      map.off('pm:edit', onMapModified)
+      map.off('pm:dragend', onMapModified)
+      map.off('pm:cut', onMapModified)
     }
-  }, [map])
+  }, [map, onMapModified])
   
   return null
 }
 
 const MapContent: React.FC<MapProps> = ({ room }) => {
   const { theme, messages, sendMessage } = useRoom(room)
-  const [currentFeatures, setCurrentFeatures] = useState<GeoJSON.GeoJSON | undefined>(undefined)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
   const geoJsonLayerRef = useRef<LeafletGeoJSON | null>(null)
+  const mapRef = useRef<L.Map | null>(null)
 
   const config: RoomDetails | undefined = useMemo(() => {
     if (!room.description) 
@@ -104,36 +112,58 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
 
   // Default position - can be updated based on your requirements
   const position: [number, number] = [51.505, -0.09]
-  
-  const featureCollection: GeoJSON.GeoJSON | undefined = useMemo(() => {
+
+  const latestMessage = useMemo(() => {
     if (messages.length > 0) {
-      return messages[messages.length - 1].content as GeoJSON.GeoJSON
+      return messages[messages.length - 1]
     } else {
       return undefined
     }
   }, [messages])
   
-  // Update current features when messages change
-  useEffect(() => {
-    setCurrentFeatures(featureCollection)
-  }, [featureCollection])
+  const currentFeatures: GeoJSON.GeoJSON | undefined = useMemo(() => {
+    if (latestMessage) {
+      const latest = latestMessage.content as GeoJSON.GeoJSON
+      console.log('latest', latest)
+      return latest
+    } else {
+      return undefined
+    }
+  }, [latestMessage])
   
+  
+  // Function to handle map modifications
+  const handleMapModified = useCallback(() => {
+    setHasUnsavedChanges(true)
+  }, [])
+
   // Function to capture the current map state and send as a message
   const captureAndSendMapState = useCallback(() => {
-    if (!geoJsonLayerRef.current) return
+    if (!mapRef.current) return
     
-    // Get the GeoJSON data from the map
-    const layers = geoJsonLayerRef.current.getLayers()
     const features: GeoJSON.Feature[] = []
     
-    layers.forEach(layer => {
+    // Get all layers from the map, including Geoman-created layers
+    mapRef.current.eachLayer((layer) => {
       // Use type assertion to handle the GeoJSON layer
       const geoJSONLayer = layer as unknown as GeoJSONLayer
-      if ('toGeoJSON' in geoJSONLayer) {
-        const feature = geoJSONLayer.toGeoJSON()
-        features.push(feature)
+      console.log('geoJSONLayer', geoJSONLayer)
+      
+      // Check if this layer has the toGeoJSON method (is a feature layer)
+      if (layer && 'toGeoJSON' in layer) {
+        try {
+          const feature = geoJSONLayer.toGeoJSON()
+          // Skip the base tile layer which might also have toGeoJSON
+          if (feature.type === 'Feature') {
+            features.push(feature)
+          }
+        } catch (e) {
+          console.error('Error converting layer to GeoJSON', e)
+        }
       }
     })
+    
+    console.log('Captured features:', features)
     
     // Create a GeoJSON FeatureCollection
     const newFeatureCollection: GeoJSON.GeoJSON = {
@@ -143,6 +173,9 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     
     // Send the updated map state as a message
     sendMessage('map', newFeatureCollection)
+    
+    // Reset the unsaved changes flag
+    setHasUnsavedChanges(false)
   }, [sendMessage])
 
   return (
@@ -159,16 +192,23 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url={mapConfig?.backdropUrl}
           />}
-          <GeoJSON 
-            data={currentFeatures || mockFeatureCollection} 
+          { currentFeatures && <GeoJSON 
+          key={latestMessage?.id }
+            data={currentFeatures} 
             ref={geoJsonLayerRef}
-          />
-          <GeomanControls />
+          /> }
+          <GeomanControls onMapModified={handleMapModified} mapRef={mapRef} />
         </MapContainer>
         <div className="map-controls">
           <Space>
-            <Tooltip title="Save the current map state">
-              <Button type="primary" onClick={captureAndSendMapState}>Save Map State</Button>
+            <Tooltip title={hasUnsavedChanges ? 'Save the current map state' : 'No unsaved changes'}>
+              <Button 
+                type="primary" 
+                onClick={captureAndSendMapState} 
+                disabled={!hasUnsavedChanges}
+              >
+                Save Map State
+              </Button>
             </Tooltip>
           </Space>
         </div>
