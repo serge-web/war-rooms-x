@@ -2,7 +2,6 @@ import { DataProvider, RaRecord } from "react-admin"
 import { XGroup, RGroup, XUser, RUser, XRoom, RRoom, XRecord, RGameState, XGameState, XTemplate } from "./raTypes-d"
 import { XMPPService } from "../../services/XMPPService"
 import { ForceConfigType, UserConfigType } from "../../types/wargame-d"
-import { PubSubDocument } from "../../services/types"
 import { Template } from "../../types/rooms-d"
 import { TemplateDataProvider } from "./Resources/templateDataProvider"
 import { WargameDataProvider } from "./Resources/wargameDataProvider"
@@ -32,7 +31,7 @@ export const userXtoR = async (result: XUser, id?: string, xmppClient?: XMPPServ
   // look for user pubsub doc
   const doc = await xmppClient?.getPubSubDocument(USERS_PREFIX + idToUseStripped)
   if (doc) {
-    const userConfig = doc.content?.json as UserConfigType
+    const userConfig = doc as UserConfigType
     const res : RUser = {
       id: idToUse,
       name: userConfig.name
@@ -61,7 +60,7 @@ const userRtoX = async (result: RUser, id: string, xmppClient: XMPPService): Pro
     }
   } else {
     const existingUserNode = await xmppClient.getPubSubDocument(nodeId)
-    const existingUserConfig = existingUserNode?.content?.json as UserConfigType
+    const existingUserConfig = existingUserNode as UserConfigType
     if (existingUserConfig) {
       const mergedNode = {
         ...existingUserConfig,
@@ -131,8 +130,8 @@ const groupXtoR = async (result: XGroup, _id: string | undefined, xmppClient: XM
   // if a member is lacking the host, append it
   const members = result.members || []
   // ok, we have to get the pubsub document for this force
-  const doc = verbose && (await xmppClient?.getPubSubDocument(FORCES_PREFIX + result.name)) as PubSubDocument
-  const forceConfig = (verbose && doc) ? doc?.content?.json as ForceConfigType : undefined
+  const doc = verbose && (await xmppClient?.getPubSubDocument(FORCES_PREFIX + result.name)) as ForceConfigType
+  const forceConfig = (verbose && doc) ? doc : undefined
   const res: RGroup = {
     id: result.name,
     name: forceConfig?.name || result.name,

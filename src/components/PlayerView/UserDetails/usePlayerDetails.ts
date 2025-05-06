@@ -39,7 +39,7 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
         const userId = USERS_PREFIX + trimHost(xmppClient.bareJid)
         const doc = await xmppClient.getPubSubDocument(userId)
         if (doc) {
-          const userConfig = doc.content?.json as UserConfigType
+          const userConfig = doc as UserConfigType
           if (userConfig) {
             // set the initial player details
             setPlayerDetails({
@@ -55,7 +55,7 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
               // get the force document
               const forceDoc = await xmppClient.getPubSubDocument(FORCES_PREFIX + forceId)
               if (forceDoc) {
-                const forceConfig = forceDoc.content?.json as ForceConfigType
+                const forceConfig = forceDoc as ForceConfigType
                 if (forceConfig) {
                   setPlayerDetails({
                     id: trimHost(xmppClient.bareJid),

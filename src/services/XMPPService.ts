@@ -756,36 +756,36 @@ export class XMPPService {
       }
     }
 
-  /**
-   * Update a PubSub document (publish to a node)
-   * @param nodeId The ID of the node to update
-   * @param content The new content for the node
-   * @returns Promise resolving to PubSubDocumentResult
-   */
-  public async updatePubSubDocument(nodeId: string, content: object): Promise<PubSubDocumentResult> {
-    if (!this.client || !this.connected) {
-      return { success: false, id: nodeId, error: 'Not connected' }
-    }
+  // /**
+  //  * Update a PubSub document (publish to a node)
+  //  * @param nodeId The ID of the node to update
+  //  * @param content The new content for the node
+  //  * @returns Promise resolving to PubSubDocumentResult
+  //  */
+  // public async updatePubSubDocument(nodeId: string, content: object): Promise<PubSubDocumentResult> {
+  //   if (!this.client || !this.connected) {
+  //     return { success: false, id: nodeId, error: 'Not connected' }
+  //   }
 
-    try {
-      if (!this.pubsubService) {
-        throw new Error('PubSub service not available')
-      }
+  //   try {
+  //     if (!this.pubsubService) {
+  //       throw new Error('PubSub service not available')
+  //     }
       
-      // Publish to the node
-      // For StanzaJS, we need to provide a proper XML payload
-      const jsonItem: JSONItem = {
-        itemType: NS_JSON_0,
-        json: content
-      }
-      await this.client.publish(this.pubsubService, nodeId, jsonItem)
+  //     // Publish to the node
+  //     // For StanzaJS, we need to provide a proper XML payload
+  //     const jsonItem: JSONItem = {
+  //       itemType: NS_JSON_0,
+  //       json: content
+  //     }
+  //     await this.client.publish(this.pubsubService, nodeId, jsonItem)
       
-      return { success: true, id: nodeId }
-    } catch (error) {
-      console.error(`Error updating PubSub document ${nodeId}:`, error)
-      return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
-    }
-  }
+  //     return { success: true, id: nodeId }
+  //   } catch (error) {
+  //     console.error(`Error updating PubSub document ${nodeId}:`, error)
+  //     return { success: false, id: nodeId, error: error instanceof Error ? error.message : String(error) }
+  //   }
+  // }
 
   /**
    * Update a JSON document in a PubSub node. Note: the publisher for a message does not receive subscription notifications, so
@@ -794,7 +794,7 @@ export class XMPPService {
    * @param content The new JSON content for the node
    * @returns Promise resolving to PubSubDocumentResult
    */
-  async publishJsonToPubSubNode(nodeId: string, content: JSONItem): Promise<PubSubDocumentResult> {
+  async publishJsonToPubSubNode(nodeId: string, content: object): Promise<PubSubDocumentResult> {
     if (!this.client || !this.connected) {
       return { success: false, id: nodeId, error: 'Not connected' }
     }
@@ -803,16 +803,24 @@ export class XMPPService {
       if (!this.pubsubService) {
         throw new Error('PubSub service not available')
       }
-
+      const wrappedItem: JSONItem = {
+        itemType: NS_JSON_0,
+        json: content
+      }
+      
       // Publish the JSON content to the node
-      const result = await this.client.publish(this.pubsubService, nodeId, content)
+      const result = await this.client.publish(this.pubsubService, nodeId, wrappedItem)
       
       // Manually trigger the document change event for local subscribers
       // This ensures that our local handlers are notified even if the XMPP server
       // doesn't send a notification back to the publisher
+      const jsonContent: JSONItem = {
+        itemType: NS_JSON_0,
+        json: content
+      }
       const document: PubSubDocument = {
         id: nodeId,
-        content: content
+        content: jsonContent
       }
       
       // Notify all registered handlers about the document change
@@ -1054,7 +1062,8 @@ export class XMPPService {
 
         if (result.items && result.items.length > 0) {
           const item = result.items[0] as PubSubDocument
-          return item
+          const jsonItem = item.content as JSONItem
+          return jsonItem.json
         }
         
         return null
@@ -1235,7 +1244,7 @@ export class XMPPService {
       const json = doc.content as JSONItem
       const userDoc = json.json as UserConfigType
       userDoc.forceId = forceId
-      await this.publishJsonToPubSubNode(userDocName, json)
+      await this.publishJsonToPubSubNode(userDocName, userDoc)
     }
   }
 

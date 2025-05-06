@@ -24,18 +24,18 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
         return await xmppClient.getPubSubDocument(id)
       })
       const items = await Promise.all(getItems)
-      const docs = items.map(d => d?.content?.json as Template)
+      const docs = items.map(d => d as Template)
       return { data: docs, total: docs.length }
     },
     getOne: async (_resource: string, params: GetOneParams & QueryFunctionContext): Promise<GetOneResult> => {
       const doc = await xmppClient.getPubSubDocument(TEMPLATES_PREFIX + params.id)
-      const template: Template = doc && doc.content?.json ? doc.content.json : emptyTemplate
+      const template: Template = doc as Template || emptyTemplate
       return { data: template }
     },
     getMany: async (_resource: string, params: GetManyParams): Promise<GetManyResult> => {
       const getActions = params.ids.map(async (id: string) => {
         const doc = await xmppClient.getPubSubDocument(TEMPLATES_PREFIX + id)
-        const template: Template = doc && doc.content?.json ? doc.content.json : emptyTemplate
+        const template: Template = doc as Template || emptyTemplate
         return template
       })
       const templates = await Promise.all(getActions)
@@ -45,7 +45,7 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
       throw new Error('getManyReference not supported for templates')
     },
     update: async (_resource: string, params: UpdateParams<Template>): Promise<UpdateResult> => {
-      const updated = await xmppClient.updatePubSubDocument(TEMPLATES_PREFIX + params.data.id, params.data)
+      const updated = await xmppClient.publishJsonToPubSubNode(TEMPLATES_PREFIX + params.data.id, params.data)
       if (!updated.success) {
         throw new Error('Failed to update template.' + updated.error)
       }
