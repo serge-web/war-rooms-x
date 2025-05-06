@@ -31,8 +31,13 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   const config: RoomDetails | undefined = useMemo(() => {
     if (!room.description) 
       return undefined
-    const data= JSON.parse(room.description)
-    return data
+    try {
+      const data = JSON.parse(room.description)
+      return data
+    } catch (error) {
+      console.error("Failed to parse room.description:", error)
+      return undefined
+    }
   }, [room])
   
   const mapConfig: MapRoomConfig | undefined = useMemo(() => {

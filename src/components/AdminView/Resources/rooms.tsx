@@ -70,8 +70,6 @@ const RoomSpecifics = () => {
   const strategy = useMemo(() => roomTypeFactory.get(roomType), [roomType])
   const roomTypes = roomTypeFactory.list()
   const roomTypeNames = roomTypes.map((roomType) => ({ name: roomType.label + ' - ' + roomType.description, id: roomType.id }))
-  const details = record.details as RoomDetails
-  console.log('room type', roomType, details)
   
   // We need to handle the component rendering in a type-safe way
   // This is a bit complex due to the generic nature of the components
