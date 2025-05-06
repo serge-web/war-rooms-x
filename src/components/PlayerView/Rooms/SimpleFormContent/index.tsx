@@ -6,8 +6,8 @@ import { useRoom } from '../useRoom'
 import { RoomType, Template } from '../../../../types/rooms-d'
 import { ConfigProvider } from 'antd'
 import ErrorModal from '../../../Utilities/ErrorModal'
-import { usePlayerDetails } from '../../UserDetails/usePlayerDetails'
 import { useTemplates } from '../../../../hooks/useTemplates'
+import { useWargame } from '../../../../contexts/WargameContext'
 
 interface SimpleFormProps {
   room: RoomType
@@ -15,7 +15,7 @@ interface SimpleFormProps {
 
 const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
-  const { playerDetails } = usePlayerDetails()
+  const { playerDetails } = useWargame()
   const { templates } = useTemplates()
   const myTemplates = useMemo(() => {
     if (!room.description)

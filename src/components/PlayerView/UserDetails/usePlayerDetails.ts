@@ -1,24 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useWargame } from '../../../contexts/WargameContext';
 import { trimHost } from '../../AdminView/raHelpers';
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import { RGroup, RUser } from '../../AdminView/raTypes-d';
-import { ForceConfigType, UserConfigType } from '../../../types/wargame-d';
+import { ForceConfigType, GamePlayerDetails, MockId, UserConfigType } from '../../../types/wargame-d';
+import { JSONItem } from 'stanza/protocol';
+import { XMPPService } from '../../../services/XMPPService';
 
-export interface GamePlayerDetails {
-  id: string
-  role: string
-  forceId: string
-  forceName: string
-  forceObjectives?: string
-  color?: string
-}
-
-export const usePlayerDetails = () => {
+export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => {
   const [playerDetails, setPlayerDetails] = useState<GamePlayerDetails | null>(null)
-  const { xmppClient, mockPlayerId, setMockPlayerId } = useWargame()
   const { data: mockUsers, loading: usersLoading } = useIndexedDBData<RUser[]>('users')
   const { data: mockForces, loading: forcesLoading } = useIndexedDBData<RGroup[]>('groups')
+  const [mockPlayerId, setMockPlayerId] = useState<MockId | null>(null)
 
   useEffect(() => {
     const fetchPlayerDetails = async () => {
@@ -46,7 +38,9 @@ export const usePlayerDetails = () => {
         const userId = 'users:' + trimHost(xmppClient.bareJid)
         const doc = await xmppClient.getPubSubDocument(userId)
         if (doc) {
-          const userConfig = doc.content?.json as UserConfigType
+          console.log('player doc', doc)
+          const userConfigDoc = doc.content?.json as JSONItem
+          const userConfig = userConfigDoc.json as UserConfigType
           if (userConfig) {
             // set the initial player details
             setPlayerDetails({

@@ -7,7 +7,6 @@ import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
 // We now use the mockBackend data from the localStorageDataProvider
 import dataProvider from '../AdminView/dataProvider'
-import { usePlayerDetails } from '../PlayerView/UserDetails/usePlayerDetails'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -20,8 +19,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const { setXmppClient, setRaDataProvider } = useWargame()
-  const { setMockPlayerId } = usePlayerDetails()
+  const { setXmppClient, setRaDataProvider, setMockPlayerId } = useWargame()
   const [userLocal, setUseLocal] = useState(false)
 
   const loginRoles = [

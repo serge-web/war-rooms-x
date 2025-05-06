@@ -6,7 +6,7 @@ import { useRoom } from '../useRoom'
 import { RoomType } from '../../../../types/rooms-d'
 import { ConfigProvider } from 'antd'
 import ErrorModal from '../../../Utilities/ErrorModal'
-import { usePlayerDetails } from '../../UserDetails/usePlayerDetails'
+import { useWargame } from '../../../../contexts/WargameContext'
 
 interface RoomProps {
   room: RoomType
@@ -14,7 +14,7 @@ interface RoomProps {
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
-  const { playerDetails } = usePlayerDetails()
+  const { playerDetails } = useWargame()
   return (
     <ConfigProvider
     theme={theme}>

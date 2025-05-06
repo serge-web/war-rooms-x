@@ -24,6 +24,14 @@ export interface MockId {
   forceId: string
 }
 
+export interface GamePlayerDetails {
+  id: string
+  role: string
+  forceId: string
+  forceName: string
+  forceObjectives?: string
+  color?: string
+}
 
 
 export interface WargameContextType {
@@ -34,6 +42,7 @@ export interface WargameContextType {
   setRaDataProvider: (value: DataProvider | undefined) => void
   mockPlayerId: MockId | null
   setMockPlayerId: (value: MockId | null) => void
+  playerDetails: GamePlayerDetails | null
   getForce: (forceId: string) => Promise<ForceConfigType>
   gameProperties: GamePropertiesType | null
   gameState: GameStateType | null

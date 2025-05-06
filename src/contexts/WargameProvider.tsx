@@ -2,11 +2,12 @@ import { useState, ReactNode, useMemo, useCallback } from 'react'
 import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
 import { DataProvider } from 'react-admin'
-import { ForceConfigType, MockId } from '../types/wargame-d'
+import { ForceConfigType } from '../types/wargame-d'
 import { roomTypeFactory } from '../services/roomTypes'
 import { mockBackend } from '../mockData/mockAdmin'
 import { useGameProperties } from '../components/PlayerView/GameState/useGameSetup'
 import { useGameState } from '../components/PlayerView/GameState/useGameState'
+import { usePlayerDetails } from '../components/PlayerView/UserDetails/usePlayerDetails'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -16,13 +17,13 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   // for this object, `null` is a special value meaning `use mock data`
   const [xmppClient, setXmppClient] = useState<XMPPService | null | undefined>(undefined) 
   const [raDataProvider, setRaDataProvider] = useState<DataProvider | undefined>(undefined)
-  const [mockPlayerId, setMockPlayerId] = useState<MockId | null>(null)
   const loggedIn = useMemo(() => {
     return xmppClient !== undefined
   }, [xmppClient])
   const [forceCache] = useState<Record<string, ForceConfigType>>({})
   const { gameProperties } = useGameProperties(xmppClient)
   const { gameState, nextTurn } = useGameState(xmppClient)
+  const { playerDetails, mockPlayerId, setMockPlayerId } = usePlayerDetails(xmppClient)
 
   const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => {
     if (!forceId) {
@@ -89,6 +90,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     setRaDataProvider,
     mockPlayerId,
     setMockPlayerId,
+    playerDetails,
     roomTypeFactory,
     getForce,
     gameProperties,

@@ -2,13 +2,11 @@ import React from 'react'
 import { Card, Avatar, Typography, Space, Tooltip, Button, Badge } from 'antd'
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons'
 import { useWargame } from '../../../contexts/WargameContext'
-import { usePlayerDetails } from './usePlayerDetails'
 
 const { Title } = Typography
 
 const UserDetails: React.FC = () => {
-  const { setXmppClient, xmppClient } = useWargame()
-  const { playerDetails } = usePlayerDetails()
+  const { setXmppClient, xmppClient, playerDetails } = useWargame()
 
   const handleLogout = () => {
     if (xmppClient) {
