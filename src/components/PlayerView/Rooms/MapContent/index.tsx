@@ -102,6 +102,16 @@ const GeomanControls: React.FC<{
       // Mark the layer as a Geoman-created layer to identify it when saving
       const geomanEvent = e as GeomanCreateEvent
       const layer = geomanEvent.layer
+
+      // if it's a circle, we need to copy `radius` to teh properties
+      if (layer.options && layer.options.radius) {
+        layer.feature.properties.radius = layer.options.radius
+      }
+
+      // if it's a text marker, copy the label to properties
+      if (layer.options && layer.options.text) {
+        layer.feature.properties.text = layer.options.text
+      }
       
       // Store the original feature for identification
       try {
