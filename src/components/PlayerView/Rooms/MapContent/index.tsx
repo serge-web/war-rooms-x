@@ -207,7 +207,12 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
         const geoJSONLayer = layer as L.GeoJSON
         const feature = geoJSONLayer.feature as GeoJSON.Feature
         if (feature && feature.properties && feature.properties.geomanCreated) {
-          layer.remove()
+          // see if this is already present in new features
+          const featureId = feature.properties.id
+          if (currentFeatures?.features.some((f) => f.properties?.id === featureId)) {
+            console.log('removing', featureId)
+            layer.remove()
+          }
         }
     })
 
@@ -284,18 +289,14 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             key={latestMessage?.id}
             data={currentFeatures} 
             ref={geoJsonLayerRef}
-            // Ensure each feature is a separate interactive layer
-            onEachFeature={(feature, layer) => {
-              // Store the original feature ID for identification
+            onEachFeature={(feature) => {
               if (!feature.properties) {
                 feature.properties = {}
               }
+              // Store the original feature ID for identification
               if (!feature.properties.id) {
                 feature.properties.id = `feature-${Date.now()}-${Math.floor(Math.random() * 1000)}`
               }
-              
-              // Store the feature on the layer for reference
-              (layer as any).feature = feature
             }}
           /> }
           <GeomanControls 
