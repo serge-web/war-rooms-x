@@ -46,7 +46,7 @@ type GeomanLayer = L.Layer & {
   toGeoJSON: () => GeoJSON.Feature
   pm: Record<string, unknown>
   feature?: GeoJSON.Feature
-  options?: any
+  options?: Record<string, unknown>
 }
 
 // Define type for Geoman create event
