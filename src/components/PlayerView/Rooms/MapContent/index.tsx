@@ -105,12 +105,26 @@ const GeomanControls: React.FC<{
 
       // if it's a circle, we need to copy `radius` to teh properties
       if (layer.options && layer.options.radius) {
+        if (!layer.feature.properties) {
+          layer.feature.properties = {}
+        }
         layer.feature.properties.radius = layer.options.radius
       }
 
       // if it's a text marker, copy the label to properties
-      if (layer.options && layer.options.text) {
-        layer.feature.properties.text = layer.options.text
+      if (layer.options) {
+        if (layer.options.text) {
+          if (!layer.feature.properties) {
+            layer.feature.properties = {}
+          }
+          layer.feature.properties.text = layer.options.text
+        }
+        if (layer.options.textMarker) {
+          if (!layer.feature.properties) {
+            layer.feature.properties = {}
+          }
+          layer.feature.properties.textMarker = layer.options.textMarker
+        }
       }
       
       // Store the original feature for identification
@@ -119,7 +133,9 @@ const GeomanControls: React.FC<{
         layer.feature = layer.toGeoJSON()
         if (layer.feature.properties) {
           layer.feature.properties.geomanCreated = true
-          layer.feature.properties.id = `geoman-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+        }
+        if (!layer.feature.id) {
+          layer.feature.id = `geoman-${new Date().toISOString()}-${Math.floor(Math.random() * 1000)}`
         }
       } catch (error) {
         console.error('Error setting layer properties:', error)
@@ -194,12 +210,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   const currentFeatures: GeoJSON.GeoJSON | undefined = useMemo(() => {
     if (latestMessage) {
       const latest = latestMessage.content as GeoJSON.FeatureCollection
-      // clear any `geomanCreated properties on new data, since we wish to delete old data
-      latest.features.forEach((feature) => {
-        if (feature.properties && feature.properties.geomanCreated) {
-          delete feature.properties.geomanCreated
-        }
-      })
       return latest
     } else {
       return undefined
@@ -209,21 +219,18 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   useEffect(() => {
     // manually created features get added to the map.  But, once user has `saved`, when
     // they get a new message (with all features) there will be both the manually added one, 
-    // and the new instance of ot.  So, when we get a new message ,delete any manually
-    // created features.
-    // TODO: this could break if multiple people editing map, since local edits could be lost 
-    // if someone else edits map
+    // and the new instance of it.  So, when we get a new message, de-dupe the features.
+    const featureHandled: string[] = []
     mapRef.current?.eachLayer((layer: L.Layer) => {
-        const geoJSONLayer = layer as L.GeoJSON
-        const feature = geoJSONLayer.feature as GeoJSON.Feature
-        if (feature && feature.properties && feature.properties.geomanCreated) {
-          // see if this is already present in new features
-          const featureId = feature.properties.id
-          if (currentFeatures?.features.some((f) => f.properties?.id === featureId)) {
-            console.log('removing', featureId)
-            layer.remove()
-          }
+      const geoJSONLayer = layer as L.GeoJSON
+      const feature = geoJSONLayer.feature as GeoJSON.Feature
+      if (feature?.id) {
+        if (!featureHandled.includes(feature.id as string)) {
+          featureHandled.push(feature.id as string)
+        } else {
+          layer.remove()
         }
+      }
     })
 
   }, [currentFeatures])
@@ -253,7 +260,7 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
           // Skip the base tile layer and avoid duplicates
           if (feature.type === 'Feature') {
             // Check if this feature has an ID and hasn't been processed yet
-            const featureId = feature.properties?.id
+            const featureId = feature.id as string
             if (featureId && !processedIds.has(featureId)) {
               processedIds.add(featureId)
               features.push(feature)
@@ -299,15 +306,6 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             key={latestMessage?.id}
             data={currentFeatures} 
             ref={geoJsonLayerRef}
-            onEachFeature={(feature) => {
-              if (!feature.properties) {
-                feature.properties = {}
-              }
-              // Store the original feature ID for identification
-              if (!feature.properties.id) {
-                feature.properties.id = `feature-${Date.now()}-${Math.floor(Math.random() * 1000)}`
-              }
-            }}
           /> }
           <GeomanControls 
             onMapModified={handleMapModified} 
