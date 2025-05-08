@@ -28,6 +28,7 @@ export default {
   // Only include specific directories that are known to work with unit tests
   collectCoverageFrom: [
     'src/components/PlayerView/Rooms/RoomsList/useRooms.ts',
+    'src/components/PlayerView/Rooms/useRoom.ts',
     'src/hooks/useIndexedDBData.ts',
     'src/hooks/usePubSub.ts',
     'src/hooks/useTemplates.ts',
