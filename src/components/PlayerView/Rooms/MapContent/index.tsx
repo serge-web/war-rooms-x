@@ -315,13 +315,13 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
         </MapContainer>
         <div className="map-controls">
           <Space>
-            <Tooltip title={hasUnsavedChanges ? 'Save the current map state' : 'No unsaved changes'}>
+            <Tooltip title={hasUnsavedChanges ? 'Share the current map state' : 'No unsaved changes'}>
               <Button 
                 type="primary" 
                 onClick={captureAndSendMapState} 
                 disabled={!hasUnsavedChanges}
               >
-                Save Map State
+                Share updated map
               </Button>
             </Tooltip>
           </Space>
