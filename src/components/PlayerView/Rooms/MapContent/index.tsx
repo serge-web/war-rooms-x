@@ -6,7 +6,7 @@ import { ConfigProvider, Button, Space, Tooltip } from 'antd'
 import { MapContainer, TileLayer, GeoJSON, useMap, Marker } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
-import { GeoJSON as LeafletGeoJSON, DivIcon, LatLngExpression, Marker as LeafletMarker } from 'leaflet'
+import { GeoJSON as LeafletGeoJSON, DivIcon, LatLngExpression } from 'leaflet'
 import '@geoman-io/leaflet-geoman-free'
 
 // Define types for Geoman functionality
@@ -138,11 +138,11 @@ const GeomanControls: React.FC<{
     }
     
     // Add event listeners for map modifications
+    const modifiedEvents: string[] = ['pm:remove', 'pm:edit', 'pm:dragend', 'pm:cut']
+    modifiedEvents.forEach((event) => {
+      map.on(event, onMapModified)
+    })
     map.on('pm:create', handleCreate)
-    map.on('pm:remove', onMapModified)
-    map.on('pm:edit', onMapModified)
-    map.on('pm:dragend', onMapModified)
-    map.on('pm:cut', onMapModified)
     
     return () => {
       // Cleanup
@@ -152,10 +152,9 @@ const GeomanControls: React.FC<{
       
       // Remove event listeners
       map.off('pm:create', handleCreate)
-      map.off('pm:remove', onMapModified)
-      map.off('pm:edit', onMapModified)
-      map.off('pm:dragend', onMapModified)
-      map.off('pm:cut', onMapModified)
+      modifiedEvents.forEach((event) => {
+        map.off(event, onMapModified)
+      })
     }
   }, [map, onMapModified, geoJsonLayerRef])
   
@@ -314,6 +313,10 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     setHasUnsavedChanges(false)
   }, [sendMessage])
 
+  const isTextMarker = (feature: GeoJSON.Feature): boolean => {
+    return feature.properties?.textMarker === true
+  }
+
   return (
     <ConfigProvider
     theme={theme}>
@@ -332,24 +335,12 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             key={latestMessage?.id}
             data={currentFeatures} 
             ref={geoJsonLayerRef}
-            pointToLayer={(feature, latlng) => {
-              // Check if this is a text marker
-              if (feature.properties && feature.properties.text) {
-                // Don't create a marker here, we'll render the text separately
-                return null as unknown as LeafletMarker
-              }
-              // For other point features, use the default marker
-              return new LeafletMarker(latlng)
-            }}
+            filter={(f) => !isTextMarker(f)}
           /> }
           
           {/* Render text labels for point features */}
           {currentFeatures && currentFeatures.features
-            .filter(feature => 
-              feature.geometry.type === 'Point' && 
-              feature.properties && 
-              feature.properties.text
-            )
+            .filter(isTextMarker)
             .map(feature => {
               // Type assertion for Point geometry which has coordinates
               const coords = (feature.geometry as GeoJSON.Point).coordinates
