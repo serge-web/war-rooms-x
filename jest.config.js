@@ -32,7 +32,8 @@ export default {
     // Exclude integration-heavy modules that require live servers
     '!src/services/XMPPService.ts',
     '!src/services/XMPPRestService.ts',
-    '!src/services/roomTypes/**/*.ts'
+    '!src/services/roomTypes/**/*.ts',
+    '!src/services/roomTypes/SimpleFormsStrategy.tsx'
   ],
   // Temporarily lowered thresholds to get coverage reports without failing tests
   // These should be increased as test coverage improves

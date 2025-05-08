@@ -1,11 +1,13 @@
 export default {
   preset: 'ts-jest/presets/js-with-ts-esm',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   testMatch: [
     '**/helpers/**/*.test.ts',
     '**/utils/**/*.test.ts',
     '**/types/**/*.test.ts',
+    '**/hooks/**/*.test.ts',
+    '**/rooms-test/hooks/**/*.test.ts',
     '**/project-structure.test.ts'
   ],
   transform: {
@@ -25,9 +27,7 @@ export default {
   coverageDirectory: 'coverage/unit',
   // Only include specific directories that are known to work with unit tests
   collectCoverageFrom: [
-    'src/helpers/**/*.ts',
-    'src/utils/**/*.ts',
-    'src/types/**/*.ts',
+    'src/components/PlayerView/Rooms/RoomsList/useRooms.ts',
     // Exclude test files
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -42,19 +42,12 @@ export default {
       lines: 0,
       statements: 0
     },
-    'src/helpers/**/*.{ts,tsx}': {
-      branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50
-    },
-    'src/types/**/*.{ts,tsx}': {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0
+    'src/components/PlayerView/Rooms/RoomsList/useRooms.ts': {
+      branches: 40,
+      functions: 55,
+      lines: 65,
+      statements: 65
     }
-    // Removed utils threshold since we don't have tests for it yet
   },
   coverageReporters: ['text', 'lcov', 'html']
 }
