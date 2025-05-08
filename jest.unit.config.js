@@ -28,6 +28,7 @@ export default {
   // Only include specific directories that are known to work with unit tests
   collectCoverageFrom: [
     'src/components/PlayerView/Rooms/RoomsList/useRooms.ts',
+    'src/hooks/useIndexedDBData.ts',
     // Exclude test files
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -47,6 +48,12 @@ export default {
       functions: 55,
       lines: 65,
       statements: 65
+    },
+    'src/hooks/useIndexedDBData.ts': {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60
     }
   },
   coverageReporters: ['text', 'lcov', 'html']
