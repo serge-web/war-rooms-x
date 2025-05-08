@@ -29,6 +29,7 @@ export default {
   collectCoverageFrom: [
     'src/components/PlayerView/Rooms/RoomsList/useRooms.ts',
     'src/hooks/useIndexedDBData.ts',
+    'src/hooks/usePubSub.ts',
     // Exclude test files
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -54,6 +55,12 @@ export default {
       functions: 60,
       lines: 60,
       statements: 60
+    },
+    'src/hooks/usePubSub.ts': {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70
     }
   },
   coverageReporters: ['text', 'lcov', 'html']
