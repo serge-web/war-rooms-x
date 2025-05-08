@@ -3,10 +3,10 @@ import './index.css'
 import { useRoom } from '../useRoom'
 import { MapRoomConfig, RoomDetails, RoomType } from '../../../../types/rooms-d'
 import { ConfigProvider, Button, Space, Tooltip } from 'antd'
-import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, GeoJSON, useMap, Marker } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
-import { GeoJSON as LeafletGeoJSON } from 'leaflet'
+import { GeoJSON as LeafletGeoJSON, DivIcon, LatLngExpression, Marker as LeafletMarker } from 'leaflet'
 import '@geoman-io/leaflet-geoman-free'
 
 // Define types for Geoman functionality
@@ -103,6 +103,11 @@ const GeomanControls: React.FC<{
       const geomanEvent = e as GeomanCreateEvent
       const layer = geomanEvent.layer
 
+      // special case: new text blocks don't have a feature
+      if (!layer.feature) {
+        layer.feature = layer.toGeoJSON()
+      }
+
       // if it's a circle, we need to copy `radius` to teh properties
       if (layer.options && layer.options.radius) {
         if (!layer.feature.properties) {
@@ -111,21 +116,8 @@ const GeomanControls: React.FC<{
         layer.feature.properties.radius = layer.options.radius
       }
 
-      // if it's a text marker, copy the label to properties
-      if (layer.options) {
-        if (layer.options.text) {
-          if (!layer.feature.properties) {
-            layer.feature.properties = {}
-          }
-          layer.feature.properties.text = layer.options.text
-        }
-        if (layer.options.textMarker) {
-          if (!layer.feature.properties) {
-            layer.feature.properties = {}
-          }
-          layer.feature.properties.textMarker = layer.options.textMarker
-        }
-      }
+      // note: we can't copy the text from options to feature, since
+      // at point of creation the text hasn't been provided
       
       // Store the original feature for identification
       try {
@@ -168,6 +160,28 @@ const GeomanControls: React.FC<{
   }, [map, onMapModified, geoJsonLayerRef])
   
   return null
+}
+
+// Custom component to render text labels on the map
+const TextMarker: React.FC<{
+  position: LatLngExpression,
+  text: string
+}> = ({ position, text }) => {
+  // Create a custom div icon with the text
+  const icon = new DivIcon({
+    className: 'map-text-label',
+    html: `<div>${text}</div>`,
+    iconSize: [100, 40],
+    iconAnchor: [50, 20]
+  })
+
+  return (
+    <Marker 
+      position={position} 
+      icon={icon}
+      interactive={true}
+    />
+  )
 }
 
 const MapContent: React.FC<MapProps> = ({ room }) => {
@@ -269,6 +283,18 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
               features.push(feature)
             }
           }
+          // for new text markers we need to copy the text and textMarker
+          // flag from optionts to properties
+          const layerOptions = layer.options as {
+            textMarker?: boolean
+            text?: string
+          }
+          const isAMarker = layerOptions?.textMarker
+          const hasText = layerOptions?.text
+          if(feature.properties && isAMarker && hasText) {
+            feature.properties.text = layerOptions.text
+            feature.properties.textMarker = true
+          }
         } catch (e) {
           console.error('Error converting layer to GeoJSON', e)
         }
@@ -306,7 +332,36 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
             key={latestMessage?.id}
             data={currentFeatures} 
             ref={geoJsonLayerRef}
+            pointToLayer={(feature, latlng) => {
+              // Check if this is a text marker
+              if (feature.properties && feature.properties.text) {
+                // Don't create a marker here, we'll render the text separately
+                return null as unknown as LeafletMarker
+              }
+              // For other point features, use the default marker
+              return new LeafletMarker(latlng)
+            }}
           /> }
+          
+          {/* Render text labels for point features */}
+          {currentFeatures && currentFeatures.features
+            .filter(feature => 
+              feature.geometry.type === 'Point' && 
+              feature.properties && 
+              feature.properties.text
+            )
+            .map(feature => {
+              // Type assertion for Point geometry which has coordinates
+              const coords = (feature.geometry as GeoJSON.Point).coordinates
+              return (
+                <TextMarker 
+                  key={feature.id as string}
+                  position={[coords[1], coords[0]]}
+                  text={feature.properties!.text as string}
+                />
+              )
+            })
+          }
           <GeomanControls 
             onMapModified={handleMapModified} 
             mapRef={mapRef} 
