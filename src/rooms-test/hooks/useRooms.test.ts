@@ -1,5 +1,6 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useRooms } from '../../components/PlayerView/Rooms/RoomsList/useRooms'
+import { XMPPService } from '../../services/XMPPService'
 
 // Mock the WargameContext to control xmppClient value
 const mockUseWargame = jest.fn()
@@ -14,6 +15,10 @@ jest.mock('../../hooks/useIndexedDBData', () => ({
 }))
 
 describe('useRooms hook', () => {
+  // Mock XMPP client methods
+  const mockListRooms = jest.fn()
+  const mockGetDiscoInfo = jest.fn()
+  
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -173,5 +178,83 @@ describe('useRooms hook', () => {
     
     // Verify empty array is returned when mockPlayerId is missing
     expect(result.current.rooms).toEqual([])
+  })
+
+  it('should fetch rooms from XMPP client when available', async () => {
+    // Mock room data from XMPP server
+    const mockXmppRooms = [
+      { jid: 'room1@conference.example.com', name: 'Room 1' },
+      { jid: 'room2@conference.example.com', name: 'Room 2' }
+    ]
+
+    // Mock room info data
+    const mockRoomInfos = [
+      {
+        extensions: [{
+          fields: [
+            { name: 'muc#roominfo_description', value: 'Description for Room 1' }
+          ]
+        }]
+      },
+      {
+        extensions: [{
+          fields: [
+            { name: 'muc#roominfo_description', value: 'Description for Room 2' }
+          ]
+        }]
+      }
+    ]
+
+    // Create mock XMPP client
+    mockListRooms.mockResolvedValue(mockXmppRooms)
+    mockGetDiscoInfo.mockImplementation((jid) => {
+      if (jid === 'room1@conference.example.com') {
+        return Promise.resolve(mockRoomInfos[0])
+      } else {
+        return Promise.resolve(mockRoomInfos[1])
+      }
+    })
+
+    const mockXmppClient = {
+      mucService: 'conference.example.com',
+      listRooms: mockListRooms,
+      client: {
+        getDiscoInfo: mockGetDiscoInfo
+      }
+    }
+
+    // Set up mock for xmppClient
+    mockUseWargame.mockReturnValue({
+      xmppClient: mockXmppClient as unknown as XMPPService,
+      mockPlayerId: { playerId: 'test-user', forceId: 'test-force' }
+    })
+
+    // Render the hook
+    const { result } = renderHook(() => useRooms())
+    
+    // Wait for async operations to complete
+    await waitFor(() => {
+      expect(mockListRooms).toHaveBeenCalled()
+    })
+
+    // Verify rooms are fetched from XMPP client
+    await waitFor(() => {
+      expect(result.current.rooms).toHaveLength(2)
+    })
+
+    // Verify room data is correctly transformed
+    await waitFor(() => {
+      const roomIds = result.current.rooms.map(room => room.roomName)
+      expect(roomIds).toContain('room1@conference.example.com')
+      expect(roomIds).toContain('room2@conference.example.com')
+
+      const room1 = result.current.rooms.find(room => room.roomName === 'room1@conference.example.com')
+      expect(room1).toHaveProperty('naturalName', 'Room 1')
+      expect(room1).toHaveProperty('description', 'Description for Room 1')
+
+      const room2 = result.current.rooms.find(room => room.roomName === 'room2@conference.example.com')
+      expect(room2).toHaveProperty('naturalName', 'Room 2')
+      expect(room2).toHaveProperty('description', 'Description for Room 2')
+    })
   })
 })
