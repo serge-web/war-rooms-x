@@ -163,8 +163,10 @@ const mapMessages: GameMessage[] = [{
         type: 'Point',
         coordinates: [-0.09, 51.505]
       },
+      id: 'test-point',
       properties: {
-        name: 'Test Point'
+        name: 'Test Point',
+        text: 'the text'
       }
     },
     {
@@ -175,7 +177,8 @@ const mapMessages: GameMessage[] = [{
       },
       properties: {
         name: 'Test Line'
-      }
+      },
+      id: 'test-line'
     }
   ]
   }
