@@ -30,6 +30,7 @@ export default {
     'src/components/PlayerView/Rooms/RoomsList/useRooms.ts',
     'src/hooks/useIndexedDBData.ts',
     'src/hooks/usePubSub.ts',
+    'src/hooks/useTemplates.ts',
     // Exclude test files
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -57,6 +58,12 @@ export default {
       statements: 60
     },
     'src/hooks/usePubSub.ts': {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70
+    },
+    'src/hooks/useTemplates.ts': {
       branches: 70,
       functions: 70,
       lines: 70,
