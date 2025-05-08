@@ -178,7 +178,7 @@ export class XMPPRestService {
   async authenticateWithSecretKey(secretKey?: string): Promise<boolean> {
     if (!this.client) {
       this.setError('REST client not initialized', 'CLIENT_NOT_INITIALIZED', 0)
-      throw new Error('REST client not initialized')
+      return false
     }
 
     try {
