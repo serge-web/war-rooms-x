@@ -165,7 +165,8 @@ const mapMessages: GameMessage[] = [{
       },
       id: 'test-point',
       properties: {
-        name: 'Test Point'
+        name: 'Test Point',
+        text: 'the text'
       }
     },
     {
