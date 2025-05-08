@@ -29,6 +29,8 @@ export default {
   collectCoverageFrom: [
     'src/components/PlayerView/Rooms/RoomsList/useRooms.ts',
     'src/components/PlayerView/Rooms/useRoom.ts',
+    'src/components/PlayerView/GameState/useGameSetup.ts',
+    'src/components/PlayerView/GameState/useGameState.ts',
     'src/hooks/useIndexedDBData.ts',
     'src/hooks/usePubSub.ts',
     'src/hooks/useTemplates.ts',

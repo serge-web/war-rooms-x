@@ -32,7 +32,7 @@ const mockLocalforageSetItem = localforage.setItem as jest.MockedFunction<typeof
 // Mock game state data
 const mockGameState: GameStateType = {
   turn: '1',
-  currentPhase: 'planning',
+  currentPhase: "Active",
   currentTime: '2023-01-01T00:00:00.000Z'
 }
 
@@ -48,7 +48,7 @@ const mockRGameState = {
   id: 'game1',
   name: 'Test Game',
   turn: '1',
-  currentPhase: 'planning',
+  currentPhase: "Active",
   currentTime: '2023-01-01T00:00:00.000Z',
   startTime: '2023-01-01T00:00:00.000Z',
   interval: '1d',
@@ -164,14 +164,14 @@ describe('useGameState hook', () => {
       `${prefixKey}wargames`,
       expect.arrayContaining([expect.objectContaining({ 
         turn: '2', // Turn should be incremented
-        currentPhase: 'planning' // Phase should be reset to first phase
+        currentPhase: 'Active' // Phase for LINEAR_TURNS model
       })])
     )
     
     // Verify game state was updated
     expect(result.current.gameState).toEqual(expect.objectContaining({
       turn: '2',
-      currentPhase: 'planning'
+      currentPhase: "Active"
     }))
   })
 
@@ -200,14 +200,14 @@ describe('useGameState hook', () => {
     expect(mockUpdateDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         turn: '2', // Turn should be incremented
-        currentPhase: 'planning' // Phase should be reset to first phase
+        currentPhase: 'Active' // Phase for LINEAR_TURNS model
       })
     )
     
     // Verify game state was updated
     expect(result.current.gameState).toEqual(expect.objectContaining({
       turn: '2',
-      currentPhase: 'planning'
+      currentPhase: "Active"
     }))
   })
 
@@ -264,7 +264,7 @@ describe('useGameState hook', () => {
     // Verify game state was updated to the next turn and first phase
     expect(result.current.gameState).toEqual(expect.objectContaining({
       turn: '2', // Turn should be incremented
-      currentPhase: 'planning' // Phase should be reset to first phase
+      currentPhase: 'Active' // Phase for LINEAR_TURNS model
     }))
   })
 })
