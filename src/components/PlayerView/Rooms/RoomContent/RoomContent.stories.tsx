@@ -5,6 +5,7 @@ import { WargameContext } from '../../../../contexts/WargameContext'
 import { RoomType } from '../../../../types/rooms-d'
 import { mockBackend } from '../../../../mockData/mockAdmin'
 import { ForceConfigType, GameStateType } from '../../../../types/wargame-d'
+import type { OnlineUser } from '../RoomPresenceBar'
 
 // Define the meta export for the component
 const meta = {
@@ -20,13 +21,14 @@ type Story = StoryObj<typeof RoomContent>
 
 // Mock force colors for the Storybook
 const mockForceColors: Record<string, string> = {
-  'red': '#ff4d4f',
   'blue': '#1890ff',
+  'red': '#f5222d',
   'umpire': '#722ed1',
   'green': '#52c41a',
   'yellow': '#faad14',
   'purple': '#722ed1',
-  'admin': '#262626'
+  'admin': '#262626',
+  'logs': '#8c8c8c'
 }
 
 // Mock room data
@@ -46,25 +48,7 @@ const mockRoom: RoomType = {
   })
 }
 
-// Get mock messages from mockBackend for each force
-const mockMessages = {
-  blue: mockBackend.chatrooms.find(room => room.id === 'blue-chat')?.dummyMessages || [],
-  red: mockBackend.chatrooms.find(room => room.id === 'red-chat')?.dummyMessages || [],
-  green: mockBackend.chatrooms.find(room => room.id === 'green-chat')?.dummyMessages || [],
-  umpire: mockBackend.chatrooms.find(room => room.id === 'umpire-chat')?.dummyMessages || []
-}
-
-// Get mock users for room presence
-const mockRoomUsers = {
-  blue: mockBackend.users.filter(user => user.name.toLowerCase().includes('blue')),
-  red: mockBackend.users.filter(user => user.name.toLowerCase().includes('red')),
-  green: mockBackend.users.filter(user => user.name.toLowerCase().includes('green')),
-  umpire: mockBackend.users.filter(user => user.name.toLowerCase().includes('umpire')),
-  logs: mockBackend.users.filter(user => user.name.toLowerCase().includes('logs')),
-  all: mockBackend.users
-}
-
-// Create a WargameContext decorator for each force
+// Create a decorator for each force
 const createForceDecorator = (forceId: string) => {
   return (Story: React.ComponentType) => {
     // Create a mock implementation of the getForce method
@@ -83,9 +67,6 @@ const createForceDecorator = (forceId: string) => {
       currentPhase: 'planning',
       currentTime: new Date().toISOString()
     }
-    
-    // Get the appropriate users for this force's room
-    const roomUsers = mockRoomUsers[forceId as keyof typeof mockRoomUsers] || []
     
     // Mock WargameContext value with the appropriate force player
     const wargameContextValue = {
@@ -106,32 +87,26 @@ const createForceDecorator = (forceId: string) => {
       getForce: mockGetForce,
       gameProperties: null,
       gameState,
-      nextTurn: async () => {}
-    }
-
-    // Create a mock room context with messages and users
-    const mockRoomContext = {
-      messages: mockMessages[forceId as keyof typeof mockMessages],
-      users: roomUsers,
-      theme: {
-        token: {
-          colorPrimary: mockForceColors[forceId] || '#000000'
-        }
-      },
-      canSubmit: true,
-      sendMessage: () => {},
-      error: null,
-      clearError: () => {}
-    }
-
-    // Add the room context to the WargameContext
-    const contextWithRoom = {
-      ...wargameContextValue,
-      roomData: mockRoomContext
+      nextTurn: async () => {},
+      // Add mock data for the useRoomUsers hook
+      mockRoomUsers: {
+        // This will be used by the useRoomUsers hook in the component
+        users: mockBackend.users
+          .filter(user => user.name.toLowerCase().includes(forceId))
+          .map(user => ({
+            id: user.id,
+            name: user.name,
+            force: forceId,
+            isOnline: true
+          })) as OnlineUser[],
+        presenceVisibility: 'all',
+        loading: false,
+        error: null
+      }
     }
 
     return (
-      <WargameContext.Provider value={contextWithRoom}>
+      <WargameContext.Provider value={wargameContextValue}>
         <div style={{ 
           width: '800px', 
           height: '600px', 
@@ -198,8 +173,7 @@ export const UmpireChat: Story = {
   decorators: [createForceDecorator('umpire')]
 }
 
-
-// Umpire Chat Room
+// Logs Chat Room
 export const LogsChat: Story = {
   args: {
     room: {
