@@ -2,7 +2,11 @@
 name: 'Chromatic Publish'
 
 # Event for the workflow
-on: push
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 
 # List of jobs
 jobs:
@@ -20,9 +24,37 @@ jobs:
           cache: 'yarn'
       - run: yarn
       #👇 Adds Chromatic as a step in the workflow
-      - uses: chromaui/action@latest
+      - name: Publish to Chromatic
+        id: chromatic
+        uses: chromaui/action@latest
         # Options required for Chromatic's GitHub Action
         with:
-          #👇 Chromatic projectToken,
+          #👇 Chromatic projectToken
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Output build details to GitHub step summary
+          storybookBuildDir: storybook-static
+          onlyChanged: true
+      
+      # Add a comment to the PR with the Storybook preview URL
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        if: github.event_name == 'pull_request'
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Storybook Preview
+      
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Storybook Preview
+            ✨ View the latest Storybook build for this PR: [${{ steps.chromatic.outputs.storybookUrl }}](${{ steps.chromatic.outputs.storybookUrl }})
+            
+            Changes: [${{ steps.chromatic.outputs.buildUrl }}](${{ steps.chromatic.outputs.buildUrl }})
+          edit-mode: replace
