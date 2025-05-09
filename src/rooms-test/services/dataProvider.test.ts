@@ -21,7 +21,7 @@ jest.mock('../../components/AdminView/raHelpers', () => {
         resource: 'customResource',
         toRRecord: jest.fn((data: TestRecord) => ({ id: data.id, title: data.title })),
         toXRecord: jest.fn((data: TestRecord) => ({ id: data.id, title: data.title })),
-        provider: jest.fn((_xmppClient) => ({
+        provider: jest.fn(() => ({
           getList: jest.fn().mockResolvedValue({ data: [{ id: 'custom1', title: 'Custom 1' }], total: 1 }),
           getOne: jest.fn().mockResolvedValue({ data: { id: 'custom1', title: 'Custom 1' } }),
           getMany: jest.fn().mockResolvedValue({ data: [{ id: 'custom1', title: 'Custom 1' }] }),
