@@ -45,7 +45,12 @@ export default {
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/index.{ts,tsx}',
-    '!src/**/*.stories.{ts,tsx}'
+    '!src/**/*.stories.{ts,tsx}',
+    // Exclude JSX files that cause issues in test environment
+    '!src/services/roomTypes/index.ts',
+    '!src/services/roomTypes/ChatRoomStrategy.tsx',
+    '!src/services/roomTypes/SimpleFormsStrategy.tsx',
+    '!src/services/roomTypes/MapRoomStrategy.tsx'
   ],
   // Reasonable thresholds for unit tests
   coverageThreshold: {

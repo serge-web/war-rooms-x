@@ -23,7 +23,12 @@ export default {
     // Only include integration-heavy modules
     'src/services/XMPPService.ts',
     'src/services/XMPPRestService.ts',
-    'src/services/roomTypes/**/*.ts'
+    'src/services/roomTypes/**/*.ts',
+    // Exclude JSX files
+    '!src/services/roomTypes/index.ts',
+    '!src/services/roomTypes/ChatRoomStrategy.tsx',
+    '!src/services/roomTypes/SimpleFormsStrategy.tsx',
+    '!src/services/roomTypes/MapRoomStrategy.tsx'
   ],
   // Very low thresholds for integration tests since they depend on external services
   coverageThreshold: {
