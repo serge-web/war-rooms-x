@@ -26,5 +26,7 @@ dist-ssr
 playwright-report
 test-results
 
+*storybook.log
+
 # Test coverage
 coverage

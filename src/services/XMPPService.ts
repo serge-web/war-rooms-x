@@ -2,7 +2,7 @@ import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
 import { AccountManagement, DataForm, DiscoInfoResult, DiscoItem, IQ, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
 import { GameMessage, User } from '../types/rooms-d'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, PresenceData, PresenceHandler, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 import { NS_JSON_0 } from 'stanza/Namespaces'
 import { UserConfigType } from '../types/wargame-d'
 import { USERS_COLLECTION, USERS_PREFIX } from '../types/constants'
@@ -29,11 +29,34 @@ export class XMPPService {
   private messageHandlers: Map<string, RoomMessageHandler[]> = new Map()
   private pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
   private subscriptionIds: Map<string, string> = new Map() // Map of nodeId to subscriptionId
+  public presenceHandlers: Map<string, PresenceHandler[]> = new Map() // Map of roomJid to handlers
   public pubsubService: string | null = null
   public mucService: string | null = null
 
   /**
+   * Get the presence status for a user
+   * @param jid The JID of the user
+   * @returns Promise resolving to the presence data
+   */
+  async getPresence(jid: string): Promise<PresenceData> {
+    // Underscore prefix indicates intentionally unused parameter
+    throw new Error('getPresence not yet implemented:' + jid)
+  }
+  
+  /**
+   * Subscribe to presence updates for a room
+   * @param roomJid The JID of the room
+   * @param handler The handler function to call when presence updates
+   * @returns A function to unsubscribe from presence updates
+   */
+  subscribeToPresence(roomJid: string, handler: PresenceHandler): () => void {
+    // Underscore prefix indicates intentionally unused parameters
+    throw new Error('subscribeToPresence not yet implemented:' + roomJid + !!handler)
+  }
+
+  /**
    * Connect to the XMPP server
+   * @param ip The XMPP server IP
    * @param host The XMPP server host
    * @param username The username for authentication
    * @param password The password for authentication

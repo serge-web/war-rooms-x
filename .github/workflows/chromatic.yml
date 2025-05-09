@@ -1,0 +1,65 @@
+# Workflow name
+name: 'Chromatic Publish'
+
+# Event for the workflow
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+# List of jobs
+jobs:
+  test:
+    # Operating System
+    runs-on: ubuntu-latest
+    # Job steps
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn
+      
+      # Build Storybook
+      - name: Build Storybook
+        run: yarn build-storybook
+        
+      #👇 Adds Chromatic as a step in the workflow
+      - name: Publish to Chromatic
+        id: chromatic
+        uses: chromaui/action@latest
+        # Options required for Chromatic's GitHub Action
+        with:
+          #👇 Chromatic projectToken
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Use the built Storybook
+          storybookBuildDir: storybook-static
+          onlyChanged: true
+      
+      # Add a comment to the PR with the Storybook preview URL
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        if: github.event_name == 'pull_request'
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Storybook Preview
+      
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Storybook Preview
+            ✨ View the latest Storybook build for this PR: [${{ steps.chromatic.outputs.storybookUrl }}](${{ steps.chromatic.outputs.storybookUrl }})
+            
+            Changes: [${{ steps.chromatic.outputs.buildUrl }}](${{ steps.chromatic.outputs.buildUrl }})
+          edit-mode: replace

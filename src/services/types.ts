@@ -103,3 +103,17 @@ export interface PubSubSubscribeResult {
  * PubSub document change handler function type
  */
 export type PubSubDocumentChangeHandler = (document: PubSubDocument) => void
+
+/**
+ * Represents presence data for a user
+ */
+export interface PresenceData {
+  available: boolean
+  status?: string
+  priority?: number
+}
+
+/**
+ * Presence handler function type
+ */
+export type PresenceHandler = (jid: string, available: boolean) => void
