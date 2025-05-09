@@ -2,9 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { usePubSub } from '../../hooks/usePubSub'
 import { PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubSubscribeResult } from '../../services/types'
 import { XMPPService } from '../../services/XMPPService'
-import { act } from 'react-dom/test-utils'
 import { Agent } from 'stanza'
 import { NS_JSON_0 } from 'stanza/Namespaces'
+import { act } from 'react'
 
 // Mock XMPPService methods
 const mockPublishJsonToPubSubNode = jest.fn()
