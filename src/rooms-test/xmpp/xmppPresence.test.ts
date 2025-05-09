@@ -117,11 +117,21 @@ describe('XMPPService presence methods', () => {
       
       const unsubscribe = xmppService.subscribeToPresence(roomJid, handler)
       
+      // Verify the handler was added
       expect(xmppService.presenceHandlers.get(roomJid)).toContain(handler)
       
+      // Add another handler to prevent the room from being removed from the map
+      const anotherHandler: PresenceHandler = jest.fn()
+      xmppService.subscribeToPresence(roomJid, anotherHandler)
+      
+      // Unsubscribe the first handler
       unsubscribe()
       
-      expect(xmppService.presenceHandlers.get(roomJid)).not.toContain(handler)
+      // Verify the handler was removed but the room still exists in the map
+      const handlers = xmppService.presenceHandlers.get(roomJid)
+      expect(handlers).toBeDefined()
+      expect(handlers).not.toContain(handler)
+      expect(handlers).toContain(anotherHandler)
     })
     
     it('should remove room from presenceHandlers map if last handler is unsubscribed', () => {

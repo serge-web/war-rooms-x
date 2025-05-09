@@ -156,7 +156,7 @@ describe('usePresence hook', () => {
   test('should handle presence updates through subscription', async () => {
     // Capture the presence handler when subscribeToPresence is called
     let capturedHandler: ((jid: string, available: boolean) => void) | null = null
-    mockSubscribeToPresence.mockImplementation((roomJid, handler) => {
+    mockSubscribeToPresence.mockImplementation((_roomJid, handler) => {
       capturedHandler = handler
       return mockUnsubscribe
     })

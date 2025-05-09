@@ -83,12 +83,17 @@ export class XMPPService {
     
     // Return a function to unsubscribe from presence updates
     return () => {
+      // Get the current handlers for this room
       const currentHandlers = this.presenceHandlers.get(roomJid) || []
+      
+      // Filter out the handler we want to remove
       const updatedHandlers = currentHandlers.filter(h => h !== handler)
       
+      // If there are no handlers left, remove the room from the map
       if (updatedHandlers.length === 0) {
         this.presenceHandlers.delete(roomJid)
       } else {
+        // Otherwise, update the handlers list for this room
         this.presenceHandlers.set(roomJid, updatedHandlers)
       }
     }
