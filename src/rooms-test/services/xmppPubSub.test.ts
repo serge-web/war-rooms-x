@@ -327,7 +327,7 @@ describe('XMPPService - PubSub Operations', () => {
       // and calling each registered handler
       const handlers = (xmppService as unknown as { pubsubChangeHandlers: ((doc: PubSubDocument) => void)[] }).pubsubChangeHandlers
       if (Array.isArray(handlers)) {
-        handlers.forEach(h => h(document))
+        handlers.forEach(h => h(document as unknown as PubSubDocument))
       }
       
       // Assert that our handler was called with the document
