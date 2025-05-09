@@ -5,9 +5,12 @@ import { ResourceHandler } from './types'
 import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyParams, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from 'react-admin'
 import { TEMPLATES_COLLECTION, TEMPLATES_PREFIX } from '../../../types/constants'
 
-const emptyTemplate = { 
+// Define a properly typed empty template that conforms to the Template type
+import { JSONSchema7 } from 'json-schema'
+
+const emptyTemplate: Template = { 
   id: 'pending',
-  schema: { title: 'pending', type: 'object', properties: {} }, 
+  schema: { title: 'pending', type: 'object', properties: {} } as JSONSchema7, // Cast to JSONSchema7 to satisfy type requirements
   uiSchema: {}
 }
 
