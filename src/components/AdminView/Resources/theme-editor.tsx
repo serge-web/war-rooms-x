@@ -5,7 +5,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
   TextField,
   FormControl,
   InputLabel,
@@ -21,7 +20,7 @@ import {
 } from '@mui/material'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { useNotify } from 'react-admin'
-import { ConfigProvider, Button, Space, Card as AntCard, Typography as AntTypography } from 'antd'
+import { ConfigProvider, Button, Space, Card as AntCard, Typography as AntTypography, Row, Col } from 'antd'
 import type { ThemeConfig } from 'antd/es/config-provider/context'
 
 // Default token values
@@ -171,9 +170,9 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <Grid container spacing={3}>
+        <Row gutter={24}>
           {/* Left panel: Form controls */}
-          <Grid item xs={12} md={6}>
+          <Col span={12}>
             <Box sx={{ p: 2 }}>
               <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>Brand Colors</Typography>
               <Stack direction="row" spacing={2}>
@@ -434,10 +433,10 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
                 </FormControl>
               </Stack>
             </Box>
-          </Grid>
+          </Col>
           
           {/* Right panel: Live preview using Ant Design components */}
-          <Grid item xs={12} md={6}>
+          <Col span={12}>
             <Box sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>Preview</Typography>
               <Box sx={{ 
@@ -481,8 +480,8 @@ export const ThemeEditor = ({ open, onClose, initialTheme, onSave, title = 'Edit
                 </ConfigProvider>
               </Box>
             </Box>
-          </Grid>
-        </Grid>
+          </Col>
+        </Row>
       </DialogContent>
       <DialogActions>
         <MuiButton onClick={onClose}>Cancel</MuiButton>
