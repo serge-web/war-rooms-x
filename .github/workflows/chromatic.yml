@@ -23,6 +23,11 @@ jobs:
           node-version: 20
           cache: 'yarn'
       - run: yarn
+      
+      # Build Storybook
+      - name: Build Storybook
+        run: yarn build-storybook
+        
       #👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         id: chromatic
@@ -32,7 +37,7 @@ jobs:
           #👇 Chromatic projectToken
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: Output build details to GitHub step summary
+          # Use the built Storybook
           storybookBuildDir: storybook-static
           onlyChanged: true
       
