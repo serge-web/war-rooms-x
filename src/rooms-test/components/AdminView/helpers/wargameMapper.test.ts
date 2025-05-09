@@ -121,6 +121,60 @@ describe('wargameMapper', () => {
         expect(result.data.length).toBe(1)
         expect(result.total).toBe(1)
       })
+      
+      it('should use default state when only game-state is null', async () => {
+        // Setup mock data
+        const mockGameSetup: GamePropertiesType = {
+          name: 'Test Wargame',
+          description: 'Test description',
+          startTime: '2025-05-09T09:00:00Z',
+          interval: '1',
+          turnType: 'Linear',
+          playerTheme: undefined,
+          adminTheme: undefined
+        }
+        
+        // Mock the getPubSubDocument calls
+        mockGetPubSubDocument.mockImplementation((docId) => {
+          if (docId === 'game-state') return Promise.resolve(null)
+          if (docId === 'game-setup') return Promise.resolve(mockGameSetup)
+          return Promise.resolve(null)
+        })
+        
+        // Execute
+        const result = await provider.getList('wargames', {})
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-state')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-setup')
+        expect(result.data.length).toBe(1)
+        expect(result.total).toBe(1)
+      })
+      
+      it('should use default setup when only game-setup is null', async () => {
+        // Setup mock data
+        const mockGameState: GameStateType = {
+          turn: '2',
+          currentTime: '2025-05-09T10:00:00Z',
+          currentPhase: 'Planning'
+        }
+        
+        // Mock the getPubSubDocument calls
+        mockGetPubSubDocument.mockImplementation((docId) => {
+          if (docId === 'game-state') return Promise.resolve(mockGameState)
+          if (docId === 'game-setup') return Promise.resolve(null)
+          return Promise.resolve(null)
+        })
+        
+        // Execute
+        const result = await provider.getList('wargames', {})
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-state')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-setup')
+        expect(result.data.length).toBe(1)
+        expect(result.total).toBe(1)
+      })
     })
     
     describe('getOne', () => {
@@ -156,6 +210,72 @@ describe('wargameMapper', () => {
         expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-state')
         expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-setup')
         expect(mergeGameState).toHaveBeenCalledWith(mockGameSetup, mockGameState)
+        expect(result.data).toBeDefined()
+      })
+      
+      it('should use default values when documents do not exist', async () => {
+        // Mock the getPubSubDocument calls to return null
+        mockGetPubSubDocument.mockResolvedValue(null)
+        
+        // Execute
+        const result = await provider.getOne('wargames', { id: '1' })
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-state')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-setup')
+        expect(mergeGameState).toHaveBeenCalled()
+        expect(result.data).toBeDefined()
+      })
+      
+      it('should use default state when only game-state is null', async () => {
+        // Setup mock data
+        const mockGameSetup: GamePropertiesType = {
+          name: 'Test Wargame',
+          description: 'Test description',
+          startTime: '2025-05-09T09:00:00Z',
+          interval: '1',
+          turnType: 'Linear',
+          playerTheme: undefined,
+          adminTheme: undefined
+        }
+        
+        // Mock the getPubSubDocument calls
+        mockGetPubSubDocument.mockImplementation((docId) => {
+          if (docId === 'game-state') return Promise.resolve(null)
+          if (docId === 'game-setup') return Promise.resolve(mockGameSetup)
+          return Promise.resolve(null)
+        })
+        
+        // Execute
+        const result = await provider.getOne('wargames', { id: '1' })
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-state')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-setup')
+        expect(result.data).toBeDefined()
+      })
+      
+      it('should use default setup when only game-setup is null', async () => {
+        // Setup mock data
+        const mockGameState: GameStateType = {
+          turn: '2',
+          currentTime: '2025-05-09T10:00:00Z',
+          currentPhase: 'Planning'
+        }
+        
+        // Mock the getPubSubDocument calls
+        mockGetPubSubDocument.mockImplementation((docId) => {
+          if (docId === 'game-state') return Promise.resolve(mockGameState)
+          if (docId === 'game-setup') return Promise.resolve(null)
+          return Promise.resolve(null)
+        })
+        
+        // Execute
+        const result = await provider.getOne('wargames', { id: '1' })
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-state')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith('game-setup')
         expect(result.data).toBeDefined()
       })
     })

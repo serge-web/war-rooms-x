@@ -34,6 +34,11 @@ export default {
     'src/hooks/useIndexedDBData.ts',
     'src/hooks/usePubSub.ts',
     'src/hooks/useTemplates.ts',
+    'src/components/AdminView/helpers/userMapper.ts',
+    'src/components/AdminView/helpers/groupMapper.ts',
+    'src/components/AdminView/helpers/roomMapper.ts',
+    'src/components/AdminView/helpers/templateMapper.ts',
+    'src/components/AdminView/helpers/wargameMapper.ts',
     // Exclude test files
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -59,6 +64,37 @@ export default {
       functions: 60,
       lines: 60,
       statements: 60
+    },
+    // Admin View mappers
+    'src/components/AdminView/helpers/userMapper.ts': {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85
+    },
+    'src/components/AdminView/helpers/groupMapper.ts': {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85
+    },
+    'src/components/AdminView/helpers/roomMapper.ts': {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85
+    },
+    'src/components/AdminView/helpers/templateMapper.ts': {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85
+    },
+    'src/components/AdminView/helpers/wargameMapper.ts': {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85
     },
     'src/hooks/usePubSub.ts': {
       branches: 70,

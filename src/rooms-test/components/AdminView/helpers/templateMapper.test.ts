@@ -150,6 +150,70 @@ describe('templateMapper', () => {
       })
     })
     
+    describe('getMany', () => {
+      it('should fetch and return multiple templates', async () => {
+        // Setup mock
+        const mockTemplates = [
+          { id: 'template1', schema: { title: 'Template 1' }, uiSchema: {} },
+          { id: 'template2', schema: { title: 'Template 2' }, uiSchema: {} }
+        ]
+        
+        mockGetPubSubDocument.mockImplementation((id) => {
+          if (id === TEMPLATES_PREFIX + 'template1') return Promise.resolve(mockTemplates[0])
+          if (id === TEMPLATES_PREFIX + 'template2') return Promise.resolve(mockTemplates[1])
+          return Promise.resolve(null)
+        })
+        
+        // Execute
+        const result = await provider.getMany('templates', { ids: ['template1', 'template2'] })
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'template1')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'template2')
+        expect(result).toEqual({
+          data: mockTemplates
+        })
+      })
+      
+      it('should handle missing templates with empty template', async () => {
+        // Setup mock
+        mockGetPubSubDocument.mockResolvedValue(null)
+        
+        // Execute
+        const result = await provider.getMany('templates', { ids: ['nonexistent1', 'nonexistent2'] })
+        
+        // Assert
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'nonexistent1')
+        expect(mockGetPubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'nonexistent2')
+        expect(result.data.length).toBe(2)
+        expect(result.data[0].id).toBe('pending')
+        expect(result.data[1].id).toBe('pending')
+      })
+    })
+    
+    describe('getManyReference', () => {
+      it('should throw error as not supported', async () => {
+        // Execute & Assert
+        await expect(provider.getManyReference('templates', { 
+          target: 'id', 
+          id: 'template1',
+          pagination: { page: 1, perPage: 10 },
+          sort: { field: 'id', order: 'ASC' },
+          filter: {}
+        })).rejects.toThrow('getManyReference not supported for templates')
+      })
+    })
+    
+    describe('updateMany', () => {
+      it('should throw error as not supported', async () => {
+        // Execute & Assert
+        await expect(provider.updateMany('templates', { 
+          ids: ['template1', 'template2'],
+          data: { schema: { title: 'Updated' } }
+        })).rejects.toThrow('updateMany not supported for templates')
+      })
+    })
+    
     describe('create', () => {
       it('should create a new template', async () => {
         // Setup mock
@@ -275,6 +339,52 @@ describe('templateMapper', () => {
         // Execute & Assert
         await expect(provider.delete('templates', { id: 'template1' }))
           .rejects.toThrow('Failed to delete template.Test error')
+      })
+    })
+    
+    describe('deleteMany', () => {
+      it('should delete multiple templates', async () => {
+        // Setup mock
+        mockDeletePubSubDocument.mockResolvedValue({ success: true })
+        
+        // Execute
+        const result = await provider.deleteMany('templates', { ids: ['template1', 'template2'] })
+        
+        // Assert
+        expect(mockDeletePubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'template1')
+        expect(mockDeletePubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'template2')
+        expect(result).toEqual({
+          data: []
+        })
+      })
+      
+      it('should throw error when all deletions fail', async () => {
+        // Setup mock
+        mockDeletePubSubDocument.mockResolvedValue({ success: false, error: 'Test error' })
+        
+        // Execute & Assert
+        await expect(provider.deleteMany('templates', { ids: ['template1', 'template2'] }))
+          .rejects.toThrow('Failed to delete template:Test error, Test error')
+      })
+      
+      it('should succeed if at least one deletion succeeds', async () => {
+        // Setup mock
+        mockDeletePubSubDocument.mockImplementation((id) => {
+          if (id === TEMPLATES_PREFIX + 'template1') {
+            return Promise.resolve({ success: true })
+          }
+          return Promise.resolve({ success: false, error: 'Test error' })
+        })
+        
+        // Execute
+        const result = await provider.deleteMany('templates', { ids: ['template1', 'template2'] })
+        
+        // Assert
+        expect(mockDeletePubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'template1')
+        expect(mockDeletePubSubDocument).toHaveBeenCalledWith(TEMPLATES_PREFIX + 'template2')
+        expect(result).toEqual({
+          data: []
+        })
       })
     })
   })
