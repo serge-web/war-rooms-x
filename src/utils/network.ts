@@ -38,3 +38,35 @@ export const isServerReachable = async (
     return false
   }
 }
+
+export const isWebSocketServerReachable = async (
+  ip: string,
+  timeout = 2000
+): Promise<boolean> => {
+  try {
+    // Create a socket connection to test if server is reachable
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    
+    try {
+      // We're just checking if the server responds, not actually fetching content
+      // Using fetch with HEAD method to minimize data transfer
+      const url = `ws://${ip}:7070/ws/`
+      console.log('url to test', url)
+      const response = await fetch(url, {
+        method: 'HEAD',
+        signal: controller.signal
+      })
+      
+      return response.ok || response.status < 500
+    } catch (error) {
+      console.log('WebSocket server is not reachable', error)
+      return false
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  } catch {
+    return false
+  }
+}
+

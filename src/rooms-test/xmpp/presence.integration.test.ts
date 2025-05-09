@@ -1,7 +1,7 @@
 import { XMPPService } from '../../services/XMPPService'
 import { PresenceHandler } from '../../services/types'
 import { loadOpenfireConfig } from '../../utils/config'
-import { isServerReachable } from '../../utils/network'
+import { isWebSocketServerReachable } from '../../utils/network'
 
 // Mock the roomTypeFactory to avoid importing JSX files
 jest.mock('../../services/roomTypes', () => ({
@@ -44,8 +44,7 @@ describe('XMPPService Presence Integration', () => {
   
   // Test configuration
   const config = {
-    host: openfireConfig.host,
-    ip: openfireConfig.ip,
+    url: openfireConfig.wsurl,
     user1: {
       jid: openfireConfig.credentials[0].username + '@' + openfireConfig.host,
       password: openfireConfig.credentials[0].password
@@ -67,8 +66,7 @@ describe('XMPPService Presence Integration', () => {
   // Set up the test environment
   beforeAll(async () => {
     // Check if server is available
-    const port = 5222 // Default XMPP port
-    serverAvailable = await isServerReachable(config.ip, port)
+    serverAvailable = await isWebSocketServerReachable(config.url)
     
     if (!serverAvailable) {
       console.log(`OpenFire server is not running - dropping out of test`)
@@ -82,8 +80,7 @@ describe('XMPPService Presence Integration', () => {
     try {
       // Connect the first user
       await user1Service.connect(
-        config.ip,
-        config.host,
+        config.url,
         config.user1.jid.split('@')[0],
         config.user1.password
       )
