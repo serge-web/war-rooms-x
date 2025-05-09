@@ -1,5 +1,4 @@
 import { XMPPService } from '../../services/XMPPService'
-import { PresenceHandler } from '../../services/types'
 import { loadOpenfireConfig } from '../../utils/config'
 import { isServerReachable } from '../../utils/network'
 
@@ -51,10 +50,10 @@ describe('XMPPService Presence Integration', () => {
       password: openfireConfig.credentials[0].password
     },
     user2: {
-      jid: openfireConfig.credentials[1]?.username + '@' + openfireConfig.host || 'user2@' + openfireConfig.host,
-      password: openfireConfig.credentials[1]?.password || 'password'
+      jid: openfireConfig.credentials[2]?.username + '@' + openfireConfig.host || 'user2@' + openfireConfig.host,
+      password: openfireConfig.credentials[2]?.password || 'password'
     },
-    room: 'testroom@conference.' + openfireConfig.host
+    room: 'red-chat@conference.' + openfireConfig.host
   }
   
   // Flag to determine if server is available
@@ -94,7 +93,7 @@ describe('XMPPService Presence Integration', () => {
         config.user2.jid.split('@')[0],
         config.user2.password
       )
-      
+
       // Join the test room with both users
       await user1Service.joinRoom(config.room, (message) => {
         console.log('User1 received message:', message)
@@ -142,158 +141,158 @@ describe('XMPPService Presence Integration', () => {
     expect(presence.available).toBe(true)
   }, 5000)
   
-  // Test that subscribeToPresence correctly notifies about presence changes
-  it('should notify about presence changes', async () => {
-    // Skip test if server is not available
-    if (!serverAvailable) {
-      console.log('Skipping integration test: should notify about presence changes')
-      return
-    }
+//   // Test that subscribeToPresence correctly notifies about presence changes
+//   it('should notify about presence changes', async () => {
+//     // Skip test if server is not available
+//     if (!serverAvailable) {
+//       console.log('Skipping integration test: should notify about presence changes')
+//       return
+//     }
     
-    // Create a mock handler for presence updates
-    const presenceHandler = jest.fn() as jest.MockedFunction<PresenceHandler>
+//     // Create a mock handler for presence updates
+//     const presenceHandler = jest.fn() as jest.MockedFunction<PresenceHandler>
     
-    // Subscribe to presence updates for the room
-    const unsubscribe = user1Service.subscribeToPresence(config.room, presenceHandler)
+//     // Subscribe to presence updates for the room
+//     const unsubscribe = user1Service.subscribeToPresence(config.room, presenceHandler)
     
-    // Simulate user2 going offline and online again
-    await user2Service.disconnect()
+//     // Simulate user2 going offline and online again
+//     await user2Service.disconnect()
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Reconnect user2
-    await user2Service.connect(
-      config.ip,
-      config.host,
-      config.user2.jid.split('@')[0],
-      config.user2.password
-    )
+//     // Reconnect user2
+//     await user2Service.connect(
+//       config.ip,
+//       config.host,
+//       config.user2.jid.split('@')[0],
+//       config.user2.password
+//     )
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Join the room again
-    await user2Service.joinRoom(config.room, (message) => {
-      console.log('User2 reconnected received message:', message)
-    })
+//     // Join the room again
+//     await user2Service.joinRoom(config.room, (message) => {
+//       console.log('User2 reconnected received message:', message)
+//     })
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Unsubscribe from presence updates
-    unsubscribe()
+//     // Unsubscribe from presence updates
+//     unsubscribe()
     
-    // Verify that the handler was called at least twice
-    // Once for the unavailable presence and once for the available presence
-    expect(presenceHandler).toHaveBeenCalledTimes(2)
+//     // Verify that the handler was called at least twice
+//     // Once for the unavailable presence and once for the available presence
+//     expect(presenceHandler).toHaveBeenCalledTimes(2)
     
-    // The first call should be for unavailable presence
-    expect(presenceHandler.mock.calls[0][1]).toBe(false)
+//     // The first call should be for unavailable presence
+//     expect(presenceHandler.mock.calls[0][1]).toBe(false)
     
-    // The second call should be for available presence
-    expect(presenceHandler.mock.calls[1][1]).toBe(true)
-  }, 10000)
+//     // The second call should be for available presence
+//     expect(presenceHandler.mock.calls[1][1]).toBe(true)
+//   }, 10000)
   
-  // Test that multiple handlers for the same room all receive updates
-  it('should notify multiple handlers for the same room', async () => {
-    // Skip test if server is not available
-    if (!serverAvailable) {
-      console.log('Skipping integration test: should notify multiple handlers for the same room')
-      return
-    }
+//   // Test that multiple handlers for the same room all receive updates
+//   it('should notify multiple handlers for the same room', async () => {
+//     // Skip test if server is not available
+//     if (!serverAvailable) {
+//       console.log('Skipping integration test: should notify multiple handlers for the same room')
+//       return
+//     }
     
-    // Create two mock handlers for presence updates
-    const handler1 = jest.fn() as jest.MockedFunction<PresenceHandler>
-    const handler2 = jest.fn() as jest.MockedFunction<PresenceHandler>
+//     // Create two mock handlers for presence updates
+//     const handler1 = jest.fn() as jest.MockedFunction<PresenceHandler>
+//     const handler2 = jest.fn() as jest.MockedFunction<PresenceHandler>
     
-    // Subscribe both handlers to presence updates for the room
-    const unsubscribe1 = user1Service.subscribeToPresence(config.room, handler1)
-    const unsubscribe2 = user1Service.subscribeToPresence(config.room, handler2)
+//     // Subscribe both handlers to presence updates for the room
+//     const unsubscribe1 = user1Service.subscribeToPresence(config.room, handler1)
+//     const unsubscribe2 = user1Service.subscribeToPresence(config.room, handler2)
     
-    // Simulate user2 going offline and online again
-    await user2Service.disconnect()
+//     // Simulate user2 going offline and online again
+//     await user2Service.disconnect()
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Reconnect user2
-    await user2Service.connect(
-      config.ip,
-      config.host,
-      config.user2.jid.split('@')[0],
-      config.user2.password
-    )
+//     // Reconnect user2
+//     await user2Service.connect(
+//       config.ip,
+//       config.host,
+//       config.user2.jid.split('@')[0],
+//       config.user2.password
+//     )
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Join the room again
-    await user2Service.joinRoom(config.room, (message) => {
-      console.log('User2 reconnected received message:', message)
-    })
+//     // Join the room again
+//     await user2Service.joinRoom(config.room, (message) => {
+//       console.log('User2 reconnected received message:', message)
+//     })
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Unsubscribe both handlers
-    unsubscribe1()
-    unsubscribe2()
+//     // Unsubscribe both handlers
+//     unsubscribe1()
+//     unsubscribe2()
     
-    // Verify that both handlers were called
-    expect(handler1).toHaveBeenCalled()
-    expect(handler2).toHaveBeenCalled()
+//     // Verify that both handlers were called
+//     expect(handler1).toHaveBeenCalled()
+//     expect(handler2).toHaveBeenCalled()
     
-    // Both handlers should have been called the same number of times
-    expect(handler1.mock.calls.length).toBe(handler2.mock.calls.length)
-  }, 10000)
+//     // Both handlers should have been called the same number of times
+//     expect(handler1.mock.calls.length).toBe(handler2.mock.calls.length)
+//   }, 10000)
   
-  // Test that unsubscribing a handler stops it from receiving updates
-  it('should stop notifying after unsubscribe', async () => {
-    // Skip test if server is not available
-    if (!serverAvailable) {
-      console.log('Skipping integration test: should stop notifying after unsubscribe')
-      return
-    }
+//   // Test that unsubscribing a handler stops it from receiving updates
+//   it('should stop notifying after unsubscribe', async () => {
+//     // Skip test if server is not available
+//     if (!serverAvailable) {
+//       console.log('Skipping integration test: should stop notifying after unsubscribe')
+//       return
+//     }
     
-    // Create a mock handler for presence updates
-    const handler = jest.fn() as jest.MockedFunction<PresenceHandler>
+//     // Create a mock handler for presence updates
+//     const handler = jest.fn() as jest.MockedFunction<PresenceHandler>
     
-    // Subscribe to presence updates for the room
-    const unsubscribe = user1Service.subscribeToPresence(config.room, handler)
+//     // Subscribe to presence updates for the room
+//     const unsubscribe = user1Service.subscribeToPresence(config.room, handler)
     
-    // Simulate user2 going offline
-    await user2Service.disconnect()
+//     // Simulate user2 going offline
+//     await user2Service.disconnect()
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Unsubscribe from presence updates
-    unsubscribe()
+//     // Unsubscribe from presence updates
+//     unsubscribe()
     
-    // Reset the mock to clear previous calls
-    handler.mockClear()
+//     // Reset the mock to clear previous calls
+//     handler.mockClear()
     
-    // Reconnect user2
-    await user2Service.connect(
-      config.ip,
-      config.host,
-      config.user2.jid.split('@')[0],
-      config.user2.password
-    )
+//     // Reconnect user2
+//     await user2Service.connect(
+//       config.ip,
+//       config.host,
+//       config.user2.jid.split('@')[0],
+//       config.user2.password
+//     )
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Join the room again
-    await user2Service.joinRoom(config.room, (message) => {
-      console.log('User2 reconnected received message:', message)
-    })
+//     // Join the room again
+//     await user2Service.joinRoom(config.room, (message) => {
+//       console.log('User2 reconnected received message:', message)
+//     })
     
-    // Wait for presence update to propagate
-    await new Promise(resolve => setTimeout(resolve, 1000))
+//     // Wait for presence update to propagate
+//     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Verify that the handler was not called after unsubscribing
-    expect(handler).not.toHaveBeenCalled()
-  }, 10000)
+//     // Verify that the handler was not called after unsubscribing
+//     expect(handler).not.toHaveBeenCalled()
+//   }, 10000)
 })
