@@ -1,11 +1,12 @@
 import { Meta, StoryObj } from '@storybook/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 import RoomContent from './index'
 import { WargameContext } from '../../../../contexts/WargameContext'
-import { RoomType } from '../../../../types/rooms-d'
+import { RoomType, GameMessage } from '../../../../types/rooms-d'
 import { mockBackend } from '../../../../mockData/mockAdmin'
 import { ForceConfigType, GameStateType } from '../../../../types/wargame-d'
-import type { OnlineUser } from '../RoomPresenceBar'
+import localforage from 'localforage'
+import { prefixKey } from '../../../../types/constants'
 
 // Define the meta export for the component
 const meta = {
@@ -48,9 +49,49 @@ const mockRoom: RoomType = {
   })
 }
 
+// Initialize mock data for IndexedDB
+const initMockData = async (roomName: string, forceId: string) => {
+  // Create mock users for this force
+  const mockUsers = mockBackend.users
+    .filter(user => user.name.toLowerCase().includes(forceId))
+    .map(user => ({
+      jid: user.id,
+      name: user.name,
+      force: forceId
+    }))
+
+  // Get mock messages for this force
+  let mockMessages: GameMessage[] = []
+  const chatroom = mockBackend.chatrooms.find(room => room.id === `${forceId}-chat`)
+  if (chatroom && chatroom.dummyMessages) {
+    mockMessages = chatroom.dummyMessages as GameMessage[]
+  }
+
+  // Create a mock room with users and messages
+  const mockChatrooms = [
+    {
+      id: roomName,
+      name: roomName,
+      presenceConfig: 'all',
+      dummyUsers: mockUsers,
+      dummyMessages: mockMessages
+    }
+  ]
+
+  // Store in IndexedDB
+  await localforage.setItem(`${prefixKey}chatrooms`, mockChatrooms)
+  console.log(`Mock data initialized for ${roomName} with ${mockUsers.length} users and ${mockMessages.length} messages`)
+}
+
 // Create a decorator for each force
 const createForceDecorator = (forceId: string) => {
-  return (Story: React.ComponentType) => {
+  return (Story: React.ComponentType, { args }: { args: { room: RoomType } }) => {
+    // Initialize mock data for IndexedDB when the component mounts
+    useEffect(() => {
+      // Using forceId from closure, not needed in deps array
+      initMockData(args.room.roomName, forceId)
+    }, [args.room.roomName])
+
     // Create a mock implementation of the getForce method
     const mockGetForce = async (id: string): Promise<ForceConfigType> => {
       return {
@@ -87,23 +128,10 @@ const createForceDecorator = (forceId: string) => {
       getForce: mockGetForce,
       gameProperties: null,
       gameState,
-      nextTurn: async () => {},
-      // Add mock data for the useRoomUsers hook
-      mockRoomUsers: {
-        // This will be used by the useRoomUsers hook in the component
-        users: mockBackend.users
-          .filter(user => user.name.toLowerCase().includes(forceId))
-          .map(user => ({
-            id: user.id,
-            name: user.name,
-            force: forceId,
-            isOnline: true
-          })) as OnlineUser[],
-        presenceVisibility: 'all',
-        loading: false,
-        error: null
-      }
+      nextTurn: async () => {}
     }
+
+    console.log('context', wargameContextValue)
 
     return (
       <WargameContext.Provider value={wargameContextValue}>
