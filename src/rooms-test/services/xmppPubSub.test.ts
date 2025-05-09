@@ -1,12 +1,7 @@
+import { JSONItem } from 'stanza/protocol'
+import { PubSubDocument } from '../../services/types'
 import { XMPPService } from '../../services/XMPPService'
 import { Agent } from 'stanza'
-
-// Define a type for the PubSub document structure used in tests
-interface PubSubDocument {
-  id: string
-  content: any
-  name?: string
-}
 
 // Mock the stanza library
 jest.mock('stanza', () => {
@@ -237,10 +232,11 @@ describe('XMPPService - PubSub Operations', () => {
       const content = { key: 'value' }
       
       // Mock the implementation to return a specific document
+      // Use a more generic type assertion to avoid type conflicts
       jest.spyOn(xmppService, 'getPubSubDocument').mockResolvedValue({
         id: nodeId,
-        content: content
-      } as any)
+        content: content as unknown as JSONItem
+      } as unknown as PubSubDocument)
       
       // Act
       const result = await xmppService.getPubSubDocument(nodeId)
@@ -329,7 +325,7 @@ describe('XMPPService - PubSub Operations', () => {
       
       // Manually trigger the handler by accessing the private property
       // and calling each registered handler
-      const handlers = (xmppService as any).pubsubChangeHandlers
+      const handlers = (xmppService as unknown as { pubsubChangeHandlers: ((doc: PubSubDocument) => void)[] }).pubsubChangeHandlers
       if (Array.isArray(handlers)) {
         handlers.forEach(h => h(document))
       }
