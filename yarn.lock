@@ -1140,7 +1140,7 @@
   dependencies:
     "@babel/runtime" "^7.27.1"
 
-"@mui/material@^5.16.12 || ^6.0.0 || ^7.0.0":
+"@mui/material@^5.16.12 || ^6.0.0 || ^7.0.0", "@mui/material@^7.1.0":
   version "7.1.0"
   resolved "https://registry.yarnpkg.com/@mui/material/-/material-7.1.0.tgz#f25866fb507ada2a2b3ac433b13a2bc79d83f608"
   integrity sha512-ahUJdrhEv+mCp4XHW+tHIEYzZMSRLg8z4AjUOsj44QpD1ZaMxQoVOG2xiHvLFdcsIPbgSRx1bg1eQSheHBgvtg==
