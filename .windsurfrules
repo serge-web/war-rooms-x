@@ -34,6 +34,8 @@ Use the project structure specified in ./documents/technical-overview.md
 - RJSF for structured forms
 - Zustand or React Query for state management
 - React Router for routing
+- Ant Design for UI components in PlayerView
+- MaterialUI for UI components in Admin Pages
 
 # React Hooks architecture
 - useWargame() - game state
@@ -55,3 +57,8 @@ Use the project structure specified in ./documents/technical-overview.md
 - Follow DRY principles
 - Use yarn as package manager
 - Test-driven development approach (write tests first)
+
+# Development of new components
+- Try to produce a StoryBook test of new components as soon as possible, in order to gather feedback on latent requirements
+- Try to put immutable application logic into testable helpers
+- Try to put mutable application logic into testable hooks

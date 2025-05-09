@@ -79,7 +79,7 @@ describe('Project Structure', () => {
     try {
       await axios.get(`http://${host}/ping`)
     } catch {
-      console.error('OpenFire server is not running - dropping out of test')
+      console.log('OpenFire server is not running - dropping out of test')
       // drop out of test early
       return
     }

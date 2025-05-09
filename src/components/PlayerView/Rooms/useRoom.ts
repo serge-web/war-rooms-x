@@ -5,7 +5,7 @@ import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
 import { ReceivedMessage } from 'stanza/protocol';
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
-import localforage from 'localforage';
+import * as localforage from 'localforage'
 import { prefixKey } from '../../../types/constants';
 import { RRoom } from '../../AdminView/raTypes-d';
 
