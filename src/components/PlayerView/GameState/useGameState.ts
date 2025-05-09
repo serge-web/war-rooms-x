@@ -5,7 +5,7 @@ import { usePubSub } from '../../../hooks/usePubSub'
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData'
 import { RGameState } from '../../AdminView/raTypes-d'
 import { splitGameState, mergeGameState } from '../../../helpers/split-game-state'
-import localforage from 'localforage'
+import * as localforage from 'localforage'
 import { prefixKey } from '../../../types/constants'
 import { XMPPService } from '../../../services/XMPPService'
 

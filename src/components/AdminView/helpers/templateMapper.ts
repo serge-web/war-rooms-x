@@ -1,14 +1,24 @@
-import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyParams, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from "react-admin"
-import { XMPPService } from "../../../services/XMPPService"
-import { Template } from "../../../types/rooms-d"
-import { TEMPLATES_COLLECTION, TEMPLATES_PREFIX } from "../../../types/constants"
+import { XTemplate } from '../raTypes-d'
+import { XMPPService } from '../../../services/XMPPService'
+import { Template } from '../../../types/rooms-d'
+import { ResourceHandler } from './types'
+import { CreateParams, CreateResult, DataProvider, DeleteManyParams, DeleteManyResult, DeleteParams, DeleteResult, GetListResult, GetManyParams, GetManyReferenceResult, GetManyResult, GetOneParams, GetOneResult, QueryFunctionContext, UpdateManyResult, UpdateParams, UpdateResult } from 'react-admin'
+import { TEMPLATES_COLLECTION, TEMPLATES_PREFIX } from '../../../types/constants'
 
-const emptyTemplate = { 
+// Define a properly typed empty template that conforms to the Template type
+import { JSONSchema7 } from 'json-schema'
+
+const emptyTemplate: Template = { 
   id: 'pending',
-  schema: { title: 'pending', type: 'object', properties: {} }, uiSchema: {}
+  schema: { title: 'pending', type: 'object', properties: {} } as JSONSchema7, // Cast to JSONSchema7 to satisfy type requirements
+  uiSchema: {}
 }
 
-
+/**
+ * Template data provider for React Admin
+ * @param xmppClient The XMPP service client
+ * @returns A DataProvider for templates
+ */
 export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
   return {
     getList: async (): Promise<GetListResult> => {  
@@ -67,7 +77,6 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
     },
     delete: async (_resource: string, params: DeleteParams): Promise<DeleteResult>=> {
       const deleted = await xmppClient.deletePubSubDocument(TEMPLATES_PREFIX + params.id)
-      console.log('node deleted', deleted)
       if (!deleted.success) {
         throw new Error('Failed to delete template.' + deleted.error)
       }
@@ -85,4 +94,10 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
   }
 }
 
-export default TemplateDataProvider
+/**
+ * Resource handler for templates
+ */
+export const TemplateMapper: ResourceHandler<XTemplate, Template> = {
+  resource: 'templates',
+  provider: TemplateDataProvider
+}

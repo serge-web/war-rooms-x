@@ -1,6 +1,6 @@
 // useIndexedDBData.ts
 import { useState, useEffect } from 'react'
-import localforage from 'localforage'
+import * as localforage from 'localforage'
 import { mockBackend } from '../mockData/mockAdmin'
 import { prefixKey } from '../types/constants'
 

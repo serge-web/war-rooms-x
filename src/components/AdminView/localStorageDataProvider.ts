@@ -1,6 +1,6 @@
 import localForageDataProvider from 'ra-data-local-forage'
 import { mockBackend } from '../../mockData/mockAdmin'
-import localforage from 'localforage'
+import * as localforage from 'localforage'
 import { prefixKey } from '../../types/constants'
 
 // Initialize the data provider with our mock data
