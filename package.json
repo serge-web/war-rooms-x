@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "type-check": "tsc -b --noEmit",
     "preview": "vite preview",
-    "test": "jest",
+    "test": "yarn test:all",
     "test:coverage": "jest --coverage",
     "test:unit": "jest --config=jest.unit.config.js",
     "test:unit:coverage": "jest --config=jest.unit.config.js --coverage",
