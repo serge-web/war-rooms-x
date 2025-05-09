@@ -77,7 +77,6 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
     },
     delete: async (_resource: string, params: DeleteParams): Promise<DeleteResult>=> {
       const deleted = await xmppClient.deletePubSubDocument(TEMPLATES_PREFIX + params.id)
-      console.log('node deleted', deleted)
       if (!deleted.success) {
         throw new Error('Failed to delete template.' + deleted.error)
       }
