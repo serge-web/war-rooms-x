@@ -4,6 +4,32 @@ import { WargameContext } from '../../contexts/WargameContext'
 import React from 'react'
 import { XMPPService } from '../../services/XMPPService'
 
+// Mock the roomTypeFactory to avoid importing JSX files
+jest.mock('../../services/roomTypes', () => ({
+  roomTypeFactory: {
+    get: jest.fn().mockImplementation((id) => ({
+      id,
+      label: `Mock Room Type ${id}`,
+      description: 'Mock room type for testing',
+      isConfigValid: jest.fn().mockReturnValue(true),
+      defaultConfig: {},
+      showComponent: () => null,
+      editComponent: () => null
+    })),
+    list: jest.fn().mockReturnValue([
+      {
+        id: 'chat',
+        label: 'Chat Room',
+        description: 'A room for chat messages',
+        isConfigValid: jest.fn().mockReturnValue(true),
+        defaultConfig: {},
+        showComponent: () => null,
+        editComponent: () => null
+      }
+    ])
+  }
+}))
+
 // Mock the XMPPService
 jest.mock('../../services/XMPPService')
 
