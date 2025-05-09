@@ -1,6 +1,12 @@
 import { XMPPService } from '../../services/XMPPService'
 import { Agent } from 'stanza'
-import { PubSubDocument, PubSubDocumentChangeHandler } from '../../services/types'
+import { PubSubDocumentChangeHandler } from '../../services/types'
+
+// Define a type for the PubSub document structure used in tests
+interface PubSubDocument {
+  id: string
+  content: Record<string, unknown>
+}
 
 // Mock the stanza library
 jest.mock('stanza', () => {
@@ -38,14 +44,35 @@ jest.mock('stanza', () => {
 
 describe('XMPPService - PubSub Operations', () => {
   let xmppService: XMPPService
-  let mockClient: Agent
+  let mockClient: Agent & {
+    connect: jest.Mock
+    disconnect: jest.Mock
+    sendPresence: jest.Mock
+    getDiscoInfo: jest.Mock
+    getDiscoItems: jest.Mock
+    createNode: jest.Mock
+    deleteNode: jest.Mock
+    publish: jest.Mock
+    subscribeToNode: jest.Mock
+    unsubscribeFromNode: jest.Mock
+    getItem: jest.Mock
+    getItems: jest.Mock
+    getNodeConfig: jest.Mock
+    on: jest.Mock
+    off: jest.Mock
+    sendIQ: jest.Mock
+    sendMessage: jest.Mock
+    joinRoom: jest.Mock
+    leaveRoom: jest.Mock
+    jid: string
+  }
   
   beforeEach(() => {
     // Create a new instance of XMPPService for each test
     xmppService = new XMPPService()
     
-    // Set up the mock client
-    xmppService.client = {
+    // Create a mock client with properly typed mock functions
+    const client = {
       connect: jest.fn(),
       disconnect: jest.fn().mockResolvedValue(undefined),
       sendPresence: jest.fn(),
@@ -63,10 +90,37 @@ describe('XMPPService - PubSub Operations', () => {
       off: jest.fn(),
       sendIQ: jest.fn(),
       sendMessage: jest.fn(),
+      joinRoom: jest.fn(),
+      leaveRoom: jest.fn(),
       jid: 'test-user@test-server/resource'
-    } as unknown as Agent
+    }
     
-    mockClient = xmppService.client
+    // Set the client and cast it to the Agent type
+    xmppService.client = client as unknown as Agent
+    
+    // Set the mockClient with the proper type
+    mockClient = client as unknown as Agent & {
+      connect: jest.Mock
+      disconnect: jest.Mock
+      sendPresence: jest.Mock
+      getDiscoInfo: jest.Mock
+      getDiscoItems: jest.Mock
+      createNode: jest.Mock
+      deleteNode: jest.Mock
+      publish: jest.Mock
+      subscribeToNode: jest.Mock
+      unsubscribeFromNode: jest.Mock
+      getItem: jest.Mock
+      getItems: jest.Mock
+      getNodeConfig: jest.Mock
+      on: jest.Mock
+      off: jest.Mock
+      sendIQ: jest.Mock
+      sendMessage: jest.Mock
+      joinRoom: jest.Mock
+      leaveRoom: jest.Mock
+      jid: string
+    }
     
     // Set connected state and services
     Object.defineProperty(xmppService, 'connected', { value: true, writable: true })
@@ -83,7 +137,10 @@ describe('XMPPService - PubSub Operations', () => {
     it('should check if server supports PubSub', async () => {
       // Arrange
       mockClient.getDiscoInfo.mockResolvedValue({
-        features: ['http://jabber.org/protocol/pubsub']
+        features: ['http://jabber.org/protocol/pubsub'],
+        identities: [],
+        extensions: [],
+        type: 'info'
       })
       
       // Act
@@ -97,7 +154,10 @@ describe('XMPPService - PubSub Operations', () => {
     it('should return false if server does not support PubSub', async () => {
       // Arrange
       mockClient.getDiscoInfo.mockResolvedValue({
-        features: ['some-other-feature']
+        features: ['some-other-feature'],
+        identities: [],
+        extensions: [],
+        type: 'info'
       })
       
       // Act
@@ -117,13 +177,21 @@ describe('XMPPService - PubSub Operations', () => {
         ]
       })
       
-      mockClient.getDiscoInfo.mockImplementation((jid) => {
+      mockClient.getDiscoInfo.mockImplementation((jid: string) => {
         if (jid === 'pubsub.test-server') {
           return Promise.resolve({
-            features: ['http://jabber.org/protocol/pubsub']
+            features: ['http://jabber.org/protocol/pubsub'],
+            identities: [],
+            extensions: [],
+            type: 'info'
           })
         }
-        return Promise.resolve({ features: [] })
+        return Promise.resolve({
+          features: [],
+          identities: [],
+          extensions: [],
+          type: 'info'
+        })
       })
       
       // Act
@@ -288,7 +356,7 @@ describe('XMPPService - PubSub Operations', () => {
       )
     })
     
-    it('should handle PubSub document change events', async () => {
+    it('should notify handlers when a PubSub document changes', () => {
       // Arrange
       const handler: PubSubDocumentChangeHandler = jest.fn()
       const document: PubSubDocument = {
@@ -299,18 +367,31 @@ describe('XMPPService - PubSub Operations', () => {
       // Act
       xmppService.onPubSubDocumentChange(handler)
       
-      // Simulate a PubSub event
-      const pubsubEventHandler = (xmppService as any).pubsubEventHandler
-      pubsubEventHandler({
+      // Simulate a PubSub event by directly triggering the event handler
+      // Define a type for the PubSub event structure
+      type PubSubEvent = {
         pubsub: {
           items: {
-            node: document.id,
-            published: [
-              { content: document.content }
-            ]
+            node: string
+            published: Array<{ content: unknown }>
           }
         }
-      })
+      }
+      const eventHandlers = (xmppService as unknown as { _events: Record<string, Array<(event: PubSubEvent) => void>> })._events
+      const pubsubHandler = eventHandlers['pubsub:published']?.[0]
+      
+      if (pubsubHandler) {
+        pubsubHandler({
+          pubsub: {
+            items: {
+              node: document.id,
+              published: [
+                { content: document.content }
+              ]
+            }
+          }
+        })
+      }
       
       // Assert
       expect(handler).toHaveBeenCalledWith(expect.objectContaining({
@@ -324,8 +405,20 @@ describe('XMPPService - PubSub Operations', () => {
       const nodeId = 'test-node'
       const subscriptionId = 'sub-123'
       
-      // Set up the subscriptionIds map
-      (xmppService as any).subscriptionIds.set(nodeId, subscriptionId)
+      // We need to set up the test in a way that doesn't rely on accessing private properties
+      // First, we'll subscribe to the node to set up the subscriptionIds map internally
+      mockClient.subscribeToNode.mockResolvedValue({
+        pubsub: {
+          subscription: {
+            node: nodeId,
+            jid: 'test-user@test-server',
+            subid: subscriptionId
+          }
+        }
+      })
+      
+      // Call the subscribe method to set up the internal state
+      await xmppService.subscribeToPubSubDocument(nodeId)
       
       mockClient.unsubscribeFromNode.mockResolvedValue({})
       
