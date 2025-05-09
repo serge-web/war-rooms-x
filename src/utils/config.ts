@@ -21,6 +21,7 @@ export interface OpenfireConfig {
   ip: string
   host: string
   port: number
+  wsurl: string
   apiPath: string
   secure: boolean
   credentials: {
