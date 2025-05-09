@@ -1,30 +1,35 @@
-import { TemplateMapper } from '../../../../components/AdminView/helpers/templateMapper'
 import { XMPPService } from '../../../../services/XMPPService'
 
-// Mock the TemplateDataProvider module
+// Mock the TemplateDataProvider function
 const mockDataProvider = jest.fn()
-
-jest.mock('../../../../components/AdminView/Resources/templateDataProvider', () => {
+const mockTemplateDataProvider = jest.fn().mockImplementation((xmppClient) => {
+  mockDataProvider(xmppClient)
   return {
-    TemplateDataProvider: jest.fn().mockImplementation((xmppClient) => {
-      mockDataProvider(xmppClient)
-      return {
-        getList: jest.fn(),
-        getOne: jest.fn(),
-        getMany: jest.fn(),
-        getManyReference: jest.fn(),
-        update: jest.fn(),
-        updateMany: jest.fn(),
-        create: jest.fn(),
-        delete: jest.fn(),
-        deleteMany: jest.fn()
-      }
-    })
+    getList: jest.fn(),
+    getOne: jest.fn(),
+    getMany: jest.fn(),
+    getManyReference: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+    deleteMany: jest.fn()
+  }
+})
+
+// Mock the templateMapper module
+jest.mock('../../../../components/AdminView/helpers/templateMapper', () => {
+  return {
+    TemplateDataProvider: mockTemplateDataProvider,
+    TemplateMapper: {
+      resource: 'templates',
+      provider: mockTemplateDataProvider
+    }
   }
 })
 
 // Import the mocked module after mocking
-import { TemplateDataProvider } from '../../../../components/AdminView/Resources/templateDataProvider'
+import { TemplateMapper } from '../../../../components/AdminView/helpers/templateMapper'
 
 // Create a mock XMPPService
 const mockXmppClient = {} as XMPPService
@@ -40,25 +45,19 @@ describe('templateMapper', () => {
       expect(TemplateMapper.resource).toBe('templates')
     })
     
-    it('should create a data provider when provider function is called', () => {
+    it('should have the correct provider function', () => {
       // Execute
       const providerFn = TemplateMapper.provider
       expect(providerFn).toBeDefined()
-      
-      if (providerFn) {
-        const provider = providerFn(mockXmppClient)
-        
-        // Assert
-        expect(TemplateDataProvider).toHaveBeenCalledWith(mockXmppClient)
-        expect(provider).toBeDefined()
-      }
+      expect(providerFn).toBe(mockTemplateDataProvider)
     })
     
-    it('should delegate to the TemplateDataProvider', () => {
+    it('should delegate to the TemplateDataProvider when called', () => {
       // Verify that the mapper correctly delegates to the data provider
       if (TemplateMapper.provider) {
-        TemplateMapper.provider(mockXmppClient)
+        const provider = TemplateMapper.provider(mockXmppClient)
         expect(mockDataProvider).toHaveBeenCalledWith(mockXmppClient)
+        expect(provider).toBeDefined()
       }
     })
   })
