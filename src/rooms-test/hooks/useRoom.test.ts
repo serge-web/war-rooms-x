@@ -14,7 +14,10 @@ jest.mock('../../hooks/useIndexedDBData', () => ({
 }))
 
 // Mock localforage
-jest.mock('localforage')
+const mockSetItem = jest.fn()
+jest.mock('localforage', () => ({
+  setItem: (key: string, value: unknown) => mockSetItem(key, value)
+}))
 
 // Import the actual hook we're testing
 import { useRoom } from '../../components/PlayerView/Rooms/useRoom'
@@ -27,6 +30,21 @@ describe('useRoom hook', () => {
     description: 'A test room for unit testing'
   }
 
+  // Mock XMPP client methods
+  const mockJoinRoom = jest.fn()
+  const mockGetRoomMembers = jest.fn()
+  const mockSendRoomMessage = jest.fn()
+  const mockLeaveRoom = jest.fn()
+
+  // Mock XMPP client
+  const createMockXmppClient = (includeServices = true) => ({
+    joinRoom: mockJoinRoom,
+    getRoomMembers: mockGetRoomMembers,
+    sendRoomMessage: mockSendRoomMessage,
+    leaveRoom: mockLeaveRoom,
+    mucService: includeServices ? {} : null
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
     
@@ -36,6 +54,12 @@ describe('useRoom hook', () => {
       loading: false,
       error: null
     })
+
+    // Reset XMPP client method mocks
+    mockJoinRoom.mockReset().mockResolvedValue(undefined)
+    mockGetRoomMembers.mockReset().mockResolvedValue([])
+    mockSendRoomMessage.mockReset().mockResolvedValue({ success: true })
+    mockLeaveRoom.mockReset().mockResolvedValue(undefined)
   })
 
   it('should return empty messages array when waiting for login', () => {
@@ -208,5 +232,193 @@ describe('useRoom hook', () => {
     expect(result.current.users).toEqual([])
     // But theme should be loaded from mock data
     expect(result.current.theme).toEqual({ token: { colorPrimary: '#ff0000' } })
+  })
+
+  it('should join room and fetch users when xmppClient is available', async () => {
+    // Mock users to be returned from getRoomMembers
+    const mockUsers = [
+      { id: 'user1', name: 'User 1', role: 'Player', forceId: 'force1' },
+      { id: 'user2', name: 'User 2', role: 'Admin', forceId: 'force2' }
+    ]
+    
+    // Set up mock for XMPP client
+    mockGetRoomMembers.mockResolvedValue(mockUsers)
+    
+    // Set up mocks for active xmppClient
+    mockUseWargame.mockReturnValue({
+      xmppClient: createMockXmppClient(),
+      gameState: { turn: '1', currentPhase: 'planning' },
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+    })
+
+    // Render the hook
+    const { result, rerender } = renderHook(() => useRoom(testRoom))
+    
+    // Verify initial state
+    expect(result.current.users).toEqual([])
+    
+    // Wait for async operations to complete
+    await act(async () => {
+      // Manually trigger the promises to resolve
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+    
+    // Force a re-render to get the updated state
+    rerender()
+    
+    // Verify room was joined and users were fetched
+    expect(mockJoinRoom).toHaveBeenCalledWith('test-room', expect.any(Function))
+    expect(mockGetRoomMembers).toHaveBeenCalledWith('test-room')
+    expect(result.current.users).toEqual(mockUsers)
+  })
+
+  it('should send message through XMPP client when available', async () => {
+    // Set up mocks for active xmppClient
+    mockUseWargame.mockReturnValue({
+      xmppClient: createMockXmppClient(),
+      gameState: { turn: '1', currentPhase: 'planning' },
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+    })
+
+    // Render the hook
+    const { result } = renderHook(() => useRoom(testRoom))
+    
+    // Send a message
+    await act(async () => {
+      result.current.sendMessage('chat', { text: 'Test message via XMPP' })
+      // Wait for async operations
+      await Promise.resolve()
+    })
+    
+    // Verify message was sent via XMPP client
+    expect(mockSendRoomMessage).toHaveBeenCalledWith(expect.objectContaining({
+      details: expect.objectContaining({
+        messageType: 'chat',
+        senderId: 'test-user',
+        senderForce: 'test-force',
+        channel: 'test-room'
+      }),
+      content: { text: 'Test message via XMPP' }
+    }))
+  })
+
+  it('should handle error when sending message fails', async () => {
+    // Mock sendRoomMessage to return error
+    mockSendRoomMessage.mockResolvedValue({ 
+      success: false, 
+      error: 'Failed to send message' 
+    })
+    
+    // Set up mocks for active xmppClient
+    mockUseWargame.mockReturnValue({
+      xmppClient: createMockXmppClient(),
+      gameState: { turn: '1', currentPhase: 'planning' },
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+    })
+
+    // Render the hook
+    const { result } = renderHook(() => useRoom(testRoom))
+    
+    // Verify initial error state
+    expect(result.current.error).toBeNull()
+    
+    // Send a message that will fail
+    await act(async () => {
+      result.current.sendMessage('chat', { text: 'This message will fail' })
+      // Wait for async operations
+      await Promise.resolve()
+    })
+    
+    // Verify error was set
+    expect(result.current.error).toEqual({
+      title: 'Message sending error',
+      message: 'Error sending message:Failed to send message'
+    })
+    
+    // Test clearError function
+    act(() => {
+      result.current.clearError()
+    })
+    
+    // Verify error was cleared
+    expect(result.current.error).toBeNull()
+  })
+
+  it('should handle incoming messages from XMPP', async () => {
+    // Prepare to capture the message handler function
+    let capturedMessageHandler: ((message: { body?: string }) => void) | null = null
+    mockJoinRoom.mockImplementation((_roomName: string, handler: (message: { body?: string }) => void) => {
+      capturedMessageHandler = handler
+      return Promise.resolve()
+    })
+    
+    // Set up mocks for active xmppClient
+    mockUseWargame.mockReturnValue({
+      xmppClient: createMockXmppClient(),
+      gameState: { turn: '1', currentPhase: 'planning' },
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+    })
+
+    // Render the hook
+    const { result } = renderHook(() => useRoom(testRoom))
+    
+    // Wait for joinRoom to be called
+    await act(async () => {
+      await Promise.resolve()
+    })
+    
+    // Verify initial messages array is empty
+    expect(result.current.messages).toEqual([])
+    
+    // Simulate receiving a message via the captured handler
+    await act(async () => {
+      if (capturedMessageHandler) {
+        const incomingMessage = {
+          body: JSON.stringify({
+            id: 'incoming-1',
+            details: {
+              messageType: 'chat',
+              senderId: 'other-user',
+              senderName: 'Other User',
+              senderForce: 'force2',
+              turn: '1',
+              phase: 'planning',
+              timestamp: '2023-01-01T00:00:00.000Z',
+              channel: 'test-room'
+            },
+            content: { text: 'Hello from XMPP' }
+          })
+        }
+        capturedMessageHandler(incomingMessage)
+      }
+      await Promise.resolve()
+    })
+    
+    // Verify message was added to state
+    expect(result.current.messages.length).toBe(1)
+    expect(result.current.messages[0].content).toEqual({ text: 'Hello from XMPP' })
+    expect(result.current.messages[0].details.senderId).toBe('other-user')
+  })
+
+  it('should not join room when mucService is not available', async () => {
+    // Set up mocks for xmppClient without mucService
+    mockUseWargame.mockReturnValue({
+      xmppClient: createMockXmppClient(false),
+      gameState: { turn: '1', currentPhase: 'planning' },
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+    })
+
+    // Render the hook
+    renderHook(() => useRoom(testRoom))
+    
+    // Wait for any async operations
+    await act(async () => {
+      await Promise.resolve()
+    })
+    
+    // Verify joinRoom was not called
+    expect(mockJoinRoom).not.toHaveBeenCalled()
+    expect(mockGetRoomMembers).not.toHaveBeenCalled()
   })
 })
