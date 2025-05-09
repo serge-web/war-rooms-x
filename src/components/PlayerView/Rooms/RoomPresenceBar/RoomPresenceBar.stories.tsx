@@ -80,7 +80,12 @@ const meta: Meta<typeof RoomPresenceBar> = {
     layout: 'centered'
   },
   tags: ['autodocs'],
-  decorators: [WargameProviderDecorator]
+  decorators: [WargameProviderDecorator],
+  argTypes:{
+    showOnlineOnly: {
+      control: 'boolean'
+    }
+  }
 }
 
 export default meta

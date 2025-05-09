@@ -15,17 +15,24 @@ export interface OnlineUser {
 }
 
 export interface RoomPresenceBarProps {
+  /** Array of users to display in the presence bar with their online status */
   users: OnlineUser[]
+  /** Determines which users are visible - 'all' shows everyone, 'umpires-only' restricts visibility */
   visibilityConfig: PresenceVisibility
+  /** The force ID of the current user, used to determine visibility permissions */
   currentUserForce?: string
+  /** Whether the current user has admin privileges (admins can see all users regardless of visibilityConfig) */
   isAdmin?: boolean
+  /** only show online users */
+  showOnlineOnly?: boolean
 }
 
 const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   users,
   visibilityConfig,
   currentUserForce,
-  isAdmin = false
+  isAdmin = false,
+  showOnlineOnly = false
 }) => {
   const { getForce } = useWargame()
   const [forceColors, setForceColors] = useState<Record<string, string>>({})  
@@ -54,6 +61,8 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   }, [users, getForce])
   // Filter users based on visibility config
   const visibleUsers = users.filter(user => {
+    if (showOnlineOnly && !user.isOnline) return false
+
     // Admins can see all users regardless of config
     if (isAdmin) return true
     
@@ -72,6 +81,9 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   if (visibleUsers.length === 0) {
     return null // Don't render anything if no users to show
   }
+
+  console.log('visible users', showOnlineOnly)
+  console.table(visibleUsers)
 
   return (
     <div className="room-presence-bar" data-testid="room-presence-bar">
