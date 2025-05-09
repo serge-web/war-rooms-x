@@ -106,7 +106,7 @@ describe('XMPPService Presence Integration', () => {
     }
     
     // Create a mock handler for presence updates
-    const presenceHandler: PresenceHandler = jest.fn()
+    const presenceHandler = jest.fn() as jest.MockedFunction<PresenceHandler>
     
     // Subscribe to presence updates for the room
     const unsubscribe = user1Service.subscribeToPresence(config.room, presenceHandler)
@@ -144,10 +144,10 @@ describe('XMPPService Presence Integration', () => {
     expect(presenceHandler).toHaveBeenCalledTimes(2)
     
     // The first call should be for unavailable presence
-    expect((presenceHandler as jest.Mock).mock.calls[0][1]).toBe(false)
+    expect(presenceHandler.mock.calls[0][1]).toBe(false)
     
     // The second call should be for available presence
-    expect((presenceHandler as jest.Mock).mock.calls[1][1]).toBe(true)
+    expect(presenceHandler.mock.calls[1][1]).toBe(true)
   }, 10000)
   
   // Test that multiple handlers for the same room all receive updates
@@ -159,8 +159,8 @@ describe('XMPPService Presence Integration', () => {
     }
     
     // Create two mock handlers for presence updates
-    const handler1: PresenceHandler = jest.fn()
-    const handler2: PresenceHandler = jest.fn()
+    const handler1 = jest.fn() as jest.MockedFunction<PresenceHandler>
+    const handler2 = jest.fn() as jest.MockedFunction<PresenceHandler>
     
     // Subscribe both handlers to presence updates for the room
     const unsubscribe1 = user1Service.subscribeToPresence(config.room, handler1)
@@ -200,7 +200,7 @@ describe('XMPPService Presence Integration', () => {
     expect(handler2).toHaveBeenCalled()
     
     // Both handlers should have been called the same number of times
-    expect((handler1 as jest.Mock).mock.calls.length).toBe((handler2 as jest.Mock).mock.calls.length)
+    expect(handler1.mock.calls.length).toBe(handler2.mock.calls.length)
   }, 10000)
   
   // Test that unsubscribing a handler stops it from receiving updates
