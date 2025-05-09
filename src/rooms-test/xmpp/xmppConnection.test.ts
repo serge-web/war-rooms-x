@@ -1,6 +1,6 @@
 import { XMPPService } from '../../services/XMPPService.js'
 import { loadOpenfireConfig } from '../../utils/config.js'
-import { isWebSocketServerReachable } from '../../utils/network.js'
+import { isServerReachable } from '../../utils/network.js'
 
 describe('XMPP Connection', () => {
   let xmppService: XMPPService
@@ -12,8 +12,8 @@ describe('XMPP Connection', () => {
     openfireConfig = loadOpenfireConfig()
     
     // Check if server is available
-    console.log('Checking if server is available', openfireConfig.wsip)
-    serverAvailable = await isWebSocketServerReachable(openfireConfig.wsip)
+    console.log('Checking if server is available', openfireConfig.ip)
+    serverAvailable = await isServerReachable(openfireConfig.ip, 7070)
     
     if (!serverAvailable) {
       console.log(`XMPP server at ${openfireConfig.wsurl} is not reachable, skipping test`)

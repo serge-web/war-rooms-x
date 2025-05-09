@@ -3,10 +3,9 @@
   "pubsubEnabled": true,
   "mucEnabled": true,
   "ip": "10.211.55.16",
-  "host": "ubuntu-linux-2404",
+  "host": "war-rooms-x",
   "port": 9090,
   "apiPath": "/plugins/restapi/v1",
-  "wsip": "10.211.55.16",
   "secure": false,
   "credentials": [{
     "username": "admin",
