@@ -8,6 +8,7 @@ export default {
     '**/types/**/*.test.ts',
     '**/hooks/**/*.test.ts',
     '**/rooms-test/hooks/**/*.test.ts',
+    '**/rooms-test/services/**/*.test.ts',
     '**/project-structure.test.ts'
   ],
   transform: {
@@ -39,6 +40,7 @@ export default {
     'src/components/AdminView/helpers/roomMapper.ts',
     'src/components/AdminView/helpers/templateMapper.ts',
     'src/components/AdminView/helpers/wargameMapper.ts',
+    'src/services/XMPPService.ts',
     // Exclude test files
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -98,6 +100,12 @@ export default {
     },
     'src/hooks/usePubSub.ts': {
       branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70
+    },
+    'src/services/XMPPService.ts': {
+      branches: 60,
       functions: 70,
       lines: 70,
       statements: 70

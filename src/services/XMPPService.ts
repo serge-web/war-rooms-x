@@ -514,7 +514,7 @@ export class XMPPService {
   /**
    * Set up the message handler for MUC room messages
    */
-  private setupRoomMessageHandler(): void {
+  public setupRoomMessageHandler(): void {
     if (!this.client) return
     
     // Only set up the handler once
