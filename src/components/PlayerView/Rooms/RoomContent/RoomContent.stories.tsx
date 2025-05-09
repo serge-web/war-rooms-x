@@ -46,6 +46,24 @@ const mockRoom: RoomType = {
   })
 }
 
+// Get mock messages from mockBackend for each force
+const mockMessages = {
+  blue: mockBackend.chatrooms.find(room => room.id === 'blue-chat')?.dummyMessages || [],
+  red: mockBackend.chatrooms.find(room => room.id === 'red-chat')?.dummyMessages || [],
+  green: mockBackend.chatrooms.find(room => room.id === 'green-chat')?.dummyMessages || [],
+  umpire: mockBackend.chatrooms.find(room => room.id === 'umpire-chat')?.dummyMessages || []
+}
+
+// Get mock users for room presence
+const mockRoomUsers = {
+  blue: mockBackend.users.filter(user => user.name.toLowerCase().includes('blue')),
+  red: mockBackend.users.filter(user => user.name.toLowerCase().includes('red')),
+  green: mockBackend.users.filter(user => user.name.toLowerCase().includes('green')),
+  umpire: mockBackend.users.filter(user => user.name.toLowerCase().includes('umpire')),
+  logs: mockBackend.users.filter(user => user.name.toLowerCase().includes('logs')),
+  all: mockBackend.users
+}
+
 // Create a WargameContext decorator for each force
 const createForceDecorator = (forceId: string) => {
   return (Story: React.ComponentType) => {
@@ -65,7 +83,10 @@ const createForceDecorator = (forceId: string) => {
       currentPhase: 'planning',
       currentTime: new Date().toISOString()
     }
-
+    
+    // Get the appropriate users for this force's room
+    const roomUsers = mockRoomUsers[forceId as keyof typeof mockRoomUsers] || []
+    
     // Mock WargameContext value with the appropriate force player
     const wargameContextValue = {
       loggedIn: true,
@@ -88,12 +109,40 @@ const createForceDecorator = (forceId: string) => {
       nextTurn: async () => {}
     }
 
-    // Log users for this force
-    console.log(`Available users for ${forceId} force:`, mockBackend.users.filter(u => u.forceId === forceId))
+    // Create a mock room context with messages and users
+    const mockRoomContext = {
+      messages: mockMessages[forceId as keyof typeof mockMessages],
+      users: roomUsers,
+      theme: {
+        token: {
+          colorPrimary: mockForceColors[forceId] || '#000000'
+        }
+      },
+      canSubmit: true,
+      sendMessage: () => {},
+      error: null,
+      clearError: () => {}
+    }
+
+    // Add the room context to the WargameContext
+    const contextWithRoom = {
+      ...wargameContextValue,
+      roomData: mockRoomContext
+    }
 
     return (
-      <WargameContext.Provider value={wargameContextValue}>
-        <div style={{ width: '800px', height: '600px', position: 'relative' }}>
+      <WargameContext.Provider value={contextWithRoom}>
+        <div style={{ 
+          width: '800px', 
+          height: '600px', 
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           <Story />
         </div>
       </WargameContext.Provider>
@@ -147,4 +196,17 @@ export const UmpireChat: Story = {
     }
   },
   decorators: [createForceDecorator('umpire')]
+}
+
+
+// Umpire Chat Room
+export const LogsChat: Story = {
+  args: {
+    room: {
+      ...mockRoom,
+      roomName: 'logs-chat',
+      naturalName: 'Logs Chat'
+    }
+  },
+  decorators: [createForceDecorator('logs')]
 }
