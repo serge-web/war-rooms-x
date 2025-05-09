@@ -3,25 +3,6 @@ import React from 'react'
 import RoomPresenceBar from './index'
 import { WargameContext } from '../../../../contexts/WargameContext'
 import { ForceConfigType } from '../../../../types/wargame-d'
-import * as RoomUsersModule from './useRoomUsers'
-import { UseRoomUsersResult } from './useRoomUsers'
-
-// Store the original implementation
-const originalUseRoomUsers = RoomUsersModule.useRoomUsers
-
-// Create a mock version of the useRoomUsers hook
-let mockUseRoomUsers: UseRoomUsersResult = {
-  users: [],
-  presenceVisibility: 'all',
-  loading: false,
-  error: null
-}
-
-// Cleanup function to restore the original implementation
-const cleanupMock = () => {
-  // @ts-expect-error - restoring original implementation
-  RoomUsersModule.useRoomUsers = originalUseRoomUsers
-}
 
 // Mock force colors for the Storybook
 const mockForceColors: Record<string, string> = {
@@ -34,83 +15,31 @@ const mockForceColors: Record<string, string> = {
   'admin': '#262626'
 }
 
-// Mock hook results for different scenarios
-const mockHookResults: Record<string, UseRoomUsersResult> = {
-  online: {
-    users: [
-      { id: 'user1', name: 'Commander Red', force: 'red', isOnline: true },
-      { id: 'user2', name: 'Commander Blue', force: 'blue', isOnline: true },
-      { id: 'user3', name: 'Umpire', force: 'umpire', isOnline: true }
-    ],
-    presenceVisibility: 'all',
-    loading: false,
-    error: null
-  },
-  offline: {
-    users: [
-      { id: 'user1', name: 'Commander Red', force: 'red', isOnline: false },
-      { id: 'user2', name: 'Commander Blue', force: 'blue', isOnline: false },
-      { id: 'user3', name: 'Umpire', force: 'umpire', isOnline: true }
-    ],
-    presenceVisibility: 'all',
-    loading: false,
-    error: null
-  },
-  diverse: {
-    users: [
-      { id: 'user1', name: 'Commander Red Team Alpha', force: 'red', isOnline: true },
-      { id: 'user2', name: 'Commander Blue Squadron', force: 'blue', isOnline: true },
-      { id: 'user3', name: 'Chief Umpire', force: 'umpire', isOnline: true },
-      { id: 'user4', name: 'Green Force Leader', force: 'green', isOnline: true },
-      { id: 'user5', name: 'Yellow Team Captain', force: 'yellow', isOnline: true },
-      { id: 'user6', name: 'Purple Squad', force: 'purple', isOnline: true }
-    ],
-    presenceVisibility: 'all',
-    loading: false,
-    error: null
-  },
-  empty: {
-    users: [],
-    presenceVisibility: 'all',
-    loading: false,
-    error: null
-  },
-  umpiresOnly: {
-    users: [
-      { id: 'user1', name: 'Commander Red', force: 'red', isOnline: true },
-      { id: 'user2', name: 'Commander Blue', force: 'blue', isOnline: true },
-      { id: 'user3', name: 'Umpire', force: 'umpire', isOnline: true }
-    ],
-    presenceVisibility: 'umpires-only',
-    loading: false,
-    error: null
-  },
-  loading: {
-    users: [],
-    presenceVisibility: 'all',
-    loading: true,
-    error: null
-  },
-  error: {
-    users: [],
-    presenceVisibility: 'all',
-    loading: false,
-    error: 'Failed to load users'
-  }
-}
-
-interface StoryParams {
-  parameters?: {
-    mockHookResult?: string
-    currentUserForce?: string
-    isAdmin?: boolean
-  }
+// Mock user data for stories
+const mockUsers = {
+  online: [
+    { id: 'user1', name: 'Commander Red', force: 'red', isOnline: true },
+    { id: 'user2', name: 'Commander Blue', force: 'blue', isOnline: true },
+    { id: 'user3', name: 'Umpire', force: 'umpire', isOnline: true }
+  ],
+  offline: [
+    { id: 'user1', name: 'Commander Red', force: 'red', isOnline: false },
+    { id: 'user2', name: 'Commander Blue', force: 'blue', isOnline: false },
+    { id: 'user3', name: 'Umpire', force: 'umpire', isOnline: true }
+  ],
+  diverse: [
+    { id: 'user1', name: 'Commander Red Team Alpha', force: 'red', isOnline: true },
+    { id: 'user2', name: 'Commander Blue Squadron', force: 'blue', isOnline: true },
+    { id: 'user3', name: 'Chief Umpire', force: 'umpire', isOnline: true },
+    { id: 'user4', name: 'Green Force Leader', force: 'green', isOnline: true },
+    { id: 'user5', name: 'Yellow Team Captain', force: 'yellow', isOnline: true },
+    { id: 'user6', name: 'Purple Squad', force: 'purple', isOnline: true }
+  ],
+  empty: []
 }
 
 // Mock WargameProvider wrapper for stories
-const WargameProviderDecorator = (Story: React.ComponentType, context: StoryParams) => {
-  const { parameters } = context || {}
-  
+const WargameProviderDecorator = (Story: React.ComponentType) => {
   // Create a mock implementation of the getForce method
   const mockGetForce = async (forceId: string): Promise<ForceConfigType> => {
     return {
@@ -121,23 +50,6 @@ const WargameProviderDecorator = (Story: React.ComponentType, context: StoryPara
     }
   }
 
-  // Get the mock hook result based on story parameters
-  const mockHookResult = parameters?.mockHookResult || 'online'
-  
-  // Set up the mock hook result
-  mockUseRoomUsers = mockHookResults[mockHookResult as string]
-  
-  // Override the useRoomUsers hook for this render
-  // @ts-expect-error - overriding for Storybook
-  RoomUsersModule.useRoomUsers = () => mockUseRoomUsers
-  
-  // Add cleanup when the component unmounts
-  React.useEffect(() => {
-    return () => {
-      cleanupMock()
-    }
-  }, [])
-
   // Mock WargameContext value
   const wargameContextValue = {
     loggedIn: true,
@@ -147,13 +59,7 @@ const WargameProviderDecorator = (Story: React.ComponentType, context: StoryPara
     setRaDataProvider: () => {},
     mockPlayerId: null,
     setMockPlayerId: () => {},
-    playerDetails: {
-      id: 'current-user',
-      role: parameters?.isAdmin ? 'admin' : 'player',
-      forceId: parameters?.currentUserForce || 'red',
-      forceName: 'Red Force',
-      color: mockForceColors[parameters?.currentUserForce || 'red']
-    },
+    playerDetails: null,
     getForce: mockGetForce,
     gameProperties: null,
     gameState: null,
@@ -182,8 +88,9 @@ type Story = StoryObj<typeof RoomPresenceBar>
 
 // Online players (3 example entries)
 export const OnlinePlayers: Story = {
-  parameters: {
-    mockHookResult: 'online',
+  args: {
+    users: mockUsers.online,
+    visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -191,8 +98,9 @@ export const OnlinePlayers: Story = {
 
 // Empty state
 export const EmptyState: Story = {
-  parameters: {
-    mockHookResult: 'empty',
+  args: {
+    users: mockUsers.empty,
+    visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -200,16 +108,18 @@ export const EmptyState: Story = {
 
 // Config variations: "all" vs "umpires-only"
 export const AllUsers: Story = {
-  parameters: {
-    mockHookResult: 'online',
+  args: {
+    users: mockUsers.online,
+    visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
   }
 }
 
 export const UmpiresOnly: Story = {
-  parameters: {
-    mockHookResult: 'umpiresOnly',
+  args: {
+    users: mockUsers.online,
+    visibilityConfig: 'umpires-only',
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -217,8 +127,9 @@ export const UmpiresOnly: Story = {
 
 // Mixed online/offline users
 export const MixedOnlineStatus: Story = {
-  parameters: {
-    mockHookResult: 'offline',
+  args: {
+    users: mockUsers.offline,
+    visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -226,8 +137,9 @@ export const MixedOnlineStatus: Story = {
 
 // Admin view (sees all users regardless of config)
 export const AdminView: Story = {
-  parameters: {
-    mockHookResult: 'online',
+  args: {
+    users: mockUsers.online,
+    visibilityConfig: 'umpires-only', // Even with this restriction, admin sees all
     currentUserForce: 'admin',
     isAdmin: true
   }
@@ -235,26 +147,9 @@ export const AdminView: Story = {
 
 // Story with diverse forces and longer names to demonstrate color-coded icons and name wrapping
 export const DiverseForces: Story = {
-  parameters: {
-    mockHookResult: 'diverse',
-    currentUserForce: 'red',
-    isAdmin: false
-  }
-}
-
-// Loading state
-export const Loading: Story = {
-  parameters: {
-    mockHookResult: 'loading',
-    currentUserForce: 'red',
-    isAdmin: false
-  }
-}
-
-// Error state
-export const Error: Story = {
-  parameters: {
-    mockHookResult: 'error',
+  args: {
+    users: mockUsers.diverse,
+    visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
   }
