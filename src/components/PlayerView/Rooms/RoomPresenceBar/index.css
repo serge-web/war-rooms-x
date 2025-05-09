@@ -32,14 +32,19 @@
 }
 
 .user-name {
-  max-width: 100px;
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  word-wrap: break-word;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  max-height: 2.4em; /* Allow for 2 lines */
 }
 
 @media (max-width: 768px) {
   .user-name {
-    max-width: 60px;
+    max-width: 50px;
   }
 }
