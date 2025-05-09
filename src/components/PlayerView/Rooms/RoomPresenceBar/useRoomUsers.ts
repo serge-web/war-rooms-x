@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useWargame } from '../../../../contexts/WargameContext'
-import { RoomType, User } from '../../../../types/rooms-d'
+import { RoomType } from '../../../../types/rooms-d'
 import { OnlineUser, PresenceVisibility } from './index'
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData'
-import { RRoom } from '../../../../components/AdminView/raTypes-d'
-import { prefixKey } from '../../../../types/constants'
+import { RRoom, RUser } from '../../../../components/AdminView/raTypes-d'
 
 export interface UseRoomUsersResult {
   users: OnlineUser[]
@@ -14,7 +13,7 @@ export interface UseRoomUsersResult {
 }
 
 export const useRoomUsers = (room: RoomType): UseRoomUsersResult => {
-  const { xmppClient, playerDetails } = useWargame()
+  const { xmppClient } = useWargame()
   const [users, setUsers] = useState<OnlineUser[]>([])
   const [presenceVisibility, setPresenceVisibility] = useState<PresenceVisibility>('all')
   const [loading, setLoading] = useState(true)
@@ -40,7 +39,7 @@ export const useRoomUsers = (room: RoomType): UseRoomUsersResult => {
               
               // Get mock users
               const mockUsers = mockRoom.dummyUsers || []
-              setUsers(mockUsers.map(user => ({
+              setUsers(mockUsers.map((user: RUser) => ({
                 id: user.jid,
                 name: user.name,
                 force: user.force || 'unknown',
@@ -74,7 +73,7 @@ export const useRoomUsers = (room: RoomType): UseRoomUsersResult => {
                   // fetch the user's force from the server
                   const userJid = user.jid.split('/')[0]
                   const userDoc = await xmppClient.getUserVCard(userJid)
-                  forceId = userDoc?.force || 'unknown'
+                  forceId = userDoc?.organization || 'unknown'
                 } catch (err) {
                   console.error('Error fetching user force:', err)
                 }
