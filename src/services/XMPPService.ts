@@ -39,8 +39,24 @@ export class XMPPService {
    * @returns Promise resolving to the presence data
    */
   async getPresence(jid: string): Promise<PresenceData> {
-    // Underscore prefix indicates intentionally unused parameter
-    throw new Error('getPresence not yet implemented:' + jid)
+    if (!this.client || !this.connected) {
+      return { available: false }
+    }
+    
+    try {
+      // Request presence update from the user
+      await this.client.sendPresence({
+        to: jid,
+        type: 'probe'
+      })
+      
+      // Default to unavailable if we can't determine presence yet
+      // The actual presence will come through the presence event handler
+      return { available: false }
+    } catch (error) {
+      console.error('Error getting presence:', error)
+      return { available: false }
+    }
   }
   
   /**
@@ -50,8 +66,66 @@ export class XMPPService {
    * @returns A function to unsubscribe from presence updates
    */
   subscribeToPresence(roomJid: string, handler: PresenceHandler): () => void {
-    // Underscore prefix indicates intentionally unused parameters
-    throw new Error('subscribeToPresence not yet implemented:' + roomJid + !!handler)
+    // Initialize the presence handlers map for this room if it doesn't exist
+    if (!this.presenceHandlers.has(roomJid)) {
+      this.presenceHandlers.set(roomJid, [])
+    }
+    
+    // Add the handler to the list for this room
+    const handlers = this.presenceHandlers.get(roomJid) || []
+    handlers.push(handler)
+    this.presenceHandlers.set(roomJid, handlers)
+    
+    // Set up the presence event listener if it's not already set up
+    if (this.client && this.client.listeners('presence').length === 0) {
+      this.client.on('presence', this.handlePresenceUpdate.bind(this))
+    }
+    
+    // Return a function to unsubscribe from presence updates
+    return () => {
+      const currentHandlers = this.presenceHandlers.get(roomJid) || []
+      const updatedHandlers = currentHandlers.filter(h => h !== handler)
+      
+      if (updatedHandlers.length === 0) {
+        this.presenceHandlers.delete(roomJid)
+      } else {
+        this.presenceHandlers.set(roomJid, updatedHandlers)
+      }
+    }
+  }
+  
+  /**
+   * Handle presence updates from the XMPP server
+   * @param presence The presence stanza
+   */
+  private handlePresenceUpdate(presence: { from: string; type?: string }): void {
+    if (!presence || !presence.from) return
+    
+    const from = presence.from
+    const available = presence.type !== 'unavailable'
+    
+    // Check if this is a MUC presence update
+    const isMucPresence = from.includes('@conference.')
+    
+    if (isMucPresence) {
+      // Extract the room JID
+      const parts = from.split('/')
+      const roomJid = parts[0]
+      
+      // Notify handlers for this room
+      const roomHandlers = this.presenceHandlers.get(roomJid) || []
+      for (const handler of roomHandlers) {
+        handler(from, available)
+      }
+    } else {
+      // This is a direct presence update
+      // Notify all handlers that might be interested
+      for (const [, handlers] of this.presenceHandlers.entries()) {
+        for (const handler of handlers) {
+          handler(from, available)
+        }
+      }
+    }
   }
 
   /**
