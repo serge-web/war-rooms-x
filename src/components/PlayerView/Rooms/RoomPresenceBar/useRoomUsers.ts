@@ -4,6 +4,7 @@ import { RoomType } from '../../../../types/rooms-d'
 import { OnlineUser, PresenceVisibility } from './index'
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData'
 import { RRoom, RUser } from '../../../../components/AdminView/raTypes-d'
+import { usePresence } from '../../../../hooks/usePresence'
 
 export interface UseRoomUsersResult {
   users: OnlineUser[]
@@ -19,7 +20,11 @@ export const useRoomUsers = (room: RoomType): UseRoomUsersResult => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { data: mockRooms } = useIndexedDBData<RRoom[]>('chatrooms')
+  
+  // Use the presence hook to track user presence in the room
+  const { isUserOnline, presenceMap } = usePresence(room.roomName)
 
+  // Fetch initial room users data
   useEffect(() => {
     const fetchRoomUsers = async () => {
       try {
@@ -59,30 +64,29 @@ export const useRoomUsers = (room: RoomType): UseRoomUsersResult => {
               // Get room members from XMPP
               const roomMembers = await xmppClient.getRoomMembers(room.roomName)
               
-              // Map room members to OnlineUser objects
-              // For now, we'll set all users as online
-              // This will be updated in Step 3 with actual presence data
+              // Map room members to OnlineUser objects with presence information
               const mappedUsers = await Promise.all(roomMembers.map(async (user) => {
                 // Extract user ID from JID
                 const userId = user.jid.split('@')[0]
+                const userJid = user.jid.split('/')[0]
                 
                 // Try to get force information
                 let forceId = 'unknown'
                 try {
-                  // This is a placeholder - in a real implementation, we would
-                  // fetch the user's force from the server
-                  const userJid = user.jid.split('/')[0]
                   const userDoc = await xmppClient.getUserVCard(userJid)
                   forceId = userDoc?.organization || 'unknown'
                 } catch (err) {
                   console.error('Error fetching user force:', err)
                 }
                 
+                // Get the user's online status from the presence hook
+                const isOnline = isUserOnline(userJid)
+                
                 return {
                   id: userId,
                   name: user.name || userId,
                   force: forceId,
-                  isOnline: true // All users are considered online for now
+                  isOnline
                 }
               }))
               
@@ -102,7 +106,24 @@ export const useRoomUsers = (room: RoomType): UseRoomUsersResult => {
     }
     
     fetchRoomUsers()
-  }, [xmppClient, room, mockRooms])
+  }, [room, xmppClient, mockRooms, isUserOnline])
+  
+  // Update user online status when presence changes
+  useEffect(() => {
+    // Skip if we don't have any users yet
+    if (users.length === 0) return
+    
+    // Update the online status of users based on the presence map
+    setUsers(prevUsers => 
+      prevUsers.map(user => {
+        const userJid = `${user.id}@${room.roomName.split('@')[1]}`
+        return {
+          ...user,
+          isOnline: isUserOnline(userJid)
+        }
+      })
+    )
+  }, [presenceMap, room.roomName, isUserOnline, users.length])
   
   return { users, presenceVisibility, loading, error }
 }
