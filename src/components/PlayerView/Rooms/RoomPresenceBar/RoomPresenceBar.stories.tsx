@@ -81,11 +81,6 @@ const meta: Meta<typeof RoomPresenceBar> = {
   },
   tags: ['autodocs'],
   decorators: [WargameProviderDecorator],
-  argTypes:{
-    showOnlineOnly: {
-      control: 'boolean'
-    }
-  }
 }
 
 export default meta
@@ -94,7 +89,7 @@ type Story = StoryObj<typeof RoomPresenceBar>
 // Online players (3 example entries)
 export const OnlinePlayers: Story = {
   args: {
-    users: mockUsers.online,
+    userIds: mockUsers.online.map(u => u.id),
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -104,7 +99,7 @@ export const OnlinePlayers: Story = {
 // Empty state
 export const EmptyState: Story = {
   args: {
-    users: mockUsers.empty,
+    userIds: [],
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -114,7 +109,7 @@ export const EmptyState: Story = {
 // Config variations: "all" vs "umpires-only"
 export const AllUsers: Story = {
   args: {
-    users: mockUsers.online,
+    userIds: mockUsers.online.map(u => u.id),
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -123,7 +118,7 @@ export const AllUsers: Story = {
 
 export const UmpiresOnly: Story = {
   args: {
-    users: mockUsers.online,
+    userIds: mockUsers.online.map(u => u.id),
     visibilityConfig: 'umpires-only',
     currentUserForce: 'red',
     isAdmin: false
@@ -133,7 +128,7 @@ export const UmpiresOnly: Story = {
 // Mixed online/offline users
 export const MixedOnlineStatus: Story = {
   args: {
-    users: mockUsers.offline,
+    userIds: mockUsers.offline.map(u => u.id),
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -143,7 +138,7 @@ export const MixedOnlineStatus: Story = {
 // Admin view (sees all users regardless of config)
 export const AdminView: Story = {
   args: {
-    users: mockUsers.online,
+    userIds: mockUsers.online.map(u => u.id),
     visibilityConfig: 'umpires-only', // Even with this restriction, admin sees all
     currentUserForce: 'admin',
     isAdmin: true
@@ -153,7 +148,7 @@ export const AdminView: Story = {
 // Story with diverse forces and longer names to demonstrate color-coded icons and name wrapping
 export const DiverseForces: Story = {
   args: {
-    users: mockUsers.diverse,
+    userIds: mockUsers.diverse.map(u => u.id),
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -193,7 +188,7 @@ const DynamicPresenceSimulator = () => {
   
   return (
     <RoomPresenceBar
-      users={users}
+      userIds={users.map(user => user.id)}
       visibilityConfig='all'
       currentUserForce='red'
       isAdmin={false}

@@ -8,25 +8,25 @@ import { ConfigProvider } from 'antd'
 import ErrorModal from '../../../Utilities/ErrorModal'
 import { useWargame } from '../../../../contexts/WargameContext'
 import RoomPresenceBar from '../RoomPresenceBar'
-import { useRoomUsers } from '../RoomPresenceBar/useRoomUsers'
 
 interface RoomProps {
   room: RoomType
 }
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
+  const { messages, theme, canSubmit, sendMessage, error, clearError, present, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
-  const { users, presenceVisibility, loading } = useRoomUsers(room)
+  // const { users, presenceVisibility, loading } = useRoomUsers(room)
+  console.log('room content', present)
   return (
     <ConfigProvider theme={theme}>
       <div className='room-content' data-testid={`room-content-${room.roomName}`}>
         <ErrorModal error={error} clearError={clearError} />
         
         {/* Room Presence Bar */}
-        {!loading && users.length > 0 && (
+        {present.length > 0 && (
           <RoomPresenceBar 
-            users={users}
+            userIds={present}
             visibilityConfig={presenceVisibility}
             currentUserForce={playerDetails?.forceId}
             isAdmin={playerDetails?.role === 'admin'}

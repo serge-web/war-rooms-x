@@ -125,21 +125,70 @@ describe('XMPPService Presence Integration', () => {
     }
   })
   
-  // Test that getPresence returns the correct presence status
-  it('should get presence status for a user', async () => {
+  // Test that users receive presence updates when others join a room
+  it('should receive presence updates when users join a room', async () => {
     // Skip test if server is not available
     if (!serverAvailable) {
-      console.log('Skipping integration test: should get presence status for a user')
+      console.log('Skipping integration test: should receive presence updates when users join a room')
       return
     }
     
-    // Get presence for user2 from user1's perspective
-    const presence = await user1Service.getPresence(config.user2.jid)
+    // First, make sure both users leave the room if they're already in it
+    try {
+      await user1Service.leaveRoom(config.room)
+      await user2Service.leaveRoom(config.room)
+    } catch {
+      // Ignore errors if users weren't in the room
+    }
     
-    // User2 should be available since they're connected
-    expect(presence).toBeDefined()
-    expect(presence.available).toBe(true)
-  }, 5000)
+    // Create a promise that will resolve when user1 receives user2's presence
+    let user2PresenceReceived = false
+    const presencePromise = new Promise<void>((resolve) => {
+      // Set up a presence handler for user1 to detect when user2 joins
+      const unsubscribe = user1Service.subscribeToPresence(config.room, (jid, available) => {
+        console.log(`Presence update received: ${jid} is ${available ? 'available' : 'unavailable'}`)
+        
+        // Check if this is user2's presence
+        if (jid.startsWith(config.user2.jid.split('@')[0]) && available) {
+          user2PresenceReceived = true
+          unsubscribe()
+          resolve()
+        }
+      })
+    })
+    
+    // Step 1: User1 joins the room first and sets up presence handler
+    await user1Service.joinRoom(config.room, (message) => {
+      console.log('User1 received message:', message)
+    })
+    
+    // Wait a moment for the join to complete
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // Step 2: User2 joins the room, which should trigger a presence update for user1
+    await user2Service.joinRoom(config.room, (message) => {
+      console.log('User2 received message:', message)
+    })
+    
+    // Wait for the presence update with a timeout
+    const timeoutPromise = new Promise<void>((_, reject) => {
+      setTimeout(() => reject(new Error('Timed out waiting for presence update')), 2000)
+    })
+    
+    try {
+      // Wait for either the presence update or the timeout
+      await Promise.race([presencePromise, timeoutPromise])
+      
+      // Verify that user1 received user2's presence
+      expect(user2PresenceReceived).toBe(true)
+    } catch (error) {
+      fail('Did not receive presence update from user2 within timeout period:' + error)
+    } finally {
+      // Step 3: Clean up - both users leave the room
+      await user1Service.leaveRoom(config.room)
+      await user2Service.leaveRoom(config.room)
+    }
+  }, 10000)
   
 //   // Test that subscribeToPresence correctly notifies about presence changes
 //   it('should notify about presence changes', async () => {

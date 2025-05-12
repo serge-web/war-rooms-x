@@ -1,8 +1,8 @@
 import * as XMPP from 'stanza'
 import { Agent } from 'stanza'
-import { AccountManagement, DataForm, DiscoInfoResult, DiscoItem, IQ, JSONItem, Message, PubsubEvent, PubsubSubscriptions,  VCardTemp } from 'stanza/protocol'
+import { AccountManagement, DataForm, DiscoInfoResult, DiscoItem, IQ, JSONItem, Message, MUCInfo, Pubsub, PubsubEvent, PubsubSubscriptions,  ReceivedPresence,  VCardTemp } from 'stanza/protocol'
 import { GameMessage, User } from '../types/rooms-d'
-import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, PresenceData, PresenceHandler, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
+import { JoinRoomResult, LeaveRoomResult, PubSubDocument, PubSubDocumentChangeHandler, PubSubDocumentResult, PubSubOptions, PubSubSubscribeResult, PresenceHandler, Room, RoomMessageHandler, SendMessageResult, VCardData } from './types'
 import { NS_JSON_0 } from 'stanza/Namespaces'
 import { UserConfigType } from '../types/wargame-d'
 import { USERS_COLLECTION, USERS_PREFIX } from '../types/constants'
@@ -32,32 +32,6 @@ export class XMPPService {
   public presenceHandlers: Map<string, PresenceHandler[]> = new Map() // Map of roomJid to handlers
   public pubsubService: string | null = null
   public mucService: string | null = null
-
-  /**
-   * Get the presence status for a user
-   * @param jid The JID of the user
-   * @returns Promise resolving to the presence data
-   */
-  async getPresence(jid: string): Promise<PresenceData> {
-    if (!this.client || !this.connected) {
-      return { available: false }
-    }
-    
-    try {
-      // Request presence update from the user
-      await this.client.sendPresence({
-        to: jid,
-        type: 'probe'
-      })
-      
-      // Default to unavailable if we can't determine presence yet
-      // The actual presence will come through the presence event handler
-      return { available: false }
-    } catch (error) {
-      console.error('Error getting presence:', error)
-      return { available: false }
-    }
-  }
   
   /**
    * Subscribe to presence updates for a room
@@ -66,20 +40,22 @@ export class XMPPService {
    * @returns A function to unsubscribe from presence updates
    */
   subscribeToPresence(roomJid: string, handler: PresenceHandler): () => void {
+    // Set up the presence event listener if it's not already set up
+    if (this.client && this.presenceHandlers.size === 0) {
+      this.client.on('presence', this.handlePresenceUpdate.bind(this))
+    }
+    
+
     // Initialize the presence handlers map for this room if it doesn't exist
     if (!this.presenceHandlers.has(roomJid)) {
       this.presenceHandlers.set(roomJid, [])
     }
-    
+
     // Add the handler to the list for this room
     const handlers = this.presenceHandlers.get(roomJid) || []
     handlers.push(handler)
     this.presenceHandlers.set(roomJid, handlers)
     
-    // Set up the presence event listener if it's not already set up
-    if (this.client && this.client.listeners('presence').length === 0) {
-      this.client.on('presence', this.handlePresenceUpdate.bind(this))
-    }
     
     // Return a function to unsubscribe from presence updates
     return () => {
@@ -103,31 +79,46 @@ export class XMPPService {
    * Handle presence updates from the XMPP server
    * @param presence The presence stanza
    */
-  private handlePresenceUpdate(presence: { from: string; type?: string }): void {
-    if (!presence || !presence.from) return
+  private handlePresenceUpdate(presence: ReceivedPresence): void {
+    if (!presence || !presence.from) {
+      console.warn('no presence or from')
+      return
+    }
     
     const from = presence.from
     const available = presence.type !== 'unavailable'
+
+    if (presence.muc) {
+      const mucData = presence.muc as MUCInfo
+      if (mucData.statusCodes?.includes('110')) {
+        // message refers to current user
+        return
+      }
+    }
+
+    // Extract the room JID
     
     // Check if this is a MUC presence update
     const isMucPresence = from.includes('@conference.')
-    
     if (isMucPresence) {
-      // Extract the room JID
+      
       const parts = from.split('/')
       const roomJid = parts[0]
-      
-      // Notify handlers for this room
+      const userJid = from.split('/')[1].split('@')[0]
+        // Notify handlers for this room
       const roomHandlers = this.presenceHandlers.get(roomJid) || []
+
       for (const handler of roomHandlers) {
-        handler(from, available)
+        handler(userJid, available)
       }
     } else {
-      // This is a direct presence update
+      const userJid = from.split('@')[0]
+        // This is a direct presence update
       // Notify all handlers that might be interested
+      console.log('direct presence update', from, available)
       for (const [, handlers] of this.presenceHandlers.entries()) {
         for (const handler of handlers) {
-          handler(from, available)
+          handler(userJid, available)
         }
       }
     }
@@ -1174,6 +1165,10 @@ export class XMPPService {
     } catch (error) {
       // check for item not found
       const sError = error as { error: { condition: string } }
+      if (sError && sError.error?.condition === 'item-not-found') {
+        const psError = (sError as unknown as { pubsub: Pubsub }).pubsub as Pubsub
+        console.log('Failed to find pubsub node:' + psError.fetch?.node)
+      }
       console.log('get docs error:', sError)
       if(sError && sError.error?.condition === 'item-not-found') {
         return null

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import './index.css'
 import { UserOutlined } from '@ant-design/icons'
 import { Tooltip } from 'antd'
 import { useWargame } from '../../../../contexts/WargameContext'
 import { ForceConfigType } from '../../../../types/wargame-d'
-import { PresenceVisibility } from '../../../../types/rooms-d'
+import { PresenceVisibility, User } from '../../../../types/rooms-d'
 
 export interface OnlineUser {
   id: string
@@ -15,28 +15,36 @@ export interface OnlineUser {
 
 export interface RoomPresenceBarProps {
   /** Array of users to display in the presence bar with their online status */
-  users: OnlineUser[]
+  userIds: User['jid'][]
   /** Determines which users are visible - 'all' shows everyone, 'umpires-only' restricts visibility */
   visibilityConfig: PresenceVisibility
   /** The force ID of the current user, used to determine visibility permissions */
   currentUserForce?: string
   /** Whether the current user has admin privileges (admins can see all users regardless of visibilityConfig) */
   isAdmin?: boolean
-  /** only show online users */
-  showOnlineOnly?: boolean
 }
 
 const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
-  users,
+  userIds,
   visibilityConfig,
   currentUserForce,
-  isAdmin = false,
-  showOnlineOnly = false
+  isAdmin = false
 }) => {
 
   const { getForce } = useWargame()
   const [forceColors, setForceColors] = useState<Record<string, string>>({})  
   
+  const users = useMemo(() => {
+    return userIds.map((id: User['jid']) => {
+      return {
+        id,
+        name: id,
+        force: 'force-red',
+        isOnline: true
+      }
+    })
+  }, [userIds])
+
   // Fetch force colors when users change
   useEffect(() => {
     const fetchForceColors = async () => {
@@ -61,10 +69,9 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
     
     fetchForceColors()
   }, [users, getForce])
-  // Filter users based on visibility config
-  const visibleUsers = users.filter(user => {
-    if (showOnlineOnly && !user.isOnline) return false
 
+  // Filter users based on visibility config
+  const visibleUsers = users.filter((user: OnlineUser) => {
     // Admins can see all users regardless of config
     if (isAdmin) return true
     

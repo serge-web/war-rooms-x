@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms-d';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
@@ -13,11 +13,12 @@ export const useRoom = (room: RoomType) => {
   const { xmppClient, gameState, playerDetails } = useWargame()
   const [messages, setMessages] = useState<GameMessage[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [present, setPresent] = useState<User['jid'][]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
   const messagesReceived = useRef<boolean | null>(null)
   const [error, setError] = useState<UserError | null>(null)
-const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
+  const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
   const clearError = () => {
     setError(null)
@@ -89,6 +90,18 @@ const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
       // TODO: handle other room metadata (esp. permissions)
       if (xmppClient.mucService && messagesReceived.current === null) {
         messagesReceived.current = true
+
+        // subscribe to presence changes for this room
+        xmppClient.subscribeToPresence(room.roomName, (from: string, available: boolean) => {
+          console.log('presence change', from, available)
+            if (available) {
+              // add to list, if not present
+              setPresent(prev => prev.includes(from) ? prev : [...prev, from])
+            } else {
+              // remove from list, if present
+              setPresent(prev => prev.includes(from) ? prev.filter(user => user !== from) : prev)
+            }
+          })
         // join the room
         const fetchMessages = async () => {
           await xmppClient.joinRoom(room.roomName, messageHandler)
@@ -112,5 +125,20 @@ const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
     }
   }, [room, xmppClient, loading, mockRooms]);
 
-  return { messages, users, theme, canSubmit, sendMessage, error, clearError };
+  console.log('room present', room.roomName, present, users)
+
+  const presenceVisibility = useMemo(() => {
+    if (!room.description)
+      return 'all'
+    try {
+      const config = JSON.parse(room.description)
+      if (!config.specifics?.presenceVisibility)
+        return 'all'
+      return config.specifics.presenceVisibility
+    } catch {
+      return 'none'
+    }
+  }, [room])
+
+  return { messages, users, theme, canSubmit, sendMessage, error, clearError, present, presenceVisibility };
 }
