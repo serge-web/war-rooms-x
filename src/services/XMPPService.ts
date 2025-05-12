@@ -1338,8 +1338,7 @@ export class XMPPService {
       }
       await this.publishPubSubLeaf(userDocName, USERS_COLLECTION, jsonDoc)
     } else {
-      const json = doc.content as JSONItem
-      const userDoc = json.json as UserConfigType
+      const userDoc = doc as UserConfigType
       userDoc.forceId = forceId
       await this.publishJsonToPubSubNode(userDocName, userDoc)
     }

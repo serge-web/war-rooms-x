@@ -39,14 +39,12 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
       <ErrorModal error={error} clearError={clearError} />
       
       {/* Room Presence Bar */}
-      { present.length > 0 && (
-        <RoomPresenceBar 
+      <RoomPresenceBar 
           userIds={present}
           visibilityConfig={presenceVisibility}
           currentUserForce={playerDetails?.forceId}
           isAdmin={playerDetails?.role === 'admin'}
         />
-      )}
       
       <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={templates || []} />
       { canSubmit && myTemplates && <FormMessageBuilder 

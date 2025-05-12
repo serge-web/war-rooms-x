@@ -93,7 +93,6 @@ export const useRoom = (room: RoomType) => {
 
         // subscribe to presence changes for this room
         xmppClient.subscribeToPresence(room.roomName, (from: string, available: boolean) => {
-          console.log('presence change', from, available)
             if (available) {
               // add to list, if not present
               setPresent(prev => prev.includes(from) ? prev : [...prev, from])
@@ -125,8 +124,6 @@ export const useRoom = (room: RoomType) => {
     }
   }, [room, xmppClient, loading, mockRooms]);
 
-  console.log('room present', room.roomName, present, users)
-
   const presenceVisibility = useMemo(() => {
     if (!room.description)
       return 'all'
@@ -136,7 +133,7 @@ export const useRoom = (room: RoomType) => {
         return 'all'
       return config.specifics.presenceVisibility
     } catch {
-      return 'none'
+      return 'all'
     }
   }, [room])
 

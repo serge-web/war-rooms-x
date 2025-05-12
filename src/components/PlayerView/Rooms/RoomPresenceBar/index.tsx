@@ -39,7 +39,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
       return {
         id,
         name: id,
-        force: 'force-red',
+        force: 'red',
         isOnline: true
       }
     })
@@ -71,7 +71,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   }, [users, getForce])
 
   // Filter users based on visibility config
-  const visibleUsers = users.filter((user: OnlineUser) => {
+  const visibleUsers = useMemo(() => users.filter((user: OnlineUser) => {
     // Admins can see all users regardless of config
     if (isAdmin) return true
     
@@ -85,7 +85,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
     if (user.force === currentUserForce) return true
     
     return false
-  })
+  }), [users, visibilityConfig, currentUserForce, isAdmin])
 
   if (visibleUsers.length === 0) {
     return null // Don't render anything if no users to show

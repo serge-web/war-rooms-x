@@ -26,7 +26,8 @@ const Login: React.FC = () => {
     [ip, host, 'admin', 'pwd'],
     [ip, host, 'blue-co', 'pwd'],
     [ip, host, 'red-co', 'pwd'],
-    [ip, host, 'no-perms', 'pwd'],
+    [ip, host, 'red-logs', 'pwd'],
+    [ip, host, 'red-media', 'pwd']
   ]
 
   const mockRoles = [

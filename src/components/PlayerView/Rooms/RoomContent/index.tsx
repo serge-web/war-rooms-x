@@ -16,8 +16,7 @@ interface RoomProps {
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, error, clearError, present, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
-  // const { users, presenceVisibility, loading } = useRoomUsers(room)
-  console.log('room content', present)
+
   return (
     <ConfigProvider theme={theme}>
       <div className='room-content' data-testid={`room-content-${room.roomName}`}>
