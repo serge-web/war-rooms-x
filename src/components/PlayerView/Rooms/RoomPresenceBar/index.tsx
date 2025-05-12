@@ -4,8 +4,7 @@ import { UserOutlined } from '@ant-design/icons'
 import { Tooltip } from 'antd'
 import { useWargame } from '../../../../contexts/WargameContext'
 import { ForceConfigType } from '../../../../types/wargame-d'
-
-export type PresenceVisibility = 'all' | 'umpires-only'
+import { PresenceVisibility } from '../../../../types/rooms-d'
 
 export interface OnlineUser {
   id: string
@@ -34,6 +33,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   isAdmin = false,
   showOnlineOnly = false
 }) => {
+
   const { getForce } = useWargame()
   const [forceColors, setForceColors] = useState<Record<string, string>>({})  
   
@@ -45,9 +45,11 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
       
       for (const forceId of uniqueForces) {
         try {
-          const force: ForceConfigType = await getForce(forceId)
-          if (force.color) {
-            colorMap[forceId] = force.color
+          if (forceId !== 'unknown') {
+            const force: ForceConfigType = await getForce(forceId)
+            if (force.color) {
+              colorMap[forceId] = force.color
+            }
           }
         } catch (error) {
           console.error(`Error fetching force color for ${forceId}:`, error)
@@ -81,9 +83,6 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   if (visibleUsers.length === 0) {
     return null // Don't render anything if no users to show
   }
-
-  console.log('visible users', showOnlineOnly)
-  console.table(visibleUsers)
 
   return (
     <div className="room-presence-bar" data-testid="room-presence-bar">
