@@ -4,18 +4,11 @@ import { UserOutlined } from '@ant-design/icons'
 import { Tooltip } from 'antd'
 import { useWargame } from '../../../../contexts/WargameContext'
 import { ForceConfigType } from '../../../../types/wargame-d'
-import { PresenceVisibility, User } from '../../../../types/rooms-d'
-
-export interface OnlineUser {
-  id: string
-  name: string
-  force: string
-  isOnline: boolean
-}
+import { OnlineUser, PresenceVisibility } from '../../../../types/rooms-d'
 
 export interface RoomPresenceBarProps {
   /** Array of users to display in the presence bar with their online status */
-  userIds: User['jid'][]
+  users: OnlineUser[]
   /** Determines which users are visible - 'all' shows everyone, 'umpires-only' restricts visibility */
   visibilityConfig: PresenceVisibility
   /** The force ID of the current user, used to determine visibility permissions */
@@ -25,7 +18,7 @@ export interface RoomPresenceBarProps {
 }
 
 const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
-  userIds,
+  users,
   visibilityConfig,
   currentUserForce,
   isAdmin = false
@@ -33,27 +26,19 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
 
   const { getForce } = useWargame()
   const [forceColors, setForceColors] = useState<Record<string, string>>({})  
-  
-  const users = useMemo(() => {
-    return userIds.map((id: User['jid']) => {
-      return {
-        id,
-        name: id,
-        force: 'red',
-        isOnline: true
-      }
-    })
-  }, [userIds])
 
   // Fetch force colors when users change
   useEffect(() => {
+    if (!users) {
+      return
+    }
     const fetchForceColors = async () => {
       const uniqueForces = [...new Set(users.map(user => user.force))]
       const colorMap: Record<string, string> = {}
       
       for (const forceId of uniqueForces) {
         try {
-          if (forceId !== 'unknown') {
+          if (forceId !== 'unknown' && forceId !== undefined) {
             const force: ForceConfigType = await getForce(forceId)
             if (force.color) {
               colorMap[forceId] = force.color
@@ -71,7 +56,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   }, [users, getForce])
 
   // Filter users based on visibility config
-  const visibleUsers = useMemo(() => users.filter((user: OnlineUser) => {
+  const visibleUsers = useMemo(() => users?.filter((user: OnlineUser) => {
     // Admins can see all users regardless of config
     if (isAdmin) return true
     
@@ -87,7 +72,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
     return false
   }), [users, visibilityConfig, currentUserForce, isAdmin])
 
-  if (visibleUsers.length === 0) {
+  if (visibleUsers === undefined || visibleUsers.length === 0) {
     return null // Don't render anything if no users to show
   }
 
@@ -104,7 +89,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
               className={`presence-user ${!user.isOnline ? 'offline' : ''}`}
               data-testid={`presence-user-${user.id}`}
             >
-              <UserOutlined style={forceColors[user.force] ? { color: forceColors[user.force] } : undefined} />
+              <UserOutlined style={forceColors[user.force || ''] ? { color: forceColors[user.force || ''] } : undefined} />
               <span className="user-name">{user.name}</span>
             </div>
           </Tooltip>

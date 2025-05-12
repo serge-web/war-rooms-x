@@ -2,13 +2,13 @@ import { useState, ReactNode, useMemo, useCallback } from 'react'
 import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
 import { DataProvider } from 'react-admin'
-import { ForceConfigType } from '../types/wargame-d'
+import { ForceConfigType, GamePlayerDetails } from '../types/wargame-d'
 import { roomTypeFactory } from '../services/roomTypes'
 import { mockBackend } from '../mockData/mockAdmin'
 import { useGameProperties } from '../components/PlayerView/GameState/useGameSetup'
 import { useGameState } from '../components/PlayerView/GameState/useGameState'
 import { usePlayerDetails } from '../components/PlayerView/UserDetails/usePlayerDetails'
-import { FORCES_PREFIX } from '../types/constants'
+import { FORCES_PREFIX, USERS_PREFIX } from '../types/constants'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -25,6 +25,37 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   const { gameProperties } = useGameProperties(xmppClient)
   const { gameState, nextTurn } = useGameState(xmppClient)
   const { playerDetails, mockPlayerId, setMockPlayerId } = usePlayerDetails(xmppClient)
+
+  const getPlayerDetails = useCallback(async (userId: string): Promise<GamePlayerDetails | undefined> => {
+    if (!userId) {
+      console.warn('user id missing', userId)
+    }
+    if (xmppClient === undefined) {
+      throw new Error('Not connected')
+    } else if (xmppClient === null) {
+      // get the mock user data
+      const rUser = mockBackend.users.find(u => u.id === userId)
+      if (!rUser) {
+        throw new Error('User not found: ' + userId)
+      } else {
+        const user: GamePlayerDetails = {
+          id: rUser.id,
+          role: rUser.name,
+          forceId: rUser.forceId,
+          forceName: rUser.forceName,
+          color: rUser.color
+        }
+        return user
+      }
+    } else {
+      // TODO: cache the user details
+      console.log('about to get xmpp doc:', USERS_PREFIX + userId)
+      const user = await xmppClient.getPubSubDocument(USERS_PREFIX + userId)
+      if (user) {
+        return user as GamePlayerDetails
+      }
+    }
+    }, [xmppClient])
 
   const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => {
     if (!forceId) {
@@ -91,6 +122,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     setRaDataProvider,
     mockPlayerId,
     setMockPlayerId,
+    getPlayerDetails,
     playerDetails,
     roomTypeFactory,
     getForce,

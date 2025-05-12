@@ -14,18 +14,17 @@ interface RoomProps {
 }
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, error, clearError, present, presenceVisibility } = useRoom(room)
+  const { messages, theme, canSubmit, sendMessage, error, clearError, users, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
-
   return (
     <ConfigProvider theme={theme}>
       <div className='room-content' data-testid={`room-content-${room.roomName}`}>
         <ErrorModal error={error} clearError={clearError} />
         
         {/* Room Presence Bar */}
-        {present.length > 0 && (
+        {users.length > 0 && (
           <RoomPresenceBar 
-            userIds={present}
+            users={users}
             visibilityConfig={presenceVisibility}
             currentUserForce={playerDetails?.forceId}
             isAdmin={playerDetails?.role === 'admin'}

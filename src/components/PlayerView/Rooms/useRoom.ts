@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms-d';
+import { RoomType, User, UserError, GameMessage, MessageDetails, OnlineUser } from '../../../types/rooms-d';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
@@ -10,10 +10,9 @@ import { prefixKey } from '../../../types/constants';
 import { RRoom } from '../../AdminView/raTypes-d';
 
 export const useRoom = (room: RoomType) => {
-  const { xmppClient, gameState, playerDetails } = useWargame()
+  const { xmppClient, gameState, playerDetails, getPlayerDetails } = useWargame()
   const [messages, setMessages] = useState<GameMessage[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [present, setPresent] = useState<User['jid'][]>([])
+  const [users, setUsers] = useState<OnlineUser[]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
   const messagesReceived = useRef<boolean | null>(null)
@@ -91,25 +90,53 @@ export const useRoom = (room: RoomType) => {
       if (xmppClient.mucService && messagesReceived.current === null) {
         messagesReceived.current = true
 
+        const updateUser = async (from: string, available: boolean) => {
+          if (available) {
+            // add to list, if not present
+            setUsers(prev => {
+              // check if we know about this user
+              const user = prev.find(user => user.id === from)
+              if (user) {
+                // known user, just update their presece
+                user.isOnline = true
+                return [...prev]
+              } else {
+                return [...prev, { id: from, isOnline: true, name: undefined, force: undefined }]
+              }
+            })
+          } else {
+            // mark this user as not present
+            setUsers(prev => prev.map(user => user.id === from ? { ...user, isOnline: false } : user))
+          }
+        }
+        
         // subscribe to presence changes for this room
         xmppClient.subscribeToPresence(room.roomName, (from: string, available: boolean) => {
-            if (available) {
-              // add to list, if not present
-              setPresent(prev => prev.includes(from) ? prev : [...prev, from])
-            } else {
-              // remove from list, if present
-              setPresent(prev => prev.includes(from) ? prev.filter(user => user !== from) : prev)
-            }
-          })
+          updateUser(from, available)
+        })
         // join the room
         const fetchMessages = async () => {
           await xmppClient.joinRoom(room.roomName, messageHandler)
         }
         fetchMessages().then(() => {
           // now get the users
+          const getPlayerDetailsTop = async(jid: string) => {
+            const res = await getPlayerDetails(jid)
+            return res
+          }
           const fetchUsers = async () => {
             const users = await xmppClient.getRoomMembers(room.roomName)
-            setUsers(users)
+            const getUserDetails = users.map((user: User) => {
+              const jid = user.jid.split('/')[1].split('@')[0]
+              const details = getPlayerDetailsTop(jid)
+              return details
+            })
+            Promise.all(getUserDetails).then((details) => {
+              const onlineUsers = details.map((detail): OnlineUser | undefined => {
+                return detail ? { id: detail.id, isOnline: true, name: detail.role, force: detail.forceId } : { id: '', isOnline: false, name: '', force: '' }
+              })
+              setUsers(onlineUsers.filter((user) => user !== undefined))
+            })
           }
           fetchUsers()
         })
@@ -122,7 +149,7 @@ export const useRoom = (room: RoomType) => {
       //   xmppClient.leaveRoom(room.roomName, messageHandler)
       // }
     }
-  }, [room, xmppClient, loading, mockRooms]);
+  }, [room, xmppClient, loading, mockRooms, getPlayerDetails]);
 
   const presenceVisibility = useMemo(() => {
     if (!room.description)
@@ -137,5 +164,5 @@ export const useRoom = (room: RoomType) => {
     }
   }, [room])
 
-  return { messages, users, theme, canSubmit, sendMessage, error, clearError, present, presenceVisibility };
+  return { messages, users, theme, canSubmit, sendMessage, error, clearError, presenceVisibility };
 }
