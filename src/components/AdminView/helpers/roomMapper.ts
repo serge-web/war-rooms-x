@@ -25,7 +25,8 @@ export const roomRtoX = (result: RRoom): XRoom => {
     members: result.members?.map(formatMemberWithHost) || [],
     memberGroups: result.memberForces,
     persistent: true,
-    publicRoom: result.public
+    publicRoom: result.public,
+    broadcastPresenceRoles: ['owner', 'admin', 'member']
   }
   return res
 }
