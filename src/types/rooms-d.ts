@@ -72,6 +72,13 @@ export interface User {
   name: string
 }
 
+export interface OnlineUser {
+  id: string
+  name?: string
+  force?: string
+  isOnline: boolean
+}
+
 export interface CustomRoomConfig {
   roomType: string
 }
