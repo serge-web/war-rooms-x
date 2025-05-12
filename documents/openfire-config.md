@@ -18,8 +18,15 @@ These are the steps to installing and configuring Openfire for this app.
     a. Group Chat / Group Chat Settings / History : Show Entire Chat History
     b. Default Room Settings: Make Room Persistent
 
+Install OpenFire on Digital Ocean according to the article here:
+https://www.digitalocean.com/community/tutorials/how-to-install-openfire-xmpp-server-on-a-debian-or-ubuntu-vps
+
+This is the command to restart OpenFire on Digital Ocean:
+`sudo /etc/init.d/openfire stop`
 
  [1] According to article here: https://discourse.igniterealtime.org/t/when-i-upload-to-4-7-5-the-restapi-always-redirect/92892/2   
+
+ 
 
 
 
