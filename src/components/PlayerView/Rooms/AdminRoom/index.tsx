@@ -2,11 +2,11 @@ import React from 'react'
 import RoomContent from '../RoomContent'
 import './index.css'
 import { RoomType } from '../../../../types/rooms-d'
-import { useRooms } from '../RoomsList/useRooms'
+import { useWargame } from '../../../../contexts/WargameContext'
 import { useEffect, useState } from 'react'
 
 const AdminRoom: React.FC = () => {
-  const { rooms } = useRooms()
+  const { rooms } = useWargame()
   const [room, setRoom] = useState<RoomType | null>(null)
 
   useEffect(() => {

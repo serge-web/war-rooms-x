@@ -2,6 +2,7 @@ import { DataProvider } from "react-admin"
 import { XMPPService } from "../services/XMPPService"
 import { PLAN_ADJUDICATE_TURNS, LINEAR_TURNS } from "../types/constants"
 import { ThemeConfig } from "antd"
+import { RoomType } from "./rooms-d"
 
 export interface GamePropertiesType {
   name: string
@@ -48,6 +49,7 @@ export interface WargameContextType {
   gameProperties: GamePropertiesType | null
   gameState: GameStateType | null
   nextTurn: (gameProperties: GamePropertiesType | null) => Promise<void> 
+  rooms: RoomType[]
 }
 
 /**
