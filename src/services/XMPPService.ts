@@ -39,7 +39,7 @@ export class XMPPService {
    * @param handler The handler function to call when presence updates
    * @returns A function to unsubscribe from presence updates
    */
-  subscribeToPresence(roomJid: string, handler: PresenceHandler): () => void {
+  public subscribeToPresence(roomJid: string, handler: PresenceHandler): () => void {
     // Set up the presence event listener if it's not already set up
     if (this.client && this.presenceHandlers.size === 0) {
       this.client.on('presence', this.handlePresenceUpdate.bind(this))
