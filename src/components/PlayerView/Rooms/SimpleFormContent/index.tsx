@@ -8,15 +8,17 @@ import { ConfigProvider } from 'antd'
 import ErrorModal from '../../../Utilities/ErrorModal'
 import { useTemplates } from '../../../../hooks/useTemplates'
 import { useWargame } from '../../../../contexts/WargameContext'
+import RoomPresenceBar from '../RoomPresenceBar'
 
 interface SimpleFormProps {
   room: RoomType
 }
 
 const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, error, clearError } = useRoom(room)
+  const { messages, theme, canSubmit, sendMessage, error, clearError, users, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
   const { templates } = useTemplates()
+  // const { users, presenceVisibility, loading } = useRoomUsers(room)
   const myTemplates = useMemo(() => {
     if (!room.description)
       return undefined
@@ -35,6 +37,15 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
     theme={theme}>
     <div className='simple-form-content' data-testid={`simple-form-content-${room.roomName}`}>
       <ErrorModal error={error} clearError={clearError} />
+      
+      {/* Room Presence Bar */}
+      <RoomPresenceBar 
+          users={users}
+          visibilityConfig={presenceVisibility}
+          currentUserForce={playerDetails?.forceId}
+          isAdmin={playerDetails?.role === 'admin'}
+        />
+      
       <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={templates || []} />
       { canSubmit && myTemplates && <FormMessageBuilder 
         onSendMessage={sendMessage} 

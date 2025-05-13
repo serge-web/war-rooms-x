@@ -52,7 +52,7 @@ const createMessage = (id: string, senderId: string, senderName: string, senderF
 }
 
 // Create timestamps for messages (most recent first)
-const now = new Date()
+const now = new Date('2025-04-25T12:00:00.000Z')
 const timestamps = Array.from({ length: 10 }, (_, i) => {
   const date = new Date(now)
   date.setMinutes(now.getMinutes() - (i * 15)) // 15 minute intervals
@@ -192,9 +192,9 @@ const chatrooms: RRoom[] = [
   {id: 'red-c2', name: 'red c2', details:{description: 'Red command and control discussions', specifics: {roomType: 'chat'}}, memberForces:[redForce.id], dummyMessages: redC2Messages},
   {id: 'green-chat', name: 'green chat', details:{description: 'Green force discussions', specifics: {roomType: 'chat'}}, memberForces:[greenForce.id], dummyMessages: greenMessages},
   {id: 'umpire-chat', name: 'umpire chat', details:{description: 'Umpire force discussions, about game-play and rules', specifics: {roomType: 'chat'}}, memberForces:[umpires.id], dummyMessages: umpireMessages},
-  {id: 'main-map', name: 'Main Map', details:{description: 'Main map', specifics: {roomType: 'map', backdropUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}}, public: false, members: ['blue-logs'], dummyMessages: mapMessages},
-  {id: 'logs-chat', name: 'Logistics Debate', details:{description: 'Logistics Debate, across forces, discussing logistic issues', specifics: {roomType: 'form', templateIds: ['sitrep', 'chat']}}, members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
-  {id: '__admin', name: 'Admin', details:{description: 'Game administration', specifics: {roomType: 'chat'}}, public: true, dummyMessages: adminMessages}
+  {id: 'main-map', name: 'Main Map', details:{description: 'Main scenario map', presenceVisibility: 'all', specifics: {roomType: 'map', backdropUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}}, public: false, members: ['blue-logs'], dummyMessages: mapMessages},
+  {id: 'logs-chat', name: 'Logistics Debate', details:{description: 'Logistics Debate, across forces, discussing logistic issues', presenceVisibility: 'umpires-only', specifics: {roomType: 'form', templateIds: ['sitrep', 'chat']}}, members: [blueLogs.id, redLogs.id, greenLogs.id], memberForces:[umpires.id], dummyMessages: logsMessages},
+  {id: '__admin', name: 'Admin', details:{description: 'Game administration', presenceVisibility: 'none', specifics: {roomType: 'chat'}}, public: true, dummyMessages: adminMessages}
 ]
 
 const templates: Template[] = [

@@ -68,6 +68,7 @@ const createWargameContextMock = (xmppClientValue: XMPPService | undefined | nul
   setMockPlayerId: jest.fn(),
   playerDetails: null,
   getForce: jest.fn().mockResolvedValue({}),
+  getPlayerDetails: jest.fn().mockResolvedValue({}),
   gameProperties: null,
   gameState: null,
   nextTurn: jest.fn().mockResolvedValue(undefined)

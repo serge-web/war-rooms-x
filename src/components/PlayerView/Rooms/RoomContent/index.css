@@ -9,3 +9,15 @@
   bottom: 0;
   overflow: hidden;
 }
+
+/* Message list should grow to fill available space */
+.room-content .message-list {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+/* Presence bar and input form should not grow */
+.room-content .room-presence-bar,
+.room-content .message-input-form {
+  flex-shrink: 0;
+}

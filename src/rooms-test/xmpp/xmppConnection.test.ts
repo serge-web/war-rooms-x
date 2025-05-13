@@ -12,11 +12,11 @@ describe('XMPP Connection', () => {
     openfireConfig = loadOpenfireConfig()
     
     // Check if server is available
-    const port = 5222 // Default XMPP port
-    serverAvailable = await isServerReachable(openfireConfig.ip, port)
+    console.log('Checking if server is available', openfireConfig.ip)
+    serverAvailable = await isServerReachable(openfireConfig.ip, 7070)
     
     if (!serverAvailable) {
-      console.log(`XMPP server at ${openfireConfig.ip}:${port} is not reachable, skipping test`)
+      console.log(`XMPP server at ${openfireConfig.wsurl} is not reachable, skipping test`)
     }
   })
 

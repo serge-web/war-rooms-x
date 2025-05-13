@@ -52,7 +52,7 @@ export class MapRoomStrategy implements RoomTypeStrategy<MapRoomConfig> {
    */
   public editComponent: ComponentType = () => {
     return (
-      <TextInput source="details.specifics.backdropUrl" label="Backdrop URL" />
+      <TextInput source="details.specifics.backdropUrl" helperText="URL of the tiled backdrop image" label="Backdrop URL" />
     )
   }
 }

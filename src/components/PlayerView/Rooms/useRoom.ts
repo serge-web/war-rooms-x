@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { RoomType, User, UserError, GameMessage, MessageDetails } from '../../../types/rooms-d';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { RoomType, User, UserError, GameMessage, MessageDetails, OnlineUser, RoomDetails, PresenceVisibility } from '../../../types/rooms-d';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
@@ -8,16 +8,17 @@ import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import * as localforage from 'localforage'
 import { prefixKey } from '../../../types/constants';
 import { RRoom } from '../../AdminView/raTypes-d';
+import { UserConfigType } from '../../../types/wargame-d';
 
 export const useRoom = (room: RoomType) => {
-  const { xmppClient, gameState, playerDetails } = useWargame()
+  const { xmppClient, gameState, playerDetails, getPlayerDetails } = useWargame()
   const [messages, setMessages] = useState<GameMessage[]>([])
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<OnlineUser[]>([])
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
   const messagesReceived = useRef<boolean | null>(null)
   const [error, setError] = useState<UserError | null>(null)
-const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
+  const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
   const clearError = () => {
     setError(null)
@@ -82,6 +83,9 @@ const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
         if (thisRoom && thisRoom.dummyTheme) {
           setTheme(thisRoom.dummyTheme)
         }
+        // and the users
+        const thisRoomUsers = thisRoom?.dummyUsers || []
+        setUsers(thisRoomUsers)
         setCanSubmit(true)
       }
     } else {
@@ -89,15 +93,55 @@ const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
       // TODO: handle other room metadata (esp. permissions)
       if (xmppClient.mucService && messagesReceived.current === null) {
         messagesReceived.current = true
+
+        const updateUser = async (from: string, available: boolean) => {
+          if (available) {
+            // add to list, if not present
+            setUsers(prev => {
+              // check if we know about this user
+              const user = prev.find(user => user.id === from)
+              if (user) {
+                // known user, just update their presece
+                user.isOnline = true
+                return [...prev]
+              } else {
+                return [...prev, { id: from, isOnline: true, name: undefined, force: undefined }]
+              }
+            })
+          } else {
+            // mark this user as not present
+            setUsers(prev => prev.map(user => user.id === from ? { ...user, isOnline: false } : user))
+          }
+        }
+        
+        // subscribe to presence changes for this room
+        xmppClient.subscribeToPresence(room.roomName, (from: string, available: boolean) => {
+          updateUser(from, available)
+        })
         // join the room
         const fetchMessages = async () => {
           await xmppClient.joinRoom(room.roomName, messageHandler)
         }
         fetchMessages().then(() => {
           // now get the users
+          const getPlayerDetailsTop = async(jid: string): Promise<UserConfigType | undefined> => {
+            const res = await getPlayerDetails(jid)
+            return res
+          }
           const fetchUsers = async () => {
             const users = await xmppClient.getRoomMembers(room.roomName)
-            setUsers(users)
+            const getUserDetails = users.map((user: User) => {
+              const jid = user.jid.includes('/') ? user.jid.split('/')[1].split('@')[0] : user.jid
+              return getPlayerDetailsTop(jid)
+            })
+            Promise.all(getUserDetails).then((details) => {
+              const onlineUsers = details.map((detail: UserConfigType | undefined, index: number): OnlineUser => {
+                const thisUser = users[index]
+                const jid = thisUser.jid.includes('/') ? thisUser.jid.split('/')[1].split('@')[0] : thisUser.jid
+                return detail ? { id: jid, isOnline: true, name: detail.name, force: detail.forceId } : { id: jid, isOnline: true, name: '', force: '' }
+              })
+              setUsers(onlineUsers.filter((user) => user !== undefined))
+            })
           }
           fetchUsers()
         })
@@ -110,7 +154,20 @@ const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
       //   xmppClient.leaveRoom(room.roomName, messageHandler)
       // }
     }
-  }, [room, xmppClient, loading, mockRooms]);
+  }, [room, xmppClient, loading, mockRooms, getPlayerDetails]);
 
-  return { messages, users, theme, canSubmit, sendMessage, error, clearError };
+  const presenceVisibility: PresenceVisibility = useMemo(() => {
+    if (!room.description)
+      return 'all'
+    try {
+      const config = JSON.parse(room.description) as RoomDetails
+      if (!config.presenceVisibility)
+        return 'all'
+      return config.presenceVisibility
+    } catch {
+      return 'all'
+    }
+  }, [room])
+
+  return { messages, users, theme, canSubmit, sendMessage, error, clearError, presenceVisibility };
 }

@@ -32,13 +32,7 @@ export const userRtoX = async (result: RUser, id: string, xmppClient: XMPPServic
   }
   const nodeId = USERS_PREFIX + id
   // check if this node exists
-  if (!await xmppClient.checkPubSubNodeExists(nodeId)) {
-    // create the node
-    const res = await xmppClient.publishPubSubLeaf(nodeId, USERS_COLLECTION, newDoc)
-    if (!res) {
-      console.error('problem creating user document', res)
-    }
-  } else {
+  if (await xmppClient.checkPubSubNodeExists(nodeId) && await xmppClient.getPubSubDocument(nodeId)) {
     const existingUserNode = await xmppClient.getPubSubDocument(nodeId)
     const existingUserConfig = existingUserNode as UserConfigType
     if (existingUserConfig) {
@@ -51,6 +45,12 @@ export const userRtoX = async (result: RUser, id: string, xmppClient: XMPPServic
       if (!res.success) {
         console.error('problem publishing document', id)
       } 
+    }
+  } else {
+    // create the node
+    const res = await xmppClient.publishPubSubLeaf(nodeId, USERS_COLLECTION, newDoc)
+    if (!res) {
+      console.error('problem creating user document', res)
     }
   }
   return {

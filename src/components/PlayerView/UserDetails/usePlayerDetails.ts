@@ -52,6 +52,7 @@ export const usePlayerDetails = (xmppClient: XMPPService | null | undefined) => 
             })
             const forceId = userConfig.forceId
             if (forceId) {
+              console.log('about to get force id', forceId, userId)
               // get the force document
               const forceDoc = await xmppClient.getPubSubDocument(FORCES_PREFIX + forceId)
               if (forceDoc) {

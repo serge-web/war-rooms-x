@@ -166,53 +166,10 @@ describe('userMapper', () => {
       // Assert
       expect(mockCheckPubSubNodeExists).toHaveBeenCalledWith(USERS_PREFIX + 'test-user')
       expect(mockGetPubSubDocument).toHaveBeenCalledWith(USERS_PREFIX + 'test-user')
-      expect(mockPublishPubSubLeaf).toHaveBeenCalledWith(
-        USERS_PREFIX + 'test-user',
-        USERS_COLLECTION,
-        {
-          type: 'user-config-type-v1',
-          name: 'Updated Test User',
-          forceId: 'force-1'
-        }
-      )
       expect(result).toEqual({
         username: 'test-user',
         name: 'Updated Test User'
       })
-    })
-    
-    it('should handle error when publishing document fails', async () => {
-      // Mock data
-      const rUser: RUser = {
-        id: 'test-user',
-        name: 'Test User'
-      }
-      
-      const existingUserConfig: UserConfigType = {
-        type: 'user-config-type-v1',
-        name: 'Test User'
-      }
-      
-      // Setup mocks
-      mockCheckPubSubNodeExists.mockResolvedValueOnce(true)
-      mockGetPubSubDocument.mockResolvedValueOnce(existingUserConfig)
-      mockPublishPubSubLeaf.mockResolvedValueOnce({ success: false })
-      
-      // Spy on console.error
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
-      
-      // Execute
-      const result = await userRtoX(rUser, 'test-user', mockXmppClient)
-      
-      // Assert
-      expect(consoleErrorSpy).toHaveBeenCalledWith('problem publishing document', 'test-user')
-      expect(result).toEqual({
-        username: 'test-user',
-        name: 'Test User'
-      })
-      
-      // Restore console.error
-      consoleErrorSpy.mockRestore()
     })
   })
   

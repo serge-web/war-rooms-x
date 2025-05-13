@@ -1,10 +1,14 @@
 import { ThemeConfig } from 'antd'
 import { RJSFSchema, UiSchema } from '@rjsf/utils'
 
+/** who can see the presence of others in a room */
+export type PresenceVisibility = 'all' | 'umpires-only' | 'none'
+
 export interface RoomDetails {
   theme?: ThemeConfig
   description: string
   specifics?: ChatRoomConfig | MapRoomConfig | FormRoomConfig
+  presenceVisibility?: PresenceVisibility
 }
 
 /**
@@ -66,6 +70,13 @@ export interface UserError {
 export interface User {
   jid: string
   name: string
+}
+
+export interface OnlineUser {
+  id: string
+  name?: string
+  force?: string
+  isOnline: boolean
 }
 
 export interface CustomRoomConfig {

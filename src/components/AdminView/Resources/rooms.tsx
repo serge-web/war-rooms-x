@@ -88,7 +88,6 @@ const RoomSpecifics = () => {
   
   return (
     <>
-      <TextInput source="details.description" label="Description" />
       <Box style={roundBox}>
         <LegendLabel>Custom room properties</LegendLabel>
         <SelectInput source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
@@ -98,22 +97,36 @@ const RoomSpecifics = () => {
   )
 }
 
+const AccessControl = () => {
+  return (
+    <Box style={roundBox}>
+      <LegendLabel>Access Control</LegendLabel>
+      <NotOwnerDropdown source="members" reference="users" />
+      <Stack direction='row' spacing={2}>
+        <ReferenceArrayInput source="memberForces" reference="groups">
+          <AutocompleteArrayInput optionText="id" helperText="Forces that are members of this room" />          
+        </ReferenceArrayInput>  
+        <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+        <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
+        { id: 'all', name: 'All' },
+        { id: 'umpires-only', name: 'Umpires Only' },
+        { id: 'none', name: 'None' }
+      ]}/>
+      </Stack>
+    </Box>
+  )
+}
+
 export const EditRoom = ({ id }: { id?: string }) => {
   return (
     <Edit title='> Edit room' key={id} id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
-        <TextInput source="name" />
+      <Stack direction='row' spacing={2}>
+        <TextInput helperText="Name of the room" source="name" style={{ width: '33%' }} />
+        <TextInput helperText="Description of the room" source="details.description" label="Description" style={{ width: '88%' }} />
+      </Stack>  
         <RoomSpecifics/>
-        <Box style={roundBox}>
-          <LegendLabel>Access Control</LegendLabel>
-          <NotOwnerDropdown source="members" reference="users" />
-          <Stack direction='row' spacing={2}>
-            <ReferenceArrayInput source="memberForces" reference="groups">
-              <AutocompleteArrayInput optionText="id" />          
-            </ReferenceArrayInput>  
-            <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
-          </Stack>
-        </Box>
+        <AccessControl/>
       </SimpleForm>
     </Edit>
   )
@@ -124,34 +137,25 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
     title='> Create new room'
     record={{
       details: {
+        presenceVisibility: 'all',
         specifics: {
           roomType: 'chat'
         }
       }
     }}
-    mutationOptions={{
-      onSuccess: () => {
-        // When embedded is true, don't navigate away
-        return embedded ? false : undefined
-      }
-    }}
+    // Use redirect prop instead of mutationOptions to control navigation
+    redirect={embedded ? false : false}
+    // The redirect prop accepts 'list', 'show', 'edit', false (to stay on the form)
+    // or a custom path like '/some-path'
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
       <Stack direction='row' spacing={2}>
-        <TextInput source="id" required />
-        <TextInput source="name" required />
+        <TextInput source="id" required style={{ width: '33%' }} />
+        <TextInput source="name" required style={{ width: '66%' }} />
       </Stack>
+      <TextInput source="details.description" label="Description" fullWidth helperText="Description of the room" />
       <RoomSpecifics/>
-      <Box style={roundBox}>
-          <LegendLabel>Access Control</LegendLabel>
-          <NotOwnerDropdown source="members" reference="users" />
-          <Stack direction='row' spacing={2}>
-            <ReferenceArrayInput source="memberForces" reference="groups">
-              <AutocompleteArrayInput optionText="id" />          
-            </ReferenceArrayInput>  
-            <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
-          </Stack>
-        </Box>
+      <AccessControl/>
     </SimpleForm>
   </Create>
 )

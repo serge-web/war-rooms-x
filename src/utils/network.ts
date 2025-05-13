@@ -38,3 +38,4 @@ export const isServerReachable = async (
     return false
   }
 }
+
