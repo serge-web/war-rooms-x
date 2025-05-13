@@ -14,6 +14,8 @@ const pubsubEvent = publishedName
 export class PubSubService {
   private xmppService: XMPPService
   public pubsubServiceUrl: string | null = null
+  public pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
+  public subscriptionIds: Map<string, string> = new Map()
 
   constructor(xmppService: XMPPService) {
     this.xmppService = xmppService
@@ -100,8 +102,9 @@ export class PubSubService {
       }
 
       const res = await this.xmppService.client.createNode(this.xmppService.pubsubServiceUrl!, nodeId, collectionForm)
+      console.log('node creation result', res)
 
-      if (!res || !res.node) {
+      if (!res) {
         console.error('problem creating collection', nodeId, res)
       }
       return { success: true, id: nodeId }
@@ -217,7 +220,7 @@ export class PubSubService {
       }
       
       // Notify all registered handlers about the document change
-      this.xmppService.pubsubChangeHandlers.forEach(handler => handler(document))
+      this.pubsubChangeHandlers.forEach(handler => handler(document))
       
       return { success: true, id: nodeId, itemId: result.id }
     } catch (error) {
@@ -268,7 +271,7 @@ export class PubSubService {
       }
       
       // check we aren't already subscribed to this node
-      const subIdForThisNode = this.xmppService.subscriptionIds.get(nodeId)
+      const subIdForThisNode = this.subscriptionIds.get(nodeId)
       if (subIdForThisNode) {
         return { success: true, id: nodeId, subscriptionId: subIdForThisNode }
       } else {
@@ -300,10 +303,10 @@ export class PubSubService {
         
         // Store the subscription ID for later use when unsubscribing
         if (result && result.subid) {
-          this.xmppService.subscriptionIds.set(nodeId, result.subid)
+          this.subscriptionIds.set(nodeId, result.subid)
           // Register the handler if provided
           if (handler) {
-            this.xmppService.pubsubChangeHandlers.push(handler)
+            this.pubsubChangeHandlers.push(handler)
           }
           return { success: true, id: nodeId, subscriptionId: result?.subid }
         } else {
@@ -333,7 +336,7 @@ export class PubSubService {
       }
       
       // Get the subscription ID if available
-      const subid = this.xmppService.subscriptionIds.get(nodeId)
+      const subid = this.subscriptionIds.get(nodeId)
 
       // Unsubscribe from the node with the subscription ID if available
       if (subid) {
@@ -343,7 +346,7 @@ export class PubSubService {
         })
         
         // Remove the subscription ID from the map
-        this.xmppService.subscriptionIds.delete(nodeId)
+        this.subscriptionIds.delete(nodeId)
       } else {
         // Try without subscription ID, but this might fail
         if (subscriptionId) {
@@ -358,9 +361,9 @@ export class PubSubService {
       
       // Remove the handler if provided
       if (handler) {
-        const index = this.xmppService.pubsubChangeHandlers.indexOf(handler)
+        const index = this.pubsubChangeHandlers.indexOf(handler)
         if (index !== -1) {
-          this.xmppService.pubsubChangeHandlers.splice(index, 1)
+          this.pubsubChangeHandlers.splice(index, 1)
         }
       }
       
@@ -420,7 +423,7 @@ export class PubSubService {
       }
       
       // Get the items from the node
-      const existingSub = this.xmppService.subscriptionIds.get(nodeId)
+      const existingSub = this.subscriptionIds.get(nodeId)
 
       // do we already have a subscription?
       if (existingSub) {
@@ -444,6 +447,8 @@ export class PubSubService {
       }
       else {
         const result = await this.xmppService.client.getItems(this.xmppService.pubsubServiceUrl!, nodeId)
+
+        console.log('get items result', result, this.xmppService.pubsubServiceUrl!, nodeId)
 
         if (result.items && result.items.length > 0) {
           const item = result.items[0] as PubSubDocument
@@ -490,7 +495,7 @@ export class PubSubService {
    * @param handler The handler function to call when a document changes
    */
   onPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
-    this.xmppService.pubsubChangeHandlers.push(handler)
+    this.pubsubChangeHandlers.push(handler)
   }
 
   /**
@@ -498,9 +503,9 @@ export class PubSubService {
    * @param handler The handler function to remove
    */
   offPubSubDocumentChange(handler: PubSubDocumentChangeHandler): void {
-    const index = this.xmppService.pubsubChangeHandlers.indexOf(handler)
+    const index = this.pubsubChangeHandlers.indexOf(handler)
     if (index !== -1) {
-      this.xmppService.pubsubChangeHandlers.splice(index, 1)
+      this.pubsubChangeHandlers.splice(index, 1)
     }
   }
 
@@ -634,7 +639,7 @@ export class PubSubService {
     }
     
     // Notify all registered handlers
-    this.xmppService.pubsubChangeHandlers.forEach(handler => {
+    this.pubsubChangeHandlers.forEach(handler => {
       handler(document)
     })
   }

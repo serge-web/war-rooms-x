@@ -20,7 +20,7 @@ export class XMPPService {
   public client: Agent | null = null
   private connectionService: ConnectionService
   private mucService: muc.MUCService
-  private pubsubService: PubSubService
+  public pubsubService: PubSubService
   private presenceService: PresenceService
   
   // State properties needed by the services
@@ -28,8 +28,6 @@ export class XMPPService {
   public bareJid = ''
   public jid = ''
   public server = ''
-  public pubsubChangeHandlers: PubSubDocumentChangeHandler[] = []
-  public subscriptionIds: Map<string, string> = new Map()
   public presenceHandlers: Map<string, PresenceHandler[]> = new Map()
 
   constructor() {

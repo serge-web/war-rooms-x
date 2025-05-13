@@ -100,7 +100,7 @@ export class ConnectionService {
   async disconnect(): Promise<void> {
     if (this.xmppService.client && this.xmppService.connected) {
       // TODO: clear pubsub subscriptions
-      this.xmppService.subscriptionIds.forEach(async (subid, nodeId) =>
+      this.xmppService.pubsubService.subscriptionIds.forEach(async (subid, nodeId) =>
       {
         if (this.xmppService.pubsubServiceUrl) {
           try {
