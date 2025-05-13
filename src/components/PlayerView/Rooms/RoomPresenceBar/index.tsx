@@ -56,21 +56,20 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   }, [users, getForce])
 
   // Filter users based on visibility config
-  const visibleUsers = useMemo(() => users?.filter(() => {
+  const visibleUsers = useMemo(() => {
     // Admins can see all users regardless of config
-    if (isAdmin) return true
-    
-    // If config is set to show all users
-    if (visibilityConfig === 'all') return true
-    
-    // If config is set to show only umpires and the user is an umpire
-    if (visibilityConfig === 'umpires-only') return currentUserForce === 'umpire'
-
-    // don't return if visibility is set to none
-    if (visibilityConfig === 'none') return false
-    
-    return false
-  }), [users, visibilityConfig, currentUserForce, isAdmin])
+    if (isAdmin) return users
+    switch(visibilityConfig) {
+      case 'all':
+        return users
+      case 'umpires-only':
+        return 'umpire' === currentUserForce ? users : []
+      case 'none':
+        return []
+      default:
+        return []
+    }
+  }, [users, visibilityConfig, currentUserForce, isAdmin])  
 
   if (visibleUsers === undefined || visibleUsers.length === 0) {
     return null // Don't render anything if no users to show
