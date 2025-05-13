@@ -65,7 +65,7 @@ export class SimpleFormsStrategy implements RoomTypeStrategy<FormRoomConfig> {
   public editComponent: ComponentType = () => {
     return (
       <ReferenceArrayInput source="details.specifics.templateIds" reference="templates">
-        <AutocompleteArrayInput optionText="schema.title" optionValue="id" label="Templates" />
+        <AutocompleteArrayInput helperText="Templates used to create new messages in this room" optionText="schema.title" optionValue="id" label="Templates" />
       </ReferenceArrayInput>
     )
   }
