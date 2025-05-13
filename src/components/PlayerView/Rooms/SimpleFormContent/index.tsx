@@ -15,7 +15,7 @@ interface SimpleFormProps {
 }
 
 const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, error, clearError, present, presenceVisibility } = useRoom(room)
+  const { messages, theme, canSubmit, sendMessage, error, clearError, users, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
   const { templates } = useTemplates()
   // const { users, presenceVisibility, loading } = useRoomUsers(room)
@@ -40,7 +40,7 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
       
       {/* Room Presence Bar */}
       <RoomPresenceBar 
-          userIds={present}
+          users={users}
           visibilityConfig={presenceVisibility}
           currentUserForce={playerDetails?.forceId}
           isAdmin={playerDetails?.role === 'admin'}

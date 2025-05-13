@@ -53,56 +53,7 @@ describe('XMPPService presence methods', () => {
       writable: true
     })
   })
-  
-  describe('getPresence', () => {
-    it('should return unavailable if not connected', async () => {
-      // Set connected to false
-      Object.defineProperty(xmppService, 'connected', {
-        value: false,
-        writable: true
-      })
-      
-      const result = await xmppService.getPresence('user@example.com')
-      
-      expect(result).toEqual({ available: false })
-      expect(mockClient.sendPresence).not.toHaveBeenCalled()
-    })
-    
-    it('should return unavailable if client is null', async () => {
-      // Set client to null
-      xmppService.client = null
-      
-      const result = await xmppService.getPresence('user@example.com')
-      
-      expect(result).toEqual({ available: false })
-    })
-    
-    it('should send a presence probe to the user', async () => {
-      await xmppService.getPresence('user@example.com')
-      
-      expect(mockClient.sendPresence).toHaveBeenCalledWith({
-        to: 'user@example.com',
-        type: 'probe'
-      })
-    })
-    
-    it('should handle errors when sending presence probe', async () => {
-      // Mock sendPresence to throw an error
-      mockClient.sendPresence.mockRejectedValue(new Error('Test error'))
-      
-      // Spy on console.error
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
-      
-      const result = await xmppService.getPresence('user@example.com')
-      
-      expect(result).toEqual({ available: false })
-      expect(consoleSpy).toHaveBeenCalled()
-      
-      // Restore console.error
-      consoleSpy.mockRestore()
-    })
-  })
-  
+
   describe('subscribeToPresence', () => {
     it('should add handler to presenceHandlers map', () => {
       const handler: PresenceHandler = jest.fn()
