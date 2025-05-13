@@ -17,16 +17,18 @@ export const roomXtoR = (result: XRoom): RRoom => {
 
 export const roomRtoX = (result: RRoom): XRoom => {
   const details = result.details as unknown as string
-  const description = details && !isJson(details) ? JSON.stringify(result.details) : undefined
-  const res = {
+  const description: string | undefined = details && !isJson(details) ? JSON.stringify(result.details) : undefined
+  const res: XRoom = {
     roomName: result.id as string,
     naturalName: result.name,
     description: description,
     members: result.members?.map(formatMemberWithHost) || [],
     memberGroups: result.memberForces,
     persistent: true,
-    publicRoom: result.public,
-    broadcastPresenceRoles: ['owner', 'admin', 'member']
+    publicRoom: result.public
+    // drop the next command, it frequently crashes the API, particularly
+    // when editing an existing room
+    // broadcastPresenceRoles: ['owner', 'admin', 'member']
   }
   return res
 }
