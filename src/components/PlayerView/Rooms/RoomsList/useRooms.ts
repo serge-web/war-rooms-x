@@ -33,7 +33,7 @@ export const useRooms = () => {
       } 
     } else {
       // TODO: use real data
-      if (xmppClient.mucService) {
+      if (xmppClient.mucServiceUrl) {
         const fetchRooms = async () => {
           const rooms = await xmppClient.listRooms()
           // get the room description

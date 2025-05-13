@@ -38,7 +38,7 @@ export const groupRtoX = async (result: RGroup, id: string, xmppClient: XMPPServ
     objectives: result.objectives
   }
   const nodeId = FORCES_PREFIX + id
-  const res = await xmppClient?.publishPubSubLeaf(nodeId, FORCES_COLLECTION, newDoc)
+  const res = await xmppClient?.publishPubSubLeaf(nodeId, FORCES_COLLECTION, newDoc as unknown as Record<string, unknown>)
   if (!res.success) {
     console.error('problem publishing document', id)
   }

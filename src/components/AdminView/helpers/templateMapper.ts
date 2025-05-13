@@ -23,7 +23,7 @@ export const TemplateDataProvider = (xmppClient: XMPPService): DataProvider => {
   return {
     getList: async (): Promise<GetListResult> => {  
       // start off with the collection
-      const doc = await xmppClient.client?.getDiscoItems(xmppClient.pubsubService || '', TEMPLATES_COLLECTION)
+      const doc = await xmppClient.client?.getDiscoItems(xmppClient.pubsubServiceUrl || '', TEMPLATES_COLLECTION)
       if (!doc) {
         // no templates, drop out
         return { data: [], total: 0 }

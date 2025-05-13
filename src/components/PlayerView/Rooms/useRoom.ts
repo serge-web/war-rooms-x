@@ -40,7 +40,7 @@ export const useRoom = (room: RoomType) => {
       },
       content
     }
-    if (xmppClient && xmppClient.mucService) {
+    if (xmppClient && xmppClient.mucServiceUrl) {
       const sendMessage = async (message: GameMessage) => {
         const res: SendMessageResult = (await xmppClient.sendRoomMessage(message))
         if (res && !res.success) {
@@ -91,7 +91,7 @@ export const useRoom = (room: RoomType) => {
     } else {
       // TODO: handle room theme, if present
       // TODO: handle other room metadata (esp. permissions)
-      if (xmppClient.mucService && messagesReceived.current === null) {
+      if (xmppClient.mucServiceUrl && messagesReceived.current === null) {
         messagesReceived.current = true
 
         const updateUser = async (from: string, available: boolean) => {

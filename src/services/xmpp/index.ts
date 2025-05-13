@@ -39,12 +39,20 @@ export class XMPPService {
     this.presenceService = new PresenceService(this)
   }
 
-  set pubsubServiceUrl(url: string) {
+  set pubsubServiceUrl(url: string | null) {
     this.pubsubService.pubsubServiceUrl = url
   }
 
-  set mucServiceUrl(url: string) {
+  get pubsubServiceUrl(): string | null {
+    return this.pubsubService.pubsubServiceUrl
+  }
+
+  set mucServiceUrl(url: string | null) {
     this.mucService.mucServiceUrl = url
+  }
+
+  get mucServiceUrl(): string | null {
+    return this.mucService.mucServiceUrl
   }
 
   // Connection methods
