@@ -38,7 +38,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
       
       for (const forceId of uniqueForces) {
         try {
-          if (forceId !== 'unknown' && forceId !== undefined) {
+          if (forceId !== 'unknown' && forceId) {
             const force: ForceConfigType = await getForce(forceId)
             if (force.color) {
               colorMap[forceId] = force.color
@@ -76,13 +76,17 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
     return null // Don't render anything if no users to show
   }
 
+  const userName = (user: OnlineUser): string => {
+    return user.name || user.id
+  }
+
   return (
     <div className="room-presence-bar" data-testid="room-presence-bar">
       <div className="presence-users">
         {visibleUsers.map(user => (
           <Tooltip 
             key={user.id} 
-            title={`${user.name} (${user.force})`}
+            title={`${userName(user)} (${user.force})`}
             placement="bottom"
           >
             <div 
@@ -90,7 +94,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
               data-testid={`presence-user-${user.id}`}
             >
               <UserOutlined style={forceColors[user.force || ''] ? { color: forceColors[user.force || ''] } : undefined} />
-              <span className="user-name">{user.name}</span>
+              <span className="user-name">{userName(user)}</span>
             </div>
           </Tooltip>
         ))}

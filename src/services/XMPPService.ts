@@ -1167,7 +1167,7 @@ export class XMPPService {
       const sError = error as { error: { condition: string } }
       if (sError && sError.error?.condition === 'item-not-found') {
         const psError = (sError as unknown as { pubsub: Pubsub }).pubsub as Pubsub
-        console.log('Failed to find pubsub node:' + psError.fetch?.node)
+        console.error('Failed to find pubsub node:' + psError.fetch?.node)
       }
       console.log('get docs error:', sError)
       if(sError && sError.error?.condition === 'item-not-found') {

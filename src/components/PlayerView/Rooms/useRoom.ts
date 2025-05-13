@@ -8,6 +8,7 @@ import { useIndexedDBData } from '../../../hooks/useIndexedDBData';
 import * as localforage from 'localforage'
 import { prefixKey } from '../../../types/constants';
 import { RRoom } from '../../AdminView/raTypes-d';
+import { UserConfigType } from '../../../types/wargame-d';
 
 export const useRoom = (room: RoomType) => {
   const { xmppClient, gameState, playerDetails, getPlayerDetails } = useWargame()
@@ -120,7 +121,7 @@ export const useRoom = (room: RoomType) => {
         }
         fetchMessages().then(() => {
           // now get the users
-          const getPlayerDetailsTop = async(jid: string) => {
+          const getPlayerDetailsTop = async(jid: string): Promise<UserConfigType | undefined> => {
             const res = await getPlayerDetails(jid)
             return res
           }
@@ -128,12 +129,12 @@ export const useRoom = (room: RoomType) => {
             const users = await xmppClient.getRoomMembers(room.roomName)
             const getUserDetails = users.map((user: User) => {
               const jid = user.jid.split('/')[1].split('@')[0]
-              const details = getPlayerDetailsTop(jid)
-              return details
+              return getPlayerDetailsTop(jid)
             })
             Promise.all(getUserDetails).then((details) => {
-              const onlineUsers = details.map((detail): OnlineUser | undefined => {
-                return detail ? { id: detail.id, isOnline: true, name: detail.role, force: detail.forceId } : { id: '', isOnline: false, name: '', force: '' }
+              const onlineUsers = details.map((detail: UserConfigType | undefined, index: number): OnlineUser => {
+                const jid = users[index].jid.split('/')[1].split('@')[0]
+                return detail ? { id: jid, isOnline: true, name: detail.name, force: detail.forceId } : { id: jid, isOnline: true, name: '', force: '' }
               })
               setUsers(onlineUsers.filter((user) => user !== undefined))
             })

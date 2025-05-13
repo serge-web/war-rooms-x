@@ -2,7 +2,7 @@ import { useState, ReactNode, useMemo, useCallback } from 'react'
 import { WargameContext } from './WargameContext'
 import { XMPPService } from '../services/XMPPService'
 import { DataProvider } from 'react-admin'
-import { ForceConfigType, GamePlayerDetails } from '../types/wargame-d'
+import { ForceConfigType, UserConfigType } from '../types/wargame-d'
 import { roomTypeFactory } from '../services/roomTypes'
 import { mockBackend } from '../mockData/mockAdmin'
 import { useGameProperties } from '../components/PlayerView/GameState/useGameSetup'
@@ -25,8 +25,9 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   const { gameProperties } = useGameProperties(xmppClient)
   const { gameState, nextTurn } = useGameState(xmppClient)
   const { playerDetails, mockPlayerId, setMockPlayerId } = usePlayerDetails(xmppClient)
+  const [userCache] = useState<Record<string, UserConfigType>>({})
 
-  const getPlayerDetails = useCallback(async (userId: string): Promise<GamePlayerDetails | undefined> => {
+  const getPlayerDetails = useCallback(async (userId: string): Promise<UserConfigType | undefined> => {
     if (!userId) {
       console.warn('user id missing', userId)
     }
@@ -38,24 +39,29 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
       if (!rUser) {
         throw new Error('User not found: ' + userId)
       } else {
-        const user: GamePlayerDetails = {
-          id: rUser.id,
-          role: rUser.name,
-          forceId: rUser.forceId,
-          forceName: rUser.forceName,
-          color: rUser.color
+        const user: UserConfigType = {
+          type: 'user-config-type-v1',
+          name: rUser.name,
+          forceId: rUser.forceId
         }
         return user
       }
     } else {
       // TODO: cache the user details
-      console.log('about to get xmpp doc:', USERS_PREFIX + userId)
-      const user = await xmppClient.getPubSubDocument(USERS_PREFIX + userId)
-      if (user) {
-        return user as GamePlayerDetails
+      const cachedDoc = userCache[userId]
+      if (cachedDoc) {
+        return cachedDoc
+      } else {
+        console.log('about to get xmpp doc:', USERS_PREFIX + userId)
+        const user = await xmppClient.getPubSubDocument(USERS_PREFIX + userId)
+        if (user) {
+          userCache[userId] = user as UserConfigType
+          return user as UserConfigType
+        }
       }
     }
-    }, [xmppClient])
+    return undefined
+    }, [xmppClient, userCache])
 
   const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => {
     if (!forceId) {
