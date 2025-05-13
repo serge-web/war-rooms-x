@@ -97,30 +97,36 @@ const RoomSpecifics = () => {
   )
 }
 
+const AccessControl = () => {
+  return (
+    <Box style={roundBox}>
+      <LegendLabel>Access Control</LegendLabel>
+      <NotOwnerDropdown source="members" reference="users" />
+      <Stack direction='row' spacing={2}>
+        <ReferenceArrayInput source="memberForces" reference="groups">
+          <AutocompleteArrayInput optionText="id" helperText="Forces that are members of this room" />          
+        </ReferenceArrayInput>  
+        <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+        <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
+        { id: 'all', name: 'All' },
+        { id: 'umpires-only', name: 'Umpires Only' },
+        { id: 'none', name: 'None' }
+      ]}/>
+      </Stack>
+    </Box>
+  )
+}
+
 export const EditRoom = ({ id }: { id?: string }) => {
   return (
     <Edit title='> Edit room' key={id} id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
       <Stack direction='row' spacing={2}>
-        <TextInput source="name" />
-        <TextInput source="details.description" label="Description" />
+        <TextInput helperText="Name of the room" source="name" style={{ width: '33%' }} />
+        <TextInput helperText="Description of the room" source="details.description" label="Description" style={{ width: '88%' }} />
       </Stack>  
         <RoomSpecifics/>
-        <Box style={roundBox}>
-          <LegendLabel>Access Control</LegendLabel>
-          <NotOwnerDropdown source="members" reference="users" />
-          <Stack direction='row' spacing={2}>
-            <ReferenceArrayInput source="memberForces" reference="groups">
-              <AutocompleteArrayInput optionText="id" />          
-            </ReferenceArrayInput>  
-            <BooleanInput helperText="Public rooms are visible to all users" source="public" />   
-            <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
-          { id: 'all', name: 'All' },
-          { id: 'umpires-only', name: 'Umpires Only' },
-          { id: 'none', name: 'None' }
-        ]}/>
-          </Stack>
-        </Box>
+        <AccessControl/>
       </SimpleForm>
     </Edit>
   )
@@ -131,6 +137,7 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
     title='> Create new room'
     record={{
       details: {
+        presenceVisibility: 'all',
         specifics: {
           roomType: 'chat'
         }
@@ -143,26 +150,12 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
       <Stack direction='row' spacing={2}>
-        <TextInput source="id" required />
-        <TextInput source="name" required />
+        <TextInput source="id" required style={{ width: '33%' }} />
+        <TextInput source="name" required style={{ width: '66%' }} />
       </Stack>
-      <TextInput source="details.description" label="Description" />
+      <TextInput source="details.description" label="Description" fullWidth helperText="Description of the room" />
       <RoomSpecifics/>
-      <Box style={roundBox}>
-          <LegendLabel>Access Control</LegendLabel>
-          <NotOwnerDropdown source="members" reference="users" />
-          <Stack direction='row' spacing={2}>
-            <ReferenceArrayInput source="memberForces" reference="groups">
-              <AutocompleteArrayInput optionText="id" />          
-            </ReferenceArrayInput>  
-            <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
-            <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
-          { id: 'all', name: 'All' },
-          { id: 'umpires-only', name: 'Umpires Only' },
-          { id: 'none', name: 'None' }
-        ]}/>
-          </Stack>
-        </Box>
+      <AccessControl/>
     </SimpleForm>
   </Create>
 )
