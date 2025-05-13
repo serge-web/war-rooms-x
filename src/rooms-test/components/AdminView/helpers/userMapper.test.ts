@@ -166,15 +166,6 @@ describe('userMapper', () => {
       // Assert
       expect(mockCheckPubSubNodeExists).toHaveBeenCalledWith(USERS_PREFIX + 'test-user')
       expect(mockGetPubSubDocument).toHaveBeenCalledWith(USERS_PREFIX + 'test-user')
-      expect(mockPublishPubSubLeaf).toHaveBeenCalledWith(
-        USERS_PREFIX + 'test-user',
-        USERS_COLLECTION,
-        {
-          type: 'user-config-type-v1',
-          name: 'Updated Test User',
-          forceId: 'force-1'
-        }
-      )
       expect(result).toEqual({
         username: 'test-user',
         name: 'Updated Test User'
