@@ -54,7 +54,7 @@ const mockRoom: RoomType = {
 const initMockData = async (roomName: string, forceId: string) => {
   // Create mock users for this force
   const mockUsers = mockBackend.users
-    .filter(user => user.name.toLowerCase().includes(forceId))
+    .filter(user => forceId === 'ALL' || user.name.toLowerCase().includes(forceId))
     .map(user => ({
       jid: user.id,
       name: user.name,
@@ -85,7 +85,7 @@ const initMockData = async (roomName: string, forceId: string) => {
 }
 
 // Create a decorator for each force
-const createForceDecorator = (forceId: string) => {
+const createForceDecorator = (forceId: string | 'ALL') => {
   return (Story: React.ComponentType, { args }: { args: { room: RoomType } }) => {
     // Initialize mock data for IndexedDB when the component mounts
     useEffect(() => {
@@ -225,4 +225,16 @@ export const LogsChat: Story = {
     }
   },
   decorators: [createForceDecorator('logs')]
+}
+
+// Chat Room with lots of users
+export const ManyUsers: Story = {
+  args: {
+    room: {
+      ...mockRoom,
+      roomName: 'many-users',
+      naturalName: 'Many Users'
+    }
+  },
+  decorators: [createForceDecorator('ALL')]
 }
