@@ -115,6 +115,7 @@ describe('roomMapper', () => {
         description: undefined,
         members: ['user1@ubuntu-linux-2404', 'user2@ubuntu-linux-2404'],
         memberGroups: ['force1', 'force2'],
+        broadcastPresenceRoles: ['owner', 'admin', 'member'],
         persistent: true,
         publicRoom: undefined
       })
