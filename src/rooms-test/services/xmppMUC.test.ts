@@ -90,8 +90,8 @@ describe('XMPPService - MUC Operations', () => {
     
     // Set connected state and services
     Object.defineProperty(xmppService, 'connected', { value: true, writable: true })
-    xmppService.pubsubService = 'pubsub.test-server'
-    xmppService.mucService = 'conference.test-server'
+    xmppService.pubsubServiceUrl = 'pubsub.test-server'
+    xmppService.mucServiceUrl = 'conference.test-server'
     xmppService.bareJid = 'test-user@test-server'
     
     // Set up message handler
