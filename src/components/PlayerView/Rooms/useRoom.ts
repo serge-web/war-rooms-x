@@ -83,6 +83,9 @@ export const useRoom = (room: RoomType) => {
         if (thisRoom && thisRoom.dummyTheme) {
           setTheme(thisRoom.dummyTheme)
         }
+        // and the users
+        const thisRoomUsers = thisRoom?.dummyUsers || []
+        setUsers(thisRoomUsers)
         setCanSubmit(true)
       }
     } else {
