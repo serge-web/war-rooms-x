@@ -1,5 +1,5 @@
 import * as XMPP from 'stanza'
-import { AccountManagement, DiscoInfoResult } from 'stanza/protocol'
+import { DiscoInfoResult } from 'stanza/protocol'
 import { XMPPService } from './index'
 
 /**

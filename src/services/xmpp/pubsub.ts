@@ -31,12 +31,12 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
       // Get all nodes from the pubsub service
-      const items = await this.xmppService.client.getDiscoItems(this.xmppService.pubsubServiceUrl)
+      const items = await this.xmppService.client.getDiscoItems(this.pubsubServiceUrl)
       
       // Convert DiscoItems to PubSubDocument objects
       return items.items
@@ -60,13 +60,13 @@ export class PubSubService {
     if (!this.xmppService.client || !this.xmppService.connected) {
       return []
     }
-    if (!this.xmppService.pubsubServiceUrl) {
+    if (!this.pubsubServiceUrl) {
       throw new Error('PubSub service not available')
     }
     try {
-      const items = await this.xmppService.client.getDiscoItems(this.xmppService.pubsubServiceUrl, nodeId)
+      const items = await this.xmppService.client.getDiscoItems(this.pubsubServiceUrl, nodeId)
       const itemNodes = items.items.map((item) => item.node)
-      const getItems = itemNodes.map((node) => this.xmppService.client?.getItems(this.xmppService.pubsubServiceUrl!, node as string))
+      const getItems = itemNodes.map((node) => this.xmppService.client?.getItems(this.pubsubServiceUrl!, node as string))
       const results = await Promise.all(getItems)
       const contents = results.map((result) => result?.items?.[0].content) as JSONItem[]
       const jsonDocs = contents.map((content) => content.json)
@@ -88,7 +88,7 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
@@ -101,7 +101,7 @@ export class PubSubService {
         ]
       }
 
-      const res = await this.xmppService.client.createNode(this.xmppService.pubsubServiceUrl!, nodeId, collectionForm)
+      const res = await this.xmppService.client.createNode(this.pubsubServiceUrl!, nodeId, collectionForm)
       console.log('node creation result', res)
 
       if (!res) {
@@ -127,7 +127,7 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
 
@@ -158,7 +158,7 @@ export class PubSubService {
           leafForm.fields?.push({ name: 'pubsub#collection', value: collection })
         }
 
-        const res = await this.xmppService.client.createNode(this.xmppService.pubsubServiceUrl!, nodeId, leafForm)
+        const res = await this.xmppService.client.createNode(this.pubsubServiceUrl!, nodeId, leafForm)
         if (!res || !res.node) {
           console.error('problem creating leaf document', res)
         }
@@ -170,7 +170,7 @@ export class PubSubService {
           itemType: NS_JSON_0,
           json: content
         }
-        const pushResults = await this.xmppService.client.publish(this.xmppService.pubsubServiceUrl!, nodeId, jsonDoc)
+        const pushResults = await this.xmppService.client.publish(this.pubsubServiceUrl!, nodeId, jsonDoc)
         if (!pushResults || !pushResults.id) {
           console.error('problem publishing leaf content', nodeId, pushResults)
         }
@@ -196,7 +196,7 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       const wrappedItem: JSONItem = {
@@ -205,7 +205,7 @@ export class PubSubService {
       }
       
       // Publish the JSON content to the node
-      const result = await this.xmppService.client.publish(this.xmppService.pubsubServiceUrl!, nodeId, wrappedItem)
+      const result = await this.xmppService.client.publish(this.pubsubServiceUrl!, nodeId, wrappedItem)
       
       // Manually trigger the document change event for local subscribers
       // This ensures that our local handlers are notified even if the XMPP server
@@ -240,12 +240,12 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
       // Delete the node
-      await this.xmppService.client.deleteNode(this.xmppService.pubsubServiceUrl!, nodeId)
+      await this.xmppService.client.deleteNode(this.pubsubServiceUrl!, nodeId)
       
       return { success: true, id: nodeId }
     } catch (error) {
@@ -266,7 +266,7 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
@@ -276,14 +276,14 @@ export class PubSubService {
         return { success: true, id: nodeId, subscriptionId: subIdForThisNode }
       } else {
         // check if we're already subscribed to this node
-        const subscriptions = await this.xmppService.client.getSubscriptions(this.xmppService.pubsubServiceUrl!)
+        const subscriptions = await this.xmppService.client.getSubscriptions(this.pubsubServiceUrl!)
         if (subscriptions) {
           const mySubs = subscriptions.items?.filter((item) => {
             return (item.node === nodeId) && (item.jid === this.xmppService.bareJid)
           })
           // map to unsubscribe promises
           const unsubscribePromises = mySubs?.map((subscription) => {
-            return this.xmppService.client?.unsubscribeFromNode(this.xmppService.pubsubServiceUrl!, {
+            return this.xmppService.client?.unsubscribeFromNode(this.pubsubServiceUrl!, {
               node: nodeId,
               subid: subscription.subid
             })
@@ -299,7 +299,7 @@ export class PubSubService {
         }
 
         // Subscribe to the node
-        const result = await this.xmppService.client.subscribeToNode(this.xmppService.pubsubServiceUrl!, nodeId)
+        const result = await this.xmppService.client.subscribeToNode(this.pubsubServiceUrl!, nodeId)
         
         // Store the subscription ID for later use when unsubscribing
         if (result && result.subid) {
@@ -331,7 +331,7 @@ export class PubSubService {
     }
     
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
@@ -340,7 +340,7 @@ export class PubSubService {
 
       // Unsubscribe from the node with the subscription ID if available
       if (subid) {
-        await this.xmppService.client.unsubscribeFromNode(this.xmppService.pubsubServiceUrl!, {
+        await this.xmppService.client.unsubscribeFromNode(this.pubsubServiceUrl!, {
           node: nodeId,
           subid
         })
@@ -350,12 +350,12 @@ export class PubSubService {
       } else {
         // Try without subscription ID, but this might fail
         if (subscriptionId) {
-          await this.xmppService.client.unsubscribeFromNode(this.xmppService.pubsubServiceUrl!, {
+          await this.xmppService.client.unsubscribeFromNode(this.pubsubServiceUrl!, {
             node: nodeId,
             subid: subscriptionId
           })
         } else {
-          await this.xmppService.client.unsubscribeFromNode(this.xmppService.pubsubServiceUrl!, nodeId)
+          await this.xmppService.client.unsubscribeFromNode(this.pubsubServiceUrl!, nodeId)
         }
       }
       
@@ -382,12 +382,12 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
       // Get the items from the node
-      const result = await this.xmppService.client.getSubscriptions(this.xmppService.pubsubServiceUrl)
+      const result = await this.xmppService.client.getSubscriptions(this.pubsubServiceUrl)
       
       // delete all subscriptions
       if (result && result.items) {
@@ -396,7 +396,7 @@ export class PubSubService {
             node: item.node,
             subid: item.subid
           }
-          await this.xmppService.client.unsubscribeFromNode(this.xmppService.pubsubServiceUrl, subOpts)
+          await this.xmppService.client.unsubscribeFromNode(this.pubsubServiceUrl, subOpts)
         }
       }
 
@@ -418,7 +418,7 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
@@ -430,7 +430,7 @@ export class PubSubService {
         // we need to use a special stanza, which provides the subscription id.
         const iq = {
           type: 'get',
-          to: this.xmppService.pubsubServiceUrl,
+          to: this.pubsubServiceUrl,
           pubsub: {
             items: {
                 node: nodeId,
@@ -446,7 +446,7 @@ export class PubSubService {
         return null
       }
       else {
-        const result = await this.xmppService.client.getItems(this.xmppService.pubsubServiceUrl!, nodeId)
+        const result = await this.xmppService.client.getItems(this.pubsubServiceUrl!, nodeId)
 
         if (result.items && result.items.length > 0) {
           const item = result.items[0] as PubSubDocument
@@ -518,12 +518,12 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
       // Get the node configuration using StanzaJS
-      const result = await this.xmppService.client.getNodeConfig(this.xmppService.pubsubServiceUrl!, nodeId)
+      const result = await this.xmppService.client.getNodeConfig(this.pubsubServiceUrl!, nodeId)
       return result !== null
     } catch (error) {
         // check for item not found
@@ -548,12 +548,12 @@ export class PubSubService {
     }
 
     try {
-      if (!this.xmppService.pubsubServiceUrl) {
+      if (!this.pubsubServiceUrl) {
         throw new Error('PubSub service not available')
       }
       
       // Get the node configuration using StanzaJS
-      const result = await this.xmppService.client.getNodeConfig(this.xmppService.pubsubServiceUrl!, nodeId)
+      const result = await this.xmppService.client.getNodeConfig(this.pubsubServiceUrl!, nodeId)
       
       // Extract the node type from the configuration form
       let nodeType: 'leaf' | 'collection' = 'leaf' // Default to leaf

@@ -54,6 +54,14 @@ export class XMPPService {
   }
 
   // Connection methods
+  /**
+   * Establishes a connection to the XMPP server.
+   * @param ip The IP address of the XMPP server.
+   * @param host The hostname of the XMPP server.
+   * @param username The username for the XMPP account.
+   * @param password The password for the XMPP account.
+   * @returns A boolean indicating whether the connection was successful.
+   */
   async connect(ip: string, host: string, username: string, password: string): Promise<boolean> {
     return this.connectionService.connect(ip, host, username, password)
   }
@@ -207,10 +215,5 @@ export class XMPPService {
 
   handlePresenceUpdate(presence: ReceivedPresence): void {
     this.presenceService.handlePresenceUpdate(presence)
-  }
-
-  // vCard methods
-  async getFullName(bareJid: string): Promise<string | undefined> {
-    return this.connectionService.getFullName(bareJid)
   }
 }
