@@ -131,12 +131,13 @@ export const useRoom = (room: RoomType) => {
           const fetchUsers = async () => {
             const users = await xmppClient.getRoomMembers(room.roomName)
             const getUserDetails = users.map((user: User) => {
-              const jid = user.jid.split('/')[1].split('@')[0]
+              const jid = user.jid.includes('/') ? user.jid.split('/')[1].split('@')[0] : user.jid
               return getPlayerDetailsTop(jid)
             })
             Promise.all(getUserDetails).then((details) => {
               const onlineUsers = details.map((detail: UserConfigType | undefined, index: number): OnlineUser => {
-                const jid = users[index].jid.split('/')[1].split('@')[0]
+                const thisUser = users[index]
+                const jid = thisUser.jid.includes('/') ? thisUser.jid.split('/')[1].split('@')[0] : thisUser.jid
                 return detail ? { id: jid, isOnline: true, name: detail.name, force: detail.forceId } : { id: jid, isOnline: true, name: '', force: '' }
               })
               setUsers(onlineUsers.filter((user) => user !== undefined))

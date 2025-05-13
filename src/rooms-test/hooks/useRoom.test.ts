@@ -30,11 +30,18 @@ describe('useRoom hook', () => {
     description: 'A test room for unit testing'
   }
 
+  // Mock users to be returned from getRoomMembers
+  const mockUsers = [
+    { jid: 'user1', name: 'User 1', role: 'Player', forceId: 'force1' },
+    { jid: 'user2', name: 'User 2', role: 'Admin', forceId: 'force2' }
+  ]
+  
   // Mock XMPP client methods
   const mockJoinRoom = jest.fn()
-  const mockGetRoomMembers = jest.fn()
+  const mockGetRoomMembers = jest.fn().mockResolvedValue(mockUsers)
   const mockSendRoomMessage = jest.fn()
   const mockLeaveRoom = jest.fn()
+  const mockSubscribeToPresence = jest.fn()
 
   // Mock XMPP client
   const createMockXmppClient = (includeServices = true) => ({
@@ -42,6 +49,7 @@ describe('useRoom hook', () => {
     getRoomMembers: mockGetRoomMembers,
     sendRoomMessage: mockSendRoomMessage,
     leaveRoom: mockLeaveRoom,
+    subscribeToPresence: mockSubscribeToPresence,
     mucService: includeServices ? {} : null
   })
 
@@ -56,10 +64,27 @@ describe('useRoom hook', () => {
     })
 
     // Reset XMPP client method mocks
-    mockJoinRoom.mockReset().mockResolvedValue(undefined)
+    mockJoinRoom.mockReset().mockResolvedValue( [
+      {
+        "forceId": "force1",
+        "id": "user1",
+        "name": "User 1",
+        "role": "Player",
+      },
+     {
+        "forceId": "force2",
+        "id": "user2",
+        "name": "User 2",
+        "role": "Admin",
+      }])
     mockGetRoomMembers.mockReset().mockResolvedValue([])
     mockSendRoomMessage.mockReset().mockResolvedValue({ success: true })
     mockLeaveRoom.mockReset().mockResolvedValue(undefined)
+    mockSubscribeToPresence.mockReset().mockResolvedValue(undefined)
+  })
+
+  const mockGetPlayerDetails = jest.fn().mockImplementation((id: string) => {
+    return mockUsers.find(u => u.jid === id)
   })
 
   it('should return empty messages array when waiting for login', () => {
@@ -67,7 +92,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: undefined,
       gameState: null,
-      playerDetails: null
+      playerDetails: null,
+      getPlayerDetails: mockGetPlayerDetails
     })
     
     // Render the hook
@@ -105,6 +131,7 @@ describe('useRoom hook', () => {
         id: 'test-room',
         name: 'Test Room',
         dummyMessages: mockMessages,
+        dummyUsers: mockUsers,
         dummyTheme: { token: { colorPrimary: '#ff0000' } }
       }
     ]
@@ -113,7 +140,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: null,
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     mockUseIndexedDBData.mockReturnValue({
@@ -128,7 +156,7 @@ describe('useRoom hook', () => {
     // Verify all properties are loaded from mock data
     expect(result.current.messages).toEqual(mockMessages)
     expect(result.current.theme).toEqual({ token: { colorPrimary: '#ff0000' } })
-    expect(result.current.users).toEqual([])
+    expect(result.current.users).toEqual(mockUsers)
     expect(result.current.canSubmit).toBe(true)
     expect(result.current.error).toBeNull()
   })
@@ -138,7 +166,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: null,
       gameState: null,
-      playerDetails: null
+      playerDetails: null,
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     mockUseIndexedDBData.mockReturnValue({
@@ -172,7 +201,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: null,
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     mockUseIndexedDBData.mockReturnValue({
@@ -216,7 +246,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: null,
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     mockUseIndexedDBData.mockReturnValue({
@@ -235,11 +266,6 @@ describe('useRoom hook', () => {
   })
 
   it('should join room and fetch users when xmppClient is available', async () => {
-    // Mock users to be returned from getRoomMembers
-    const mockUsers = [
-      { id: 'user1', name: 'User 1', role: 'Player', forceId: 'force1' },
-      { id: 'user2', name: 'User 2', role: 'Admin', forceId: 'force2' }
-    ]
     
     // Set up mock for XMPP client
     mockGetRoomMembers.mockResolvedValue(mockUsers)
@@ -248,7 +274,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: createMockXmppClient(),
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     // Render the hook
@@ -266,11 +293,18 @@ describe('useRoom hook', () => {
     
     // Force a re-render to get the updated state
     rerender()
+
+    const mappedUsers = mockUsers.map(u => ({
+      force: u.forceId,
+      id: u.jid,
+      isOnline: true,
+      name: u.name
+    }))
     
     // Verify room was joined and users were fetched
     expect(mockJoinRoom).toHaveBeenCalledWith('test-room', expect.any(Function))
     expect(mockGetRoomMembers).toHaveBeenCalledWith('test-room')
-    expect(result.current.users).toEqual(mockUsers)
+    expect(result.current.users).toEqual(mappedUsers)
   })
 
   it('should send message through XMPP client when available', async () => {
@@ -278,7 +312,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: createMockXmppClient(),
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     // Render the hook
@@ -314,7 +349,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: createMockXmppClient(),
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     // Render the hook
@@ -357,7 +393,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: createMockXmppClient(),
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     // Render the hook
@@ -406,7 +443,8 @@ describe('useRoom hook', () => {
     mockUseWargame.mockReturnValue({
       xmppClient: createMockXmppClient(false),
       gameState: { turn: '1', currentPhase: 'planning' },
-      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' }
+      playerDetails: { id: 'test-user', role: 'Player', forceId: 'test-force' },
+      getPlayerDetails: mockGetPlayerDetails
     })
 
     // Render the hook
