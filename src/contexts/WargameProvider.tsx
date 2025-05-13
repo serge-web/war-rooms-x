@@ -47,7 +47,6 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
         return user
       }
     } else {
-      // TODO: cache the user details
       const cachedDoc = userCache[userId]
       if (cachedDoc) {
         return cachedDoc
