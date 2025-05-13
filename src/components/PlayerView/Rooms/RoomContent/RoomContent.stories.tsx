@@ -4,9 +4,10 @@ import RoomContent from './index'
 import { WargameContext } from '../../../../contexts/WargameContext'
 import { RoomType, GameMessage } from '../../../../types/rooms-d'
 import { mockBackend } from '../../../../mockData/mockAdmin'
-import { ForceConfigType, GameStateType } from '../../../../types/wargame-d'
+import { ForceConfigType, GameStateType, UserConfigType } from '../../../../types/wargame-d'
 import localforage from 'localforage'
 import { prefixKey } from '../../../../types/constants'
+import { RUser } from '../../../AdminView/raTypes-d'
 
 // Define the meta export for the component
 const meta = {
@@ -102,6 +103,18 @@ const createForceDecorator = (forceId: string) => {
       }
     }
 
+    const mockGetPlayerDetails = async (userId: string): Promise<UserConfigType | undefined> => {
+      const details = mockBackend.users.find((u: RUser) => u.id === userId)
+      if (!details) {
+        return undefined
+      }
+      return {
+        type: 'user-config-type-v1',
+        name: details.name,
+        forceId: details.force
+      }
+    }
+
     // Create a typed game state
     const gameState: GameStateType = {
       turn: '1',
@@ -126,6 +139,7 @@ const createForceDecorator = (forceId: string) => {
         color: mockForceColors[forceId]
       },
       getForce: mockGetForce,
+      getPlayerDetails: mockGetPlayerDetails,
       gameProperties: null,
       gameState,
       nextTurn: async () => {}
