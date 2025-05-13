@@ -12,7 +12,7 @@ export interface RoomPresenceBarProps {
   /** Determines which users are visible - 'all' shows everyone, 'umpires-only' restricts visibility */
   visibilityConfig: PresenceVisibility
   /** The force ID of the current user, used to determine visibility permissions */
-  currentUserForce?: string
+  currentUserForce?: ForceConfigType['id']
   /** Whether the current user has admin privileges (admins can see all users regardless of visibilityConfig) */
   isAdmin?: boolean
 }
@@ -56,7 +56,7 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   }, [users, getForce])
 
   // Filter users based on visibility config
-  const visibleUsers = useMemo(() => users?.filter((user: OnlineUser) => {
+  const visibleUsers = useMemo(() => users?.filter(() => {
     // Admins can see all users regardless of config
     if (isAdmin) return true
     
@@ -64,10 +64,10 @@ const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
     if (visibilityConfig === 'all') return true
     
     // If config is set to show only umpires and the user is an umpire
-    if (visibilityConfig === 'umpires-only' && user.force === 'umpire') return true
-    
-    // If the user is from the same force as the current user
-    if (user.force === currentUserForce) return true
+    if (visibilityConfig === 'umpires-only') return currentUserForce === 'umpire'
+
+    // don't return if visibility is set to none
+    if (visibilityConfig === 'none') return false
     
     return false
   }), [users, visibilityConfig, currentUserForce, isAdmin])
