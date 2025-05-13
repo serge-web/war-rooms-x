@@ -87,19 +87,19 @@ export class XMPPService {
   }
 
   async supportsMUC(): Promise<boolean> {
-    return this.connectionService.supportsMUC()
+    return this.mucService.supportsMUC()
   }
 
   async supportsPubSub(): Promise<boolean> {
-    return this.connectionService.supportsPubSub()
+    return this.pubsubService.supportsPubSub()
   }
 
   async getMUCService(): Promise<string | null> {
-    return this.connectionService.getMUCService()
+    return this.mucService.getMUCService()
   }
 
   async getPubSubService(): Promise<string | null> {
-    return this.connectionService.getPubSubService()
+    return this.pubsubService.getPubSubService()
   }
 
   // MUC methods

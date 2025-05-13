@@ -17,6 +17,64 @@ export class MUCService {
     this.xmppService = xmppService
   }
 
+
+  /**
+   * Check if the server supports MUC (Multi-User Chat)
+   * @returns Promise resolving to boolean indicating if MUC is supported
+   */
+  async supportsMUC(): Promise<boolean> {
+    if (!this.xmppService.server) return false
+
+    // First try direct feature detection
+    const directSupport = await this.xmppService.serverSupportsFeature('http://jabber.org/protocol/muc')
+    if (directSupport) return true
+    
+    // If not found directly, check for MUC service
+    try {
+      if (this.xmppService.client) {
+        const items = await this.xmppService.client.getDiscoItems(this.xmppService.server)
+        // Look for conference/muc service in items
+        for (const item of items.items) {
+          if (item.jid && (item.jid.includes('conference') || item.jid.includes('muc'))) {
+            return true
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for MUC service:', error)
+    }
+    
+    return false
+  }
+
+  /**
+   * Get the MUC (conference) service JID for the server
+   * @returns Promise resolving to the MUC service JID or null if not found
+   */
+  async getMUCService(): Promise<string | null> {
+    if (!this.xmppService.client || !this.xmppService.connected || !this.xmppService.server) {
+      return null
+    }
+
+    try {
+      const items = await this.xmppService.client.getDiscoItems(this.xmppService.server)
+      
+      // Look for conference/muc service in items
+      for (const item of items.items) {
+        if (item.jid && (item.jid.includes('conference') || item.jid.includes('muc'))) {
+          return item.jid
+        }
+      }
+      
+      // If not found in items, try the standard conference subdomain
+      return `conference.${this.xmppService.server}`
+    } catch (error) {
+      console.error('Error discovering MUC service:', error)
+      return null
+    }
+  }
+
+
   /**
    * List available rooms on the server
    * @returns Promise resolving to array of Room objects

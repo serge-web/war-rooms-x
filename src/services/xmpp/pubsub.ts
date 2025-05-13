@@ -21,6 +21,46 @@ export class PubSubService {
     this.xmppService = xmppService
   }
 
+
+  /**
+   * Check if the server supports PubSub
+   * @returns Promise resolving to boolean indicating if PubSub is supported
+   */
+  async supportsPubSub(): Promise<boolean> {
+    // Check for any pubsub-related feature
+    const info = await this.xmppService.discoverServerFeatures()
+    if (!info) return false
+    
+    return info.features.some(feature => feature.includes('pubsub'))
+  }
+
+
+  /**
+   * Get the PubSub service JID for the server
+   * @returns Promise resolving to the PubSub service JID or null if not found
+   */
+  async getPubSubService(): Promise<string | null> {
+    if (!this.xmppService.client || !this.xmppService.connected || !this.xmppService.server) {
+      return null
+    }
+
+    try {
+      const items = await this.xmppService.client.getDiscoItems(this.xmppService.server)
+      
+      // Look for pubsub service in items
+      for (const item of items.items) {
+        if (item.jid && item.jid.includes('pubsub')) {
+          return item.jid
+        }
+      }
+      
+      // If not found in items, try the standard pubsub subdomain
+      return `pubsub.${this.xmppService.server}`
+    } catch (error) {
+      console.error('Error discovering PubSub service:', error)
+      return null
+    }
+  }
   /**
    * List all PubSub documents (nodes) from the server's PubSub service
    * @returns Promise resolving to array of PubSubDocument objects
