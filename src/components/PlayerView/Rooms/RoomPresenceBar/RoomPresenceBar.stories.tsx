@@ -2,7 +2,7 @@ import { Meta, StoryObj } from '@storybook/react'
 import React, { useEffect, useState } from 'react'
 import RoomPresenceBar from './index'
 import { WargameContext } from '../../../../contexts/WargameContext'
-import { ForceConfigType } from '../../../../types/wargame-d'
+import { ForceConfigType, UserConfigType } from '../../../../types/wargame-d'
 
 // Mock force colors for the Storybook
 const mockForceColors: Record<string, string> = {
@@ -50,6 +50,18 @@ const WargameProviderDecorator = (Story: React.ComponentType) => {
     }
   }
 
+  const mockGetPlayerDetails = async (userId: string): Promise<UserConfigType | undefined> => {
+    const details = mockUsers.online.find(u => u.id === userId)
+    if (!details) {
+      return undefined
+    }
+    return {
+      type: 'user-config-type-v1',
+      name: details.name,
+      forceId: details.force
+    }
+  }
+
   // Mock WargameContext value
   const wargameContextValue = {
     loggedIn: true,
@@ -61,6 +73,7 @@ const WargameProviderDecorator = (Story: React.ComponentType) => {
     setMockPlayerId: () => {},
     playerDetails: null,
     getForce: mockGetForce,
+    getPlayerDetails: mockGetPlayerDetails,
     gameProperties: null,
     gameState: null,
     nextTurn: async () => {}
@@ -89,7 +102,7 @@ type Story = StoryObj<typeof RoomPresenceBar>
 // Online players (3 example entries)
 export const OnlinePlayers: Story = {
   args: {
-    userIds: mockUsers.online.map(u => u.id),
+    users: mockUsers.online,
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -99,7 +112,7 @@ export const OnlinePlayers: Story = {
 // Empty state
 export const EmptyState: Story = {
   args: {
-    userIds: [],
+    users: [],
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -109,7 +122,7 @@ export const EmptyState: Story = {
 // Config variations: "all" vs "umpires-only"
 export const AllUsers: Story = {
   args: {
-    userIds: mockUsers.online.map(u => u.id),
+    users: mockUsers.online,
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -118,7 +131,7 @@ export const AllUsers: Story = {
 
 export const UmpiresOnly: Story = {
   args: {
-    userIds: mockUsers.online.map(u => u.id),
+    users: mockUsers.online,
     visibilityConfig: 'umpires-only',
     currentUserForce: 'red',
     isAdmin: false
@@ -128,7 +141,7 @@ export const UmpiresOnly: Story = {
 // Mixed online/offline users
 export const MixedOnlineStatus: Story = {
   args: {
-    userIds: mockUsers.offline.map(u => u.id),
+    users: mockUsers.offline,
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -138,7 +151,7 @@ export const MixedOnlineStatus: Story = {
 // Admin view (sees all users regardless of config)
 export const AdminView: Story = {
   args: {
-    userIds: mockUsers.online.map(u => u.id),
+    users: mockUsers.online,
     visibilityConfig: 'umpires-only', // Even with this restriction, admin sees all
     currentUserForce: 'admin',
     isAdmin: true
@@ -148,7 +161,7 @@ export const AdminView: Story = {
 // Story with diverse forces and longer names to demonstrate color-coded icons and name wrapping
 export const DiverseForces: Story = {
   args: {
-    userIds: mockUsers.diverse.map(u => u.id),
+    users: mockUsers.diverse,
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
@@ -188,7 +201,7 @@ const DynamicPresenceSimulator = () => {
   
   return (
     <RoomPresenceBar
-      userIds={users.map(user => user.id)}
+      users={users}
       visibilityConfig='all'
       currentUserForce='red'
       isAdmin={false}
@@ -208,6 +221,18 @@ const DynamicPresenceDecorator = (Story: React.ComponentType) => {
     }
   }
 
+  const mockGetPlayerDetails = async (userId: string): Promise<UserConfigType | undefined> => {
+    const details = mockUsers.online.find(u => u.id === userId)
+    if (!details) {
+      return undefined
+    }
+    return {
+      type: 'user-config-type-v1',
+      name: details.name,
+      forceId: details.force
+    }
+  }
+
   // Mock WargameContext value
   const dynamicWargameContextValue = {
     loggedIn: true,
@@ -218,6 +243,7 @@ const DynamicPresenceDecorator = (Story: React.ComponentType) => {
     mockPlayerId: null,
     setMockPlayerId: () => {},
     playerDetails: null,
+    getPlayerDetails: mockGetPlayerDetails,
     getForce: mockGetForce,
     gameProperties: null,
     gameState: null,
