@@ -52,7 +52,7 @@ const createMessage = (id: string, senderId: string, senderName: string, senderF
 }
 
 // Create timestamps for messages (most recent first)
-const now = new Date()
+const now = new Date('2025-04-25T12:00:00.000Z')
 const timestamps = Array.from({ length: 10 }, (_, i) => {
   const date = new Date(now)
   date.setMinutes(now.getMinutes() - (i * 15)) // 15 minute intervals
