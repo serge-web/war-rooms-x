@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { RoomType, User, UserError, GameMessage, MessageDetails, OnlineUser } from '../../../types/rooms-d';
+import { RoomType, User, UserError, GameMessage, MessageDetails, OnlineUser, RoomDetails, PresenceVisibility } from '../../../types/rooms-d';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
@@ -156,14 +156,14 @@ export const useRoom = (room: RoomType) => {
     }
   }, [room, xmppClient, loading, mockRooms, getPlayerDetails]);
 
-  const presenceVisibility = useMemo(() => {
+  const presenceVisibility: PresenceVisibility = useMemo(() => {
     if (!room.description)
       return 'all'
     try {
-      const config = JSON.parse(room.description)
-      if (!config.specifics?.presenceVisibility)
+      const config = JSON.parse(room.description) as RoomDetails
+      if (!config.presenceVisibility)
         return 'all'
-      return config.specifics.presenceVisibility
+      return config.presenceVisibility
     } catch {
       return 'all'
     }

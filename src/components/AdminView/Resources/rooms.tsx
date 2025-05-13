@@ -88,7 +88,6 @@ const RoomSpecifics = () => {
   
   return (
     <>
-      <TextInput source="details.description" label="Description" />
       <Box style={roundBox}>
         <LegendLabel>Custom room properties</LegendLabel>
         <SelectInput source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
@@ -102,7 +101,10 @@ export const EditRoom = ({ id }: { id?: string }) => {
   return (
     <Edit title='> Edit room' key={id} id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
+      <Stack direction='row' spacing={2}>
         <TextInput source="name" />
+        <TextInput source="details.description" label="Description" />
+      </Stack>  
         <RoomSpecifics/>
         <Box style={roundBox}>
           <LegendLabel>Access Control</LegendLabel>
@@ -111,7 +113,12 @@ export const EditRoom = ({ id }: { id?: string }) => {
             <ReferenceArrayInput source="memberForces" reference="groups">
               <AutocompleteArrayInput optionText="id" />          
             </ReferenceArrayInput>  
-            <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+            <BooleanInput helperText="Public rooms are visible to all users" source="public" />   
+            <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
+          { id: 'all', name: 'All' },
+          { id: 'umpires-only', name: 'Umpires Only' },
+          { id: 'none', name: 'None' }
+        ]}/>
           </Stack>
         </Box>
       </SimpleForm>
@@ -129,18 +136,17 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
         }
       }
     }}
-    mutationOptions={{
-      onSuccess: () => {
-        // When embedded is true, don't navigate away
-        return embedded ? false : undefined
-      }
-    }}
+    // Use redirect prop instead of mutationOptions to control navigation
+    redirect={embedded ? false : false}
+    // The redirect prop accepts 'list', 'show', 'edit', false (to stay on the form)
+    // or a custom path like '/some-path'
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
       <Stack direction='row' spacing={2}>
         <TextInput source="id" required />
         <TextInput source="name" required />
       </Stack>
+      <TextInput source="details.description" label="Description" />
       <RoomSpecifics/>
       <Box style={roundBox}>
           <LegendLabel>Access Control</LegendLabel>
@@ -150,6 +156,11 @@ export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
               <AutocompleteArrayInput optionText="id" />          
             </ReferenceArrayInput>  
             <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
+            <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
+          { id: 'all', name: 'All' },
+          { id: 'umpires-only', name: 'Umpires Only' },
+          { id: 'none', name: 'None' }
+        ]}/>
           </Stack>
         </Box>
     </SimpleForm>
