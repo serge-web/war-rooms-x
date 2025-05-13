@@ -6,7 +6,7 @@ import * as muc from './muc'
 import { ConnectionService } from './connection'
 import { PresenceService } from './presence'
 import { PubSubService } from './pubsub'
-import { PubSubDocumentChangeHandler, PresenceHandler, Room, RoomMessageHandler, JoinRoomResult, LeaveRoomResult, SendMessageResult, PubSubDocument, PubSubDocumentResult, PubSubSubscribeResult, PubSubOptions, VCardData } from '../types'
+import { PubSubDocumentChangeHandler, PresenceHandler, Room, RoomMessageHandler, JoinRoomResult, LeaveRoomResult, SendMessageResult, PubSubDocument, PubSubDocumentResult, PubSubSubscribeResult, PubSubOptions } from '../types'
 
 /**
  * Special constant for registering handlers that listen to messages from all rooms
@@ -212,13 +212,5 @@ export class XMPPService {
   // vCard methods
   async getFullName(bareJid: string): Promise<string | undefined> {
     return this.connectionService.getFullName(bareJid)
-  }
-
-  async getCurrentUserVCard(): Promise<VCardData> {
-    return this.connectionService.getCurrentUserVCard()
-  }
-
-  async setVCard(vCardData: VCardData): Promise<boolean> {
-    return this.connectionService.setVCard(vCardData)
   }
 }
