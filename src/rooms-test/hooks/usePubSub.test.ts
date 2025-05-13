@@ -16,7 +16,7 @@ const mockUnsubscribeFromPubSubDocument = jest.fn()
 class MockXMPPService extends XMPPService {
   constructor(pubsubServiceAvailable = true) {
     super()
-    this.pubsubService = pubsubServiceAvailable ? 'pubsub.example.com' : null
+    this.pubsubServiceUrl = pubsubServiceAvailable ? 'pubsub.example.com' : null
     // Create a minimal mock of the Stanza Agent
     this.client = { } as Agent
   }

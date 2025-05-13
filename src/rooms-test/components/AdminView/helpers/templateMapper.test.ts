@@ -12,7 +12,7 @@ const mockDeletePubSubDocument = jest.fn()
 // Create a mock XMPPService object
 const mockXmppClient = {
   bareJid: 'test-user@example.com',
-  pubsubService: 'pubsub.example.com',
+  pubsubServiceUrl: 'pubsub.example.com',
   client: {
     getDiscoItems: mockGetDiscoItems
   },

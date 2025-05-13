@@ -48,8 +48,8 @@ export const userRtoX = async (result: RUser, id: string, xmppClient: XMPPServic
     }
   } else {
     // create the node
-    const res = await xmppClient.publishPubSubLeaf(nodeId, USERS_COLLECTION, newDoc)
-    if (!res) {
+    const res = await xmppClient.publishPubSubLeaf(nodeId, USERS_COLLECTION, newDoc as unknown as Record<string, unknown>)
+    if (!res.success) {
       console.error('problem creating user document', res)
     }
   }

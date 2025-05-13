@@ -50,7 +50,8 @@ describe('useRoom hook', () => {
     sendRoomMessage: mockSendRoomMessage,
     leaveRoom: mockLeaveRoom,
     subscribeToPresence: mockSubscribeToPresence,
-    mucService: includeServices ? {} : null
+    mucService: includeServices ? {} : null,
+    mucServiceUrl: includeServices ? 'test-url' : null
   })
 
   beforeEach(() => {

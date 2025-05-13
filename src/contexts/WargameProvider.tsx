@@ -106,8 +106,9 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     }
     // check client has initialised
     const checkPubSub = () => {
-      // console.log('checking pubsub)
-      if (client && client.pubsubService) {
+      // console.log('checking pubsub', client.pubsubService, client.pubsubService.pubsubServiceUrl)
+
+      if (client && client.pubsubService && client.pubsubService.pubsubServiceUrl) {
         // now clear my subscriptions
         client.clearPubSubSubscriptions().then(() => {
           setXmppClient(client)

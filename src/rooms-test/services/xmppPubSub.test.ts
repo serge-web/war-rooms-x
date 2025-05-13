@@ -119,8 +119,8 @@ describe('XMPPService - PubSub Operations', () => {
     
     // Set connected state and services
     Object.defineProperty(xmppService, 'connected', { value: true, writable: true })
-    xmppService.pubsubService = 'pubsub.test-server'
-    xmppService.mucService = 'conference.test-server'
+    xmppService.pubsubServiceUrl = 'pubsub.test-server'
+    xmppService.mucServiceUrl = 'conference.test-server'
     xmppService.bareJid = 'test-user@test-server'
   })
   
@@ -325,7 +325,7 @@ describe('XMPPService - PubSub Operations', () => {
       
       // Manually trigger the handler by accessing the private property
       // and calling each registered handler
-      const handlers = (xmppService as unknown as { pubsubChangeHandlers: ((doc: PubSubDocument) => void)[] }).pubsubChangeHandlers
+      const handlers = (xmppService as unknown as { pubsubService: { pubsubChangeHandlers: ((doc: PubSubDocument) => void)[] } }).pubsubService.pubsubChangeHandlers
       if (Array.isArray(handlers)) {
         handlers.forEach(h => h(document as unknown as PubSubDocument))
       }

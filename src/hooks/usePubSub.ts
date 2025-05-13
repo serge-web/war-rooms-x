@@ -15,11 +15,11 @@ export const usePubSub = <T extends object>(nodeId: string, xmppClient: XMPPServ
    * @returns Promise resolving to PubSubDocumentResult
    */
   const updateDocument = useCallback(async (content: T): Promise<PubSubDocumentResult> => {
-    if (!xmppClient?.pubsubService) {
+    if (!xmppClient?.pubsubServiceUrl) {
       return { success: false, id: nodeId, error: 'XMPP client or PubSub service not available' }
     }
     
-    const res = await xmppClient.publishJsonToPubSubNode(nodeId, content)
+    const res = await xmppClient.publishJsonToPubSubNode(nodeId, content as unknown as Record<string, unknown>)
     return res
   }, [nodeId, xmppClient])
   
@@ -38,7 +38,7 @@ export const usePubSub = <T extends object>(nodeId: string, xmppClient: XMPPServ
     
     // Subscribe to the PubSub document and get its current content
     const subAndGet = async () => {
-      if (xmppClient.pubsubService) {
+      if (xmppClient.pubsubServiceUrl) {
         // insert really short delay, to prevent parallel subscriptions
         await new Promise(resolve => setTimeout(resolve, 100))
         const results = await xmppClient.subscribeToPubSubDocument(nodeId, docHandler)
@@ -59,7 +59,7 @@ export const usePubSub = <T extends object>(nodeId: string, xmppClient: XMPPServ
     
     // Cleanup: unsubscribe from the PubSub document when the component unmounts
     return () => {
-      if (xmppClient?.pubsubService) {
+      if (xmppClient?.pubsubServiceUrl) {
         xmppClient.unsubscribeFromPubSubDocument(nodeId, docHandler)
           .catch(error => console.error(`Error unsubscribing from PubSub document ${nodeId}:`, error))
       }

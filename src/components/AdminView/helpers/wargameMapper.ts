@@ -60,8 +60,8 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       // map from R to X
       const { gameProperties, gameState } = splitGameState(params.data as RGameState)
       // store documents
-      await xmppClient.publishPubSubLeaf(SETUP_DOC, undefined, gameProperties)
-      await xmppClient.publishPubSubLeaf(STATE_DOC, undefined, gameState)
+      await xmppClient.publishPubSubLeaf(SETUP_DOC, undefined, gameProperties as unknown as Record<string, unknown>)
+      await xmppClient.publishPubSubLeaf(STATE_DOC, undefined, gameState as unknown as Record<string, unknown>)
       return { data: params.data }
     },
     updateMany: async (): Promise<UpdateManyResult> => {
@@ -72,8 +72,8 @@ export const WargameDataProvider = (xmppClient: XMPPService): DataProvider => {
       const { gameProperties, gameState } = splitGameState(params.data as RGameState)
 
       // store documents
-      await xmppClient.publishPubSubLeaf(SETUP_DOC, undefined, gameProperties)
-      await xmppClient.publishPubSubLeaf(STATE_DOC, undefined, gameState)
+      await xmppClient.publishPubSubLeaf(SETUP_DOC, undefined, gameProperties as unknown as Record<string, unknown>)
+      await xmppClient.publishPubSubLeaf(STATE_DOC, undefined, gameState as unknown as Record<string, unknown>)
       return { data: params.data }
     },
     delete: async (): Promise<DeleteResult> => {

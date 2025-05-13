@@ -90,8 +90,8 @@ describe('XMPPService - MUC Operations', () => {
     
     // Set connected state and services
     Object.defineProperty(xmppService, 'connected', { value: true, writable: true })
-    xmppService.pubsubService = 'pubsub.test-server'
-    xmppService.mucService = 'conference.test-server'
+    xmppService.pubsubServiceUrl = 'pubsub.test-server'
+    xmppService.mucServiceUrl = 'conference.test-server'
     xmppService.bareJid = 'test-user@test-server'
     
     // Set up message handler
@@ -180,10 +180,10 @@ describe('XMPPService - MUC Operations', () => {
       )
       
       // Verify the room was added to joinedRooms
-      expect((xmppService as unknown as { joinedRooms: Set<string> }).joinedRooms.has(roomJid)).toBe(true)
+      expect((xmppService as unknown as { mucService: { joinedRooms: Set<string> }}).mucService.joinedRooms.has(roomJid)).toBe(true)
       
       // Verify the message handler was registered
-      const handlers = (xmppService as unknown as { messageHandlers: Map<string, RoomMessageHandler[]> }).messageHandlers.get(roomJid)
+      const handlers = (xmppService as unknown as { mucService: { messageHandlers: Map<string, RoomMessageHandler[]> }}).mucService.messageHandlers.get(roomJid)
       expect(handlers).toBeDefined()
       expect(handlers).toContain(messageHandler)
     })
@@ -201,7 +201,7 @@ describe('XMPPService - MUC Operations', () => {
       expect(result.error).toBe('Test error')
       
       // Verify the room was not added to joinedRooms
-      expect((xmppService as unknown as { joinedRooms: Set<string> }).joinedRooms.has(roomJid)).toBe(false)
+      expect((xmppService as unknown as { mucService: { joinedRooms: Set<string> }}).mucService.joinedRooms.has(roomJid)).toBe(false)
     })
     
     it('should leave a room', async () => {
@@ -222,7 +222,7 @@ describe('XMPPService - MUC Operations', () => {
       expect(mockClient.leaveRoom).toHaveBeenCalled()
       
       // Verify the room was removed from joinedRooms
-      expect((xmppService as unknown as { joinedRooms: Set<string> }).joinedRooms.has(roomJid)).toBe(false)
+      expect((xmppService as unknown as { mucService: { joinedRooms: Set<string> }}).mucService.joinedRooms.has(roomJid)).toBe(false)
       
       // When a room is left and the message handler is removed, the Map entry might be removed entirely
       // Let's check that the handler is not called when a message is received

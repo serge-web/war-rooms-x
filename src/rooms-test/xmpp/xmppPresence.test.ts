@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ReceivedPresence } from 'stanza/protocol'
 import { XMPPService } from '../../services/XMPPService'
 import { PresenceHandler } from '../../services/types'
+import { PresenceType } from 'stanza/Constants'
 
 // Mock the roomTypeFactory to avoid importing JSX files
 jest.mock('../../services/roomTypes', () => ({
@@ -84,7 +86,15 @@ describe('XMPPService presence methods', () => {
       const roomJid = 'room@conference.example.com'
       
       xmppService.subscribeToPresence(roomJid, handler)
-      
+      expect(mockClient.on).toHaveBeenCalled()
+
+      // Clear the mock to reset the called flag
+      mockClient.on.mockClear()
+
+      const handler2: PresenceHandler = jest.fn()
+      const roomJid2 = 'room@conference.example.com'
+
+      xmppService.subscribeToPresence(roomJid2, handler2)
       expect(mockClient.on).not.toHaveBeenCalled()
     })
     
@@ -139,10 +149,7 @@ describe('XMPPService presence methods', () => {
     })
     
     it('should do nothing if presence is null or missing from', () => {
-      // @ts-expect-error - accessing private method for testing
-      xmppService.handlePresenceUpdate(null)
-      // @ts-expect-error - accessing private method for testing
-      xmppService.handlePresenceUpdate({})
+      xmppService.handlePresenceUpdate(null as unknown as ReceivedPresence)
       
       expect(mockHandler1).not.toHaveBeenCalled()
       expect(mockHandler2).not.toHaveBeenCalled()
@@ -151,13 +158,13 @@ describe('XMPPService presence methods', () => {
     it('should notify handlers for MUC presence updates', () => {
       const presence = {
         from: 'room1@conference.example.com/user',
-        type: undefined // Available
+        to: 'room1@conference.example.com',
+        type: PresenceType.Available
       }
       
-      // @ts-expect-error - accessing private method for testing
       xmppService.handlePresenceUpdate(presence)
       
-      expect(mockHandler1).toHaveBeenCalledWith(presence.from, true)
+      expect(mockHandler1).toHaveBeenCalledWith(presence.from.split('/')[1], true)
       expect(mockHandler2).not.toHaveBeenCalled()
     })
     
@@ -170,20 +177,20 @@ describe('XMPPService presence methods', () => {
       // @ts-expect-error - accessing private method for testing
       xmppService.handlePresenceUpdate(presence)
       
-      expect(mockHandler1).toHaveBeenCalledWith(presence.from, false)
+      expect(mockHandler1).toHaveBeenCalledWith(presence.from.split('/')[1], false)
     })
     
     it('should notify all handlers for direct presence updates', () => {
       const presence = {
         from: 'user@example.com',
-        type: undefined // Available
+        to: 'user@example.com',
+        type: PresenceType.Available
       }
       
-      // @ts-expect-error - accessing private method for testing
       xmppService.handlePresenceUpdate(presence)
       
-      expect(mockHandler1).toHaveBeenCalledWith(presence.from, true)
-      expect(mockHandler2).toHaveBeenCalledWith(presence.from, true)
+      expect(mockHandler1).toHaveBeenCalledWith(presence.from.split('@')[0], true)
+      expect(mockHandler2).toHaveBeenCalledWith(presence.from.split('@')[0], true)
     })
   })
 })

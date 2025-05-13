@@ -216,7 +216,7 @@ describe('useRooms hook', () => {
     })
 
     const mockXmppClient = {
-      mucService: 'conference.example.com',
+      mucServiceUrl: 'conference.example.com',
       listRooms: mockListRooms,
       client: {
         getDiscoInfo: mockGetDiscoInfo
