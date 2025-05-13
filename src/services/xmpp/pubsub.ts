@@ -448,8 +448,6 @@ export class PubSubService {
       else {
         const result = await this.xmppService.client.getItems(this.xmppService.pubsubServiceUrl!, nodeId)
 
-        console.log('get items result', result, this.xmppService.pubsubServiceUrl!, nodeId)
-
         if (result.items && result.items.length > 0) {
           const item = result.items[0] as PubSubDocument
           const jsonItem = item.content as JSONItem

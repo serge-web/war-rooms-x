@@ -325,7 +325,7 @@ describe('XMPPService - PubSub Operations', () => {
       
       // Manually trigger the handler by accessing the private property
       // and calling each registered handler
-      const handlers = (xmppService as unknown as { pubsubChangeHandlers: ((doc: PubSubDocument) => void)[] }).pubsubChangeHandlers
+      const handlers = (xmppService as unknown as { pubsubService: { pubsubChangeHandlers: ((doc: PubSubDocument) => void)[] } }).pubsubService.pubsubChangeHandlers
       if (Array.isArray(handlers)) {
         handlers.forEach(h => h(document as unknown as PubSubDocument))
       }
