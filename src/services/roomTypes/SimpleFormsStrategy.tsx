@@ -46,7 +46,7 @@ export class SimpleFormsStrategy implements RoomTypeStrategy<FormRoomConfig> {
    */
   public showComponent: ComponentType = () => {
     const renderTemplate = (template: Template) => {
-      return <Chip size="small" label={template.schema?.title || template.id} />
+      return <Chip size="small" key={template.id} label={template.schema?.title || template.id} />
     }
     const renderTemplates = (context: ListControllerResult<Template>) => {
       return <span>{context.data?.map(renderTemplate)}</span>
