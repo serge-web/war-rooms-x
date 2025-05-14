@@ -1,4 +1,4 @@
-import { ReceivedPresence, MUCInfo } from 'stanza/protocol'
+import { ReceivedPresence, MUCInfo, MUCUserItem } from 'stanza/protocol'
 import { PresenceHandler, RoomChangeListener, RoomChangeEvent } from '../types'
 import { XMPPService } from './index'
 
