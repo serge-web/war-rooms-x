@@ -3,11 +3,11 @@ import * as FlexLayout from 'flexlayout-react'
 import 'flexlayout-react/style/light.css'
 import RoomContent from '../RoomContent'
 import './index.css'
-import { useRooms } from './useRooms'
 import { RoomType } from '../../../../types/rooms-d'
 import { Typography } from 'antd'
 import MapContent from '../MapContent'
 import SimpleFormContent from '../SimpleFormContent'
+import { useWargame } from '../../../../contexts/WargameContext'
 
 const { Text } = Typography
 
@@ -25,7 +25,7 @@ const parseJson = (json: string | undefined): { [key: string]: { [key: string]: 
 }
 
 const RoomsList: React.FC = () => {
-  const { rooms } = useRooms()
+  const { rooms } = useWargame()
   // Create a FlexLayout model for the rooms
   const model = useMemo((): FlexLayout.Model => {
     const normalRooms = rooms.filter((room: RoomType) => !specialRoom(room))

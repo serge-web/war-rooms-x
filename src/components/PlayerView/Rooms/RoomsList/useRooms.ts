@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { RoomType } from '../../../../types/rooms-d';
-import { useWargame } from '../../../../contexts/WargameContext';
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData';
 import { RRoom } from '../../../AdminView/raTypes-d';
+import { XMPPService } from '../../../../services/xmpp';
+import { MockId } from '../../../../types/wargame-d';
 
-export const useRooms = () => {
+export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerId: MockId | null) => {
   const [rooms, setRooms] = useState<RoomType[]>([])  
-  const { xmppClient, mockPlayerId } = useWargame()
   const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
   useEffect(() => {
