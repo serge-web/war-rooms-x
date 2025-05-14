@@ -6,7 +6,7 @@ import * as muc from './muc'
 import { ConnectionService } from './connection'
 import { PresenceService } from './presence'
 import { PubSubService } from './pubsub'
-import { PubSubDocumentChangeHandler, PresenceHandler, Room, RoomMessageHandler, JoinRoomResult, LeaveRoomResult, SendMessageResult, PubSubDocument, PubSubDocumentResult, PubSubSubscribeResult, PubSubOptions } from '../types'
+import { PubSubDocumentChangeHandler, PresenceHandler, Room, RoomMessageHandler, JoinRoomResult, LeaveRoomResult, SendMessageResult, PubSubDocument, PubSubDocumentResult, PubSubSubscribeResult, PubSubOptions, RoomChangeListener } from '../types'
 
 /**
  * Special constant for registering handlers that listen to messages from all rooms
@@ -211,6 +211,15 @@ export class XMPPService {
   // Presence methods
   subscribeToPresence(roomJid: string, handler: PresenceHandler): () => void {
     return this.presenceService.subscribeToPresence(roomJid, handler)
+  }
+
+  /**
+   * Subscribe to room change events for the current user
+   * @param listener The listener function to call when the current user is added to or removed from a room
+   * @returns A function to unsubscribe from room change events
+   */
+  subscribeToRoomChanges(listener: RoomChangeListener): () => void {
+    return this.presenceService.subscribeToRoomChanges(listener)
   }
 
   handlePresenceUpdate(presence: ReceivedPresence): void {

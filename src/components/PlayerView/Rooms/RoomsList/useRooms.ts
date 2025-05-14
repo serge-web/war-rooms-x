@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { RoomType } from '../../../../types/rooms-d';
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData';
 import { RRoom } from '../../../AdminView/raTypes-d';
 import { XMPPService } from '../../../../services/xmpp';
 import { MockId } from '../../../../types/wargame-d';
+import { RoomChangeEvent } from '../../../../services/types';
 
 export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerId: MockId | null) => {
   const [rooms, setRooms] = useState<RoomType[]>([])  
@@ -19,6 +20,63 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
     }
   }, [mockPlayerId?.playerId, mockPlayerId?.forceId])  
   
+  // Function to fetch rooms from XMPP server
+  const fetchRooms = useCallback(async (client: XMPPService) => {
+    if (!client.mucServiceUrl) return
+    
+    const rooms = await client.listRooms()
+    // get the room description
+    const getInfoActions = rooms.map((room) => {
+      return client.client?.getDiscoInfo(room.jid)
+    })
+    const infos = await Promise.all(getInfoActions)
+    if (rooms) {
+      setRooms(rooms.map((room, i): RoomType => {
+        const info = infos[i]?.extensions[0].fields?.find((f) => f.name === 'muc#roominfo_description')
+        return {
+          roomName: room.jid,
+          naturalName: room.name,
+          description: info?.value as string || ''
+        }
+      }))
+    }
+  }, [])
+
+  // Handle room change events
+  const handleRoomChange = useCallback(async (roomJid: string, event: RoomChangeEvent) => {
+    console.log(`Room change detected: ${event} room ${roomJid}`)
+    
+    if (!xmppClient) return
+    
+    if (event === 'leave') {
+      // Remove the room from the list
+      setRooms(prevRooms => prevRooms.filter(room => room.roomName !== roomJid))
+    } else if (event === 'enter') {
+      // Only add the room if it's not already in the list
+      const existingRoom = rooms.find(room => room.roomName === roomJid)
+      if (!existingRoom) {
+        try {
+          // Get room info for the specific room
+          const info = await xmppClient.client?.getDiscoInfo(roomJid)
+          const roomName = roomJid.split('@')[0]
+          const description = info?.extensions[0].fields?.find((f) => f.name === 'muc#roominfo_description')?.value as string || ''
+          
+          // Add the new room to the list
+          setRooms(prevRooms => [
+            ...prevRooms,
+            {
+              roomName: roomJid,
+              naturalName: roomName,
+              description
+            }
+          ])
+        } catch (error) {
+          console.error('Error fetching room info:', error)
+        }
+      }
+    }
+  }, [xmppClient, rooms])
+
   useEffect(() => {
     if (xmppClient === undefined) {
       // waiting for login
@@ -42,30 +100,21 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
         }))
       } 
     } else {
-      // TODO: use real data
+      // Use real data
       if (xmppClient.mucServiceUrl) {
-        const fetchRooms = async () => {
-          const rooms = await xmppClient.listRooms()
-          // get the room description
-          const getInfoActions = rooms.map((room) => {
-            return xmppClient.client?.getDiscoInfo(room.jid)
-          })
-          const infos = await Promise.all(getInfoActions)
-          if (rooms) {
-            setRooms(rooms.map((room, i): RoomType => {
-              const info = infos[i]?.extensions[0].fields?.find((f) => f.name === 'muc#roominfo_description')
-              return {
-                roomName: room.jid,
-                naturalName: room.name,
-                description: info?.value as string || ''
-              }
-            }))
-          }
+        // Initial fetch of rooms
+        fetchRooms(xmppClient)
+        
+        // Subscribe to room change events
+        const unsubscribe = xmppClient.subscribeToRoomChanges(handleRoomChange)
+        
+        // Clean up subscription when component unmounts or xmppClient changes
+        return () => {
+          unsubscribe()
         }
-        fetchRooms()
       }
     }
-  }, [xmppClient, mockRooms, loading, mockPlayerInfoItem]);
+  }, [xmppClient, mockRooms, loading, mockPlayerInfoItem, fetchRooms, handleRoomChange]);
 
   return { rooms };
 }
