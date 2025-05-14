@@ -133,7 +133,9 @@ export class PresenceService {
 
     const from = presence.from
     const roomJid = from.split('/')[0]
-    const event: RoomChangeEvent = presence.type !== 'unavailable' ? 'enter' : 'leave'
+    if (!presence.muc) return
+    const muc = presence.muc as MUCUserItem
+    const event: RoomChangeEvent = muc.affiliation !== 'none' ? 'enter' : 'leave'
     
     // Notify all room change listeners
     for (const listener of this.roomChangeListeners) {
