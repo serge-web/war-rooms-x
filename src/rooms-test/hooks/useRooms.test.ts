@@ -153,6 +153,14 @@ describe('useRooms hook', () => {
       { jid: 'room2@conference.example.com', name: 'Room 2' }
     ]
 
+    // Mock useIndexedDBData to return a default value (we won't 
+    // use indexed db in this test, but it's necessary at runtime)
+    mockUseIndexedDBData.mockReturnValue({
+      data: null,
+      loading: false
+    })
+
+
     // Mock room info data
     const mockRoomInfos = [
       {
@@ -184,6 +192,7 @@ describe('useRooms hook', () => {
     const mockXmppClient = {
       mucServiceUrl: 'conference.example.com',
       listRooms: mockListRooms,
+      subscribeToRoomChanges: () => { return () => {} },
       client: {
         getDiscoInfo: mockGetDiscoInfo
       }

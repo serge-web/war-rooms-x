@@ -25,7 +25,6 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
   const fetchRooms = useCallback(async (client: XMPPService | undefined) => {
     if (!client) {
       // user may have logged out. We'll need to reihitialise
-      console.log('clearing room init')
       setHasInitializedRooms(false)
       setRooms([])
       return
@@ -33,14 +32,12 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
     if (!client.mucServiceUrl) return
     
     try {
-      console.log('Fetching rooms...')
       const rooms = await client.listRooms()
       // get the room description
       const getInfoActions = rooms.map((room) => {
         return client.client?.getDiscoInfo(room.jid)
       })
       const infos = await Promise.all(getInfoActions)
-      console.log('Fetched rooms:', rooms.length)
       
       if (rooms) {
         const roomsList = rooms.map((room, i): RoomType => {
