@@ -1,4 +1,4 @@
-import { DiscoItem } from 'stanza/protocol'
+import { DiscoItem, Presence } from 'stanza/protocol'
 import { GameMessage, User } from '../../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, Room, RoomMessageHandler, SendMessageResult } from '../types'
 import { XMPPService, ALL_ROOMS } from './index'
@@ -124,17 +124,22 @@ export class MUCService {
     try {
       // Set up message handler for this room if not already done
       this.setupRoomMessageHandler()
-      
-      // Join the room
-      await this.xmppService.client.joinRoom(roomJid, this.xmppService.bareJid)
-      
-      // Add to our joined rooms set
-      this.joinedRooms.add(roomJid)
-      
+
       // Register the message handler if provided
       if (messageHandler) {
         this.onRoomMessage(messageHandler, roomJid)
       }
+
+      // Join the room
+      const historyOpts = {
+        history: {
+          maxStanzas: 20 // number of previous messages to fetch
+        } 
+      } as unknown as Presence
+      await this.xmppService.client.joinRoom(roomJid, this.xmppService.bareJid, historyOpts)
+      
+      // Add to our joined rooms set
+      this.joinedRooms.add(roomJid)           
       
       return { success: true, roomJid }
     } catch (error) {
