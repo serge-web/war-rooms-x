@@ -1,5 +1,6 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useRooms } from '../../components/PlayerView/Rooms/RoomsList/useRooms'
+import { XMPPService } from '../../services/xmpp'
 
 // Mock useIndexedDBData to avoid localforage issues
 const mockUseIndexedDBData = jest.fn()
@@ -9,8 +10,8 @@ jest.mock('../../hooks/useIndexedDBData', () => ({
 
 describe('useRooms hook', () => {
   // Mock XMPP client methods
-  // const mockListRooms = jest.fn()
-  // const mockGetDiscoInfo = jest.fn()
+  const mockListRooms = jest.fn()
+  const mockGetDiscoInfo = jest.fn()
   
   beforeEach(() => {
     jest.clearAllMocks()
@@ -84,159 +85,135 @@ describe('useRooms hook', () => {
     expect(room1).toHaveProperty('description')
   })
 
-  // it('should include all rooms for admin user with mock data', () => {
-  //   // Mock data for admin user
-  //   const mockRooms = [
-  //     { 
-  //       id: 'room1', 
-  //       name: 'Room 1', 
-  //       memberForces: ['force1'],
-  //       members: ['user1'] 
-  //     },
-  //     { 
-  //       id: 'room2', 
-  //       name: 'Room 2', 
-  //       memberForces: ['force2'],
-  //       members: ['user2'] 
-  //     }
-  //   ]
+  it('should include all rooms for admin user with mock data', () => {
+    // Mock data for admin user
+    const mockRooms = [
+      { 
+        id: 'room1', 
+        name: 'Room 1', 
+        memberForces: ['force1'],
+        members: ['user1'] 
+      },
+      { 
+        id: 'room2', 
+        name: 'Room 2', 
+        memberForces: ['force2'],
+        members: ['user2'] 
+      }
+    ]
 
-  //   // Set up mocks for null xmppClient and admin user
-  //   mockUseWargame.mockReturnValue({
-  //     xmppClient: null,
-  //     mockPlayerId: { playerId: 'admin', forceId: 'admin' }
-  //   })
+    mockUseIndexedDBData.mockReturnValue({
+      data: mockRooms,
+      loading: false
+    })
 
-  //   mockUseIndexedDBData.mockReturnValue({
-  //     data: mockRooms,
-  //     loading: false
-  //   })
-
-  //   // Render the hook
-  //   const { result } = renderHook(() => useRooms(null, { playerId: 'admin', forceId: 'admin' }))
+    // Render the hook
+    const { result } = renderHook(() => useRooms(null, { playerId: 'admin', forceId: 'admin' }))
     
-  //   // Verify all rooms are included for admin
-  //   expect(result.current.rooms).toHaveLength(2)
+    // Verify all rooms are included for admin
+    expect(result.current.rooms).toHaveLength(2)
     
-  //   // Check that all rooms are included
-  //   const roomIds = result.current.rooms.map(room => room.roomName)
-  //   expect(roomIds).toContain('room1')
-  //   expect(roomIds).toContain('room2')
-  // })
+    // Check that all rooms are included
+    const roomIds = result.current.rooms.map(room => room.roomName)
+    expect(roomIds).toContain('room1')
+    expect(roomIds).toContain('room2')
+  })
   
-  // it('should handle loading state correctly', () => {
-  //   // Set up mocks for null xmppClient and loading state
-  //   mockUseWargame.mockReturnValue({
-  //     xmppClient: null,
-  //     mockPlayerId: { playerId: 'test-user', forceId: 'test-force' }
-  //   })
+  it('should handle loading state correctly', () => {
+    mockUseIndexedDBData.mockReturnValue({
+      data: null,
+      loading: true
+    })
 
-  //   mockUseIndexedDBData.mockReturnValue({
-  //     data: null,
-  //     loading: true
-  //   })
-
-  //   // Render the hook
-  //   const { result } = renderHook(() => useRooms(null, { playerId: 'test-user', forceId: 'test-force' }))
+    // Render the hook
+    const { result } = renderHook(() => useRooms(null, { playerId: 'test-user', forceId: 'test-force' }))
     
-  //   // Verify empty array is returned during loading
-  //   expect(result.current.rooms).toEqual([])
-  // })
+    // Verify empty array is returned during loading
+    expect(result.current.rooms).toEqual([])
+  })
 
-  // it('should handle missing mockPlayerId correctly', () => {
-  //   // Set up mocks for null xmppClient but missing mockPlayerId
-  //   mockUseWargame.mockReturnValue({
-  //     xmppClient: null,
-  //     mockPlayerId: null
-  //   })
+  it('should handle missing mockPlayerId correctly', () => {
+    // Set up mocks for null xmppClient but missing mockPlayerId
+    mockUseIndexedDBData.mockReturnValue({
+      data: [{ id: 'room1', name: 'Room 1' }],
+      loading: false
+    })
 
-  //   mockUseIndexedDBData.mockReturnValue({
-  //     data: [{ id: 'room1', name: 'Room 1' }],
-  //     loading: false
-  //   })
-
-  //   // Render the hook
-  //   const { result } = renderHook(() => useRooms(null, null))
+    // Render the hook
+    const { result } = renderHook(() => useRooms(null, null))
     
-  //   // Verify empty array is returned when mockPlayerId is missing
-  //   expect(result.current.rooms).toEqual([])
-  // })
+    // Verify empty array is returned when mockPlayerId is missing
+    expect(result.current.rooms).toEqual([])
+  })
 
-  // it('should fetch rooms from XMPP client when available', async () => {
-  //   // Mock room data from XMPP server
-  //   const mockXmppRooms = [
-  //     { jid: 'room1@conference.example.com', name: 'Room 1' },
-  //     { jid: 'room2@conference.example.com', name: 'Room 2' }
-  //   ]
+  it('should fetch rooms from XMPP client when available', async () => {
+    // Mock room data from XMPP server
+    const mockXmppRooms = [
+      { jid: 'room1@conference.example.com', name: 'Room 1' },
+      { jid: 'room2@conference.example.com', name: 'Room 2' }
+    ]
 
-  //   // Mock room info data
-  //   const mockRoomInfos = [
-  //     {
-  //       extensions: [{
-  //         fields: [
-  //           { name: 'muc#roominfo_description', value: 'Description for Room 1' }
-  //         ]
-  //       }]
-  //     },
-  //     {
-  //       extensions: [{
-  //         fields: [
-  //           { name: 'muc#roominfo_description', value: 'Description for Room 2' }
-  //         ]
-  //       }]
-  //     }
-  //   ]
+    // Mock room info data
+    const mockRoomInfos = [
+      {
+        extensions: [{
+          fields: [
+            { name: 'muc#roominfo_description', value: 'Description for Room 1' }
+          ]
+        }]
+      },
+      {
+        extensions: [{
+          fields: [
+            { name: 'muc#roominfo_description', value: 'Description for Room 2' }
+          ]
+        }]
+      }
+    ]
 
-  //   // Create mock XMPP client
-  //   mockListRooms.mockResolvedValue(mockXmppRooms)
-  //   mockGetDiscoInfo.mockImplementation((jid) => {
-  //     if (jid === 'room1@conference.example.com') {
-  //       return Promise.resolve(mockRoomInfos[0])
-  //     } else {
-  //       return Promise.resolve(mockRoomInfos[1])
-  //     }
-  //   })
+    // Create mock XMPP client
+    mockListRooms.mockResolvedValue(mockXmppRooms)
+    mockGetDiscoInfo.mockImplementation((jid) => {
+      if (jid === 'room1@conference.example.com') {
+        return Promise.resolve(mockRoomInfos[0])
+      } else {
+        return Promise.resolve(mockRoomInfos[1])
+      }
+    })
 
-  //   const mockXmppClient = {
-  //     mucServiceUrl: 'conference.example.com',
-  //     listRooms: mockListRooms,
-  //     client: {
-  //       getDiscoInfo: mockGetDiscoInfo
-  //     }
-  //   }
-
-  //   // Set up mock for xmppClient
-  //   mockUseWargame.mockReturnValue({
-  //     xmppClient: mockXmppClient as unknown as XMPPService,
-  //     mockPlayerId: { playerId: 'test-user', forceId: 'test-force' }
-  //   })
-
-  //   // Render the hook
-  //   const { result } = renderHook(() => useRooms(null, null))
+    const mockXmppClient = {
+      mucServiceUrl: 'conference.example.com',
+      listRooms: mockListRooms,
+      client: {
+        getDiscoInfo: mockGetDiscoInfo
+      }
+    }
+    // Render the hook
+    const { result } = renderHook(() => useRooms(mockXmppClient as unknown as XMPPService, { playerId: 'test-user', forceId: 'test-force'}))
     
-  //   // Wait for async operations to complete
-  //   await waitFor(() => {
-  //     expect(mockListRooms).toHaveBeenCalled()
-  //   })
+    // Wait for async operations to complete
+    await waitFor(() => {
+      expect(mockListRooms).toHaveBeenCalled()
+    })
 
-  //   // Verify rooms are fetched from XMPP client
-  //   await waitFor(() => {
-  //     expect(result.current.rooms).toHaveLength(2)
-  //   })
+    // Verify rooms are fetched from XMPP client
+    await waitFor(() => {
+      expect(result.current.rooms).toHaveLength(2)
+    })
 
-  //   // Verify room data is correctly transformed
-  //   await waitFor(() => {
-  //     const roomIds = result.current.rooms.map(room => room.roomName)
-  //     expect(roomIds).toContain('room1@conference.example.com')
-  //     expect(roomIds).toContain('room2@conference.example.com')
+    // Verify room data is correctly transformed
+    await waitFor(() => {
+      const roomIds = result.current.rooms.map(room => room.roomName)
+      expect(roomIds).toContain('room1@conference.example.com')
+      expect(roomIds).toContain('room2@conference.example.com')
 
-  //     const room1 = result.current.rooms.find(room => room.roomName === 'room1@conference.example.com')
-  //     expect(room1).toHaveProperty('naturalName', 'Room 1')
-  //     expect(room1).toHaveProperty('description', 'Description for Room 1')
+      const room1 = result.current.rooms.find(room => room.roomName === 'room1@conference.example.com')
+      expect(room1).toHaveProperty('naturalName', 'Room 1')
+      expect(room1).toHaveProperty('description', 'Description for Room 1')
 
-  //     const room2 = result.current.rooms.find(room => room.roomName === 'room2@conference.example.com')
-  //     expect(room2).toHaveProperty('naturalName', 'Room 2')
-  //     expect(room2).toHaveProperty('description', 'Description for Room 2')
-  //   }, { timeout: 1000 })
-  // })
+      const room2 = result.current.rooms.find(room => room.roomName === 'room2@conference.example.com')
+      expect(room2).toHaveProperty('naturalName', 'Room 2')
+      expect(room2).toHaveProperty('description', 'Description for Room 2')
+    }, { timeout: 1000 })
+  })
 })

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { RoomType } from '../../../../types/rooms-d';
 import { useIndexedDBData } from '../../../../hooks/useIndexedDBData';
 import { RRoom } from '../../../AdminView/raTypes-d';
@@ -9,16 +9,26 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
   const [rooms, setRooms] = useState<RoomType[]>([])  
   const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
+  // Memoize the player ID and force ID to prevent unnecessary re-renders. The
+  // useEffect hook kept re-rendering since is an oobject it was
+  // treated as a new value each time
+  const mockPlayerInfoItem = useMemo(() => {
+    return {
+      playerId: mockPlayerId?.playerId,
+      forceId: mockPlayerId?.forceId
+    }
+  }, [mockPlayerId?.playerId, mockPlayerId?.forceId])  
+  
   useEffect(() => {
     if (xmppClient === undefined) {
       // waiting for login
     } else if (xmppClient === null) {
-      if (!loading && mockPlayerId && mockRooms) {
+      if (!loading && mockPlayerInfoItem.playerId && mockRooms) {
         // ok, use mock data
-        const myId = mockPlayerId.playerId
-        const myForce = mockPlayerId.forceId
+        const myId = mockPlayerInfoItem.playerId
+        const myForce = mockPlayerInfoItem.forceId
         const imAdmin = myId === 'admin'
-        const isMyForce = (r: RRoom) => r.memberForces?.includes(myForce)
+        const isMyForce = (r: RRoom) => myForce && r.memberForces?.includes(myForce)
         const isMyId = (r: RRoom) => r.members?.includes(myId)
         const isAdminRoom = (r: RRoom) => r.id === '__admin'
         const myRooms = mockRooms.filter(r => imAdmin || isAdminRoom(r) || isMyForce(r) || isMyId(r))
@@ -55,7 +65,7 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
         fetchRooms()
       }
     }
-  }, [xmppClient, mockRooms, loading, mockPlayerId]);
+  }, [xmppClient, mockRooms, loading, mockPlayerInfoItem]);
 
   return { rooms };
 }
