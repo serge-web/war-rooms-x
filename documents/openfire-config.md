@@ -17,6 +17,7 @@ These are the steps to installing and configuring Openfire for this app.
 5. Configure MUC
     a. Group Chat / Group Chat Settings / History : Show Entire Chat History
     b. Default Room Settings: Make Room Persistent
+    c. Group Chat / Group Chat Settings / Memory Management - disable MUC room unloading
 
 Install OpenFire on Digital Ocean according to the article here:
 https://www.digitalocean.com/community/tutorials/how-to-install-openfire-xmpp-server-on-a-debian-or-ubuntu-vps
