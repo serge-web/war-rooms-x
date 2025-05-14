@@ -19,7 +19,7 @@ These are the steps to installing and configuring Openfire for this app.
     b. Default Room Settings: Make Room Persistent
     c. Group Chat / Group Chat Settings / Memory Management - disable MUC room unloading
     d. Server Settings > Message Audit Policy > Enable Auditing
-    e. Plugins - install Monitoring
+    e. Plugins - install Monitoring. Then Server > Archiving > Archive Group Chats 
 
 Install OpenFire on Digital Ocean according to the article here:
 https://www.digitalocean.com/community/tutorials/how-to-install-openfire-xmpp-server-on-a-debian-or-ubuntu-vps
