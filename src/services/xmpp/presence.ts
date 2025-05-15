@@ -70,7 +70,6 @@ export class PresenceService {
     if (presence.muc) {
       const mucData = presence.muc as MUCInfo
       if (mucData.statusCodes?.includes('110')) {
-        console.log('self room presence received', presence)
         // message refers to current user
         // Check if this is a room membership change for the current user
         this.handleSelfRoomPresence(presence)
@@ -112,12 +111,10 @@ export class PresenceService {
    * @returns A function to unsubscribe from room change events
    */
   public subscribeToRoomChanges(listener: RoomChangeListener): () => void {
-    console.log('subscribing to room changes')
     this.roomChangeListeners.push(listener)
     
     // Return a function to unsubscribe from room change events
     return () => {
-      console.log('unsub from room changes')
       this.roomChangeListeners = this.roomChangeListeners.filter(l => l !== listener)
     }
   }

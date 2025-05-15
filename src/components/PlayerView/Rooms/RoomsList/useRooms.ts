@@ -59,8 +59,6 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
 
   // Handle room change events
   const handleRoomChange = useCallback(async (roomJid: string, event: RoomChangeEvent) => {
-    console.log(`Room change detected: ${event} room ${roomJid}`)
-    
     if (!xmppClient || !hasInitializedRooms) return
     
     if (event === 'leave') {
@@ -75,7 +73,6 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
           const info = await xmppClient.client?.getDiscoInfo(roomJid)
           const roomName = roomJid.split('@')[0]
           const description = info?.extensions[0].fields?.find((f) => f.name === 'muc#roominfo_description')?.value as string || ''
-          console.log('Adding new room:', roomName)
           
           // Add the new room to the list
           setRooms(prevRooms => [
@@ -134,14 +131,11 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
   useEffect(() => {
     // Only set up subscription after rooms are initialized and when xmppClient changes
     if (xmppClient && hasInitializedRooms) {
-      console.log('Setting up room change subscription')
-      
       // Subscribe to room change events
       const unsubscribe = xmppClient.subscribeToRoomChanges(handleRoomChange)
       
       // Clean up subscription when component unmounts or xmppClient changes
       return () => {
-        console.log('Unsubscribing from room changes')
         unsubscribe()
       }
     }
