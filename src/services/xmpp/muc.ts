@@ -1,4 +1,4 @@
-import { DiscoItem, Presence } from 'stanza/protocol'
+import { DiscoItem, Presence, ReceivedMessage } from 'stanza/protocol'
 import { GameMessage, User } from '../../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, Room, RoomMessageHandler, SendMessageResult } from '../types'
 import { XMPPService, ALL_ROOMS } from './index'
@@ -139,7 +139,64 @@ export class MUCService {
       await this.xmppService.client.joinRoom(roomJid, this.xmppService.bareJid, historyOpts)
       
       // Add to our joined rooms set
-      this.joinedRooms.add(roomJid)           
+      this.joinedRooms.add(roomJid)   
+      
+      // recursively retrieve archived messages using client.searchHistory
+      const retrieveArchivedMessages = async (roomJid: string, messageHandler: RoomMessageHandler, before?: string, maxResults: number = 50): Promise<void> => {
+        try {
+          if (!this.xmppService.client) {
+            console.warn('Cannot retrieve archived messages: client not connected')
+            return
+          }
+          
+          // Set up MAM query options
+          const queryOptions: {
+            with: string
+            max: number
+            before?: string
+          } = {
+            with: roomJid,
+            max: maxResults
+          }
+          
+          // If we have a 'before' timestamp, add it to the query
+          if (before) {
+            queryOptions.before = before
+          }
+          
+          // Execute the search
+          const result = await this.xmppService.client.searchHistory(queryOptions)
+          
+          // Process the results
+          if (result && result.results && result.results.length > 0) {
+            // Process each message in the result set
+            for (const item of result.results) {
+              if (item.item.delay) {
+                // this is an archived message - handle it
+                messageHandler(item.item.message as ReceivedMessage)                
+              }  
+            }
+            
+            // Check if we need to fetch more (if we got the maximum number of results)
+            if (result.results.length === maxResults && result.paging && result.paging.first) {
+              // Get the timestamp of the oldest message for pagination
+              const oldestMessageTime = result.paging.first
+              
+              // Recursively fetch older messages
+              await retrieveArchivedMessages(roomJid, messageHandler, oldestMessageTime, maxResults)
+            }
+          }
+        } catch (error) {
+          console.error('Error retrieving archived messages:', error)
+        }
+      }
+      
+      // If we have a message handler, retrieve archived messages
+      if (messageHandler) {
+        retrieveArchivedMessages(roomJid, messageHandler).catch(err => {
+          console.error('Failed to retrieve archived messages:', err)
+        })
+      }
       
       return { success: true, roomJid }
     } catch (error) {
