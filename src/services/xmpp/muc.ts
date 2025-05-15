@@ -2,6 +2,7 @@ import { DiscoItem, Presence, ReceivedMessage } from 'stanza/protocol'
 import { GameMessage, User } from '../../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, Room, RoomMessageHandler, SendMessageResult } from '../types'
 import { XMPPService, ALL_ROOMS } from './index'
+import { MAMQueryOptions } from 'stanza'
 
 /**
  * Service for handling Multi-User Chat (MUC) operations
@@ -149,32 +150,38 @@ export class MUCService {
             return
           }
           
-          // Set up MAM query options
-          const queryOptions: {
-            with: string
-            max: number
-            before?: string
-          } = {
-            with: roomJid,
-            max: maxResults
+          // Set up MAM query options for MUC room archives
+          // Using a more specific type to avoid ESLint errors while still allowing the necessary properties
+          // This enables us to query the room's archive for messages from all users
+          const queryOpts: Partial<MAMQueryOptions> = {
+            paging: {count: maxResults},
+            node: roomJid
           }
           
-          // If we have a 'before' timestamp, add it to the query
-          if (before) {
-            queryOptions.before = before
+          // Add pagination if needed
+          if (before && queryOpts.paging) {
+            queryOpts.paging.index = Number(before)
           }
+
+          console.log('query opts', roomJid, queryOpts)
           
-          // Execute the search
-          const result = await this.xmppService.client.searchHistory(queryOptions)
+          // Execute the search to retrieve messages from all users in the room
+          const result = await this.xmppService.client.searchHistory(queryOpts)
+
+          console.log('search results', roomJid, result)
           
           // Process the results
           if (result && result.results && result.results.length > 0) {
             // Process each message in the result set
             for (const item of result.results) {
-              if (item.item.delay) {
-                // this is an archived message - handle it
-                messageHandler(item.item.message as ReceivedMessage)                
-              }  
+              // Check for different possible message formats in MAM results
+              if (item.item && item.item.delay && item.item.message) {
+                console.log('archived message', item.item.message)
+                // Format 1: item.item.message structure
+                messageHandler(item.item.message as ReceivedMessage)
+              } else {
+                console.warn('Unrecognized message format in archive result:', item)
+              }
             }
             
             // Check if we need to fetch more (if we got the maximum number of results)
