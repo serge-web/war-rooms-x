@@ -143,13 +143,11 @@ export class MUCService {
       this.joinedRooms.add(roomJid)   
       
       // recursively retrieve archived messages using client.searchHistory
-      const retrieveArchivedMessages = async (roomJid: string, messageHandler: RoomMessageHandler, before?: string, maxResults: number = 50): Promise<void> => {
-        try {
-          if (!this.xmppService.client) {
-            console.warn('Cannot retrieve archived messages: client not connected')
-            return
-          }
-          
+      const retrieveArchivedMessages = async (roomJid: string, 
+        messageHandler: RoomMessageHandler, 
+        before?: string, 
+        maxResults: number = 50): Promise<void> => {
+        try {          
           // Set up MAM query options for MUC room archives
           // Using a more specific type to avoid ESLint errors while still allowing the necessary properties
           // This enables us to query the room's archive for messages from all users
@@ -166,7 +164,7 @@ export class MUCService {
           console.log('query opts', roomJid, queryOpts)
           
           // Execute the search to retrieve messages from all users in the room
-          const result = await this.xmppService.client.searchHistory(queryOpts)
+          const result = await this.xmppService.client?.searchHistory(queryOpts)
 
           console.log('search results', roomJid, result)
           
@@ -199,7 +197,7 @@ export class MUCService {
       }
       
       // If we have a message handler, retrieve archived messages
-      if (messageHandler) {
+      if (messageHandler && roomJid.includes('map')) {
         retrieveArchivedMessages(roomJid, messageHandler).catch(err => {
           console.error('Failed to retrieve archived messages:', err)
         })

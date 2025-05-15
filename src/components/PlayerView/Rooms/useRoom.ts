@@ -63,10 +63,19 @@ export const useRoom = (room: RoomType) => {
     }
   }, [xmppClient, room, gameState, playerDetails, mockRooms])
 
+  const robustMessage = (message: ReceivedMessage): GameMessage => {
+    try {
+      const msg = JSON.parse(message.body as string)
+      return msg
+    } catch {
+      return {id: message.id || '', details: {messageType: 'chat', senderId: message.from, senderName: message.from, senderForce: '', turn: '', phase: '', timestamp: new Date().toISOString(), channel: room.roomName}, content: message.body as unknown as object}
+    }
+  }
+
   useEffect(() => {
     const messageHandler = (message: ReceivedMessage): void => {
       if (message.body !== undefined) {
-        setMessages(prev => [...prev, JSON.parse(message.body as string) as GameMessage])
+        setMessages(prev => [...prev, robustMessage(message)])
       }
     }
     if (xmppClient === undefined) {
