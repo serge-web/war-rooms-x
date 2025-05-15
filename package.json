@@ -19,7 +19,7 @@
     "test:integration": "jest --config=jest.integration.config.js",
     "test:integration:coverage": "jest --config=jest.integration.config.js --coverage",
     "test:all": "yarn test:unit && yarn test:integration",
-    "start": "serve -s dist",
+    "start": "node server.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
@@ -49,6 +49,7 @@
     "dotenv": "^16.4.7",
     "events": "^3.3.0",
     "flexlayout-react": "^0.8.9",
+    "http-proxy-middleware": "^3.0.5",
     "leaflet": "^1.9.4",
     "localforage": "^1.10.0",
     "prettier": "^3.2.5",
@@ -103,6 +104,9 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.7"
+  },
+  "resolutions": {
+  "router": "2.1.0"
   },
   "eslintConfig": {
     "extends": [
