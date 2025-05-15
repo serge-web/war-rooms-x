@@ -155,7 +155,7 @@ export class MUCService {
           // This enables us to query the room's archive for messages from all users
           const queryOpts: Partial<MAMQueryOptions> = {
             paging: {count: maxResults},
-            node: roomJid
+            with: roomJid
           }
           
           // Add pagination if needed
