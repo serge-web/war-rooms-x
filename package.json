@@ -105,9 +105,7 @@
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.7"
   },
-  "resolutions": {
-  "router": "2.1.0"
-  },
+
   "eslintConfig": {
     "extends": [
       "plugin:storybook/recommended"
