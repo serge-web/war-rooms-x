@@ -53,7 +53,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
       if (cachedDoc) {
         return cachedDoc
       } else {
-        console.log('about to get xmpp doc:', USERS_PREFIX + userId)
+        // console.log('about to get xmpp doc:', USERS_PREFIX + userId)
         const user = await xmppClient.getPubSubDocument(USERS_PREFIX + userId)
         if (user) {
           userCache[userId] = user as UserConfigType
