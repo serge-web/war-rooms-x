@@ -76,7 +76,8 @@ const WargameProviderDecorator = (Story: React.ComponentType) => {
     getPlayerDetails: mockGetPlayerDetails,
     gameProperties: null,
     gameState: null,
-    nextTurn: async () => {}
+    nextTurn: async () => {},
+    rooms: []
   }
 
   return (
@@ -247,7 +248,8 @@ const DynamicPresenceDecorator = (Story: React.ComponentType) => {
     getForce: mockGetForce,
     gameProperties: null,
     gameState: null,
-    nextTurn: async () => {}
+    nextTurn: async () => {},
+    rooms: []
   }
   
   return (

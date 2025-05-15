@@ -221,7 +221,8 @@ const createForceDecorator = (forceId: string, presenceVisibility: 'all' | 'umpi
       getForce: mockGetForce,
       gameProperties: null,
       gameState,
-      nextTurn: async () => {}
+      nextTurn: async () => {},
+      rooms: []
     }
 
     return (
