@@ -221,10 +221,10 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   }, [messages])
   
   const currentFeatures: GeoJSON.GeoJSON | undefined = useMemo(() => {
-    if (latestMessage) {
+    if (latestMessage && latestMessage.details.messageType === 'map') {
       const latest = latestMessage.content as GeoJSON.FeatureCollection
       return latest
-    } else {
+    } else {  
       return undefined
     }
   }, [latestMessage])
