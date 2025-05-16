@@ -18,8 +18,13 @@ const Login: React.FC = () => {
   const [host, setHost] = useState(defaultHost)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  // Interface for modal state
+  interface ModalState {
+    title: string
+    message: string
+  }
+
+  const [modal, setModal] = useState<ModalState | null>(null)
   const { setXmppClient, setRaDataProvider, setMockPlayerId } = useWargame()
   const [userLocal, setUseLocal] = useState(false)
 
@@ -72,10 +77,16 @@ const Login: React.FC = () => {
       if (success) {
         setXmppClient(xmpp)
       } else {
-        setError('Auth failed, please check username and password')
+        setModal({
+        title: 'Login Error',
+        message: 'Auth failed, please check username and password'
+      })
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error))
+      setModal({
+        title: 'Login Error',
+        message: error instanceof Error ? error.message : String(error)
+      })
     }
   }
 
@@ -95,10 +106,16 @@ const Login: React.FC = () => {
       if (restAuth && xmppAuth) {
         setRaDataProvider(dataProvider(RestService, xmppService))
       } else {
-        setError('REST Auth failed, please check username and password')
+        setModal({
+          title: 'Login Error',
+          message: 'REST Auth failed, please check username and password'
+        })
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error))
+      setModal({
+        title: 'Login Error',
+        message: error instanceof Error ? error.message : String(error)
+      })
     }
   }  
 
@@ -111,28 +128,28 @@ const Login: React.FC = () => {
   const handleResetDataStore = async () => {
     try {
       await resetLocalForageDataStore()
-      // Set success message to trigger the modal
-      setSuccessMessage('The in-memory local data store has been reset with fresh default data.')
+      // Set modal with success message
+      setModal({
+        title: 'Data Reset Complete',
+        message: 'The in-memory local data store has been reset with fresh default data.'
+      })
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error))
+      setModal({
+        title: 'Login Error',
+        message: error instanceof Error ? error.message : String(error)
+      })
     }
   }
 
   return (
     <div className="login-container">
-      {/* Error Modal */}
-      <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
-        <p>{error}</p>
-      </Modal>
-      
-      {/* Success Modal */}
       <Modal 
-        open={!!successMessage} 
-        title="Data Reset Complete" 
-        onOk={() => setSuccessMessage(null)} 
-        onCancel={() => setSuccessMessage(null)}
+        open={!!modal} 
+        title={modal?.title} 
+        onOk={() => setModal(null)} 
+        onCancel={() => setModal(null)}
       >
-        <p>{successMessage}</p>
+        <p>{modal?.message}</p>
       </Modal>
       <div className="login-layout">
         <div className="logo-container">
