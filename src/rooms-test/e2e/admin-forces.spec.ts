@@ -169,7 +169,7 @@ test.describe('Admin force management functionality', () => {
     await expect(page.getByText('> Create new force')).toBeVisible()
     
     // Go back to the list to verify no new force was created
-    await page.getByRole('button', { name: 'Cancel' }).click()
+    // await page.getByRole('button', { name: 'Cancel' }).click()
     
     // Wait for the list to load
     await expect(page.locator('tbody tr.RaDatagrid-row:first-child')).toBeVisible()
@@ -182,7 +182,7 @@ test.describe('Admin force management functionality', () => {
     await expect(page.getByText('> Create new force')).toBeVisible()
     
     // Go back to the list to verify no new force was created
-    await page.getByRole('button', { name: 'Cancel' }).click()
+    // await page.getByRole('button', { name: 'Cancel' }).click()
     
     // Wait for the list to load
     await expect(page.locator('tbody tr.RaDatagrid-row:first-child')).toBeVisible()
@@ -205,10 +205,10 @@ test.describe('Admin force management functionality', () => {
     await expect(page.getByText('> Create new force')).toBeVisible()
     
     // Fill in the name field
-    await page.locator('input[name="create-name"]').fill('Test Force Validation')
+    await page.locator('input#create-name').fill('Test Force Validation')
     
     // Fill in the objectives field
-    await page.locator('textarea[name="create-objectives"]').fill('Test objectives for the new force')
+    await page.locator('textarea#create-objectives').fill('Test objectives for the new force')
     
     // Now the form should submit successfully
     await page.getByRole('button', { name: 'Create' }).click()
@@ -219,13 +219,14 @@ test.describe('Admin force management functionality', () => {
     // Verify our new force is in the list
     const newForceRow = page.locator('tbody tr.RaDatagrid-row:has-text("test-force-validation")')
     await expect(newForceRow).toBeVisible()
+
+    // users can also delete a row by selecting the row checkbox, and clicking the delete button
+    await newForceRow.locator('.select-item').click()
+    // Get the first Delete button (there may be multiple on the page)
+    await page.getByRole('button', { name: 'Delete' }).first().click()
+
+    // check there are the original number of rows
+    await expect(page.locator('tbody tr.RaDatagrid-row')).toHaveCount(initialForceCount)
     
-    // Clean up by deleting the test force
-    // Find the delete button that's in the same toolbar as the Save button
-    const saveButton = page.getByRole('button', { name: 'Save' })
-    const toolbar = saveButton.locator('xpath=..') // Get the parent of the Save button
-    const deleteButton = toolbar.getByRole('button', { name: 'Delete' })
-    await deleteButton.click()
-    await page.getByRole('button', { name: 'Confirm' }).click()
   })
 })
