@@ -74,7 +74,14 @@ export const useRoom = (room: RoomType) => {
     }
     const messageHandler = (message: ReceivedMessage): void => {
       if (message.body !== undefined) {
-        setMessages(prev => [...prev, robustMessage(message)])
+        setMessages(prev => {
+          // check message not already present
+          const existingMessage = prev.find(m => m.id === message.id)
+          if (existingMessage) {
+            return prev
+          }
+          return [...prev, robustMessage(message)]
+        })
       }
     }
     if (xmppClient === undefined) {
