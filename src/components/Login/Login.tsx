@@ -75,13 +75,15 @@ const Login: React.FC = () => {
       } else {
         setError({
           title: 'Login Error',
-          message: 'Auth failed, please check username and password'
+          message: 'Auth failed, please check username and password',
+          type: 'error'
         })
       }
     } catch (error) {
       setError({
         title: 'Login Error',
-        message: error instanceof Error ? error.message : String(error)
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error'
       })
     }
   }
@@ -104,13 +106,15 @@ const Login: React.FC = () => {
       } else {
         setError({
           title: 'Login Error',
-          message: 'REST Auth failed, please check username and password'
+          message: 'REST Auth failed, please check username and password',
+          type: 'error'
         })
       }
     } catch (error) {
       setError({
         title: 'Login Error',
-        message: error instanceof Error ? error.message : String(error)
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error'
       })
     }
   }  
@@ -127,12 +131,14 @@ const Login: React.FC = () => {
       // Set success message
       setError({
         title: 'Data Reset Complete',
-        message: 'The in-memory local data store has been reset with fresh default data.'
+        message: 'The in-memory local data store has been reset with fresh default data.',
+        type: 'success'
       })
     } catch (error) {
       setError({
         title: 'Login Error',
-        message: error instanceof Error ? error.message : String(error)
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error'
       })
     }
   }

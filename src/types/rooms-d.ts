@@ -65,7 +65,8 @@ export interface MockRoom {
 /** composite title and message, for when we wish to show a modal info dialog. */
 export interface UserInfo {
   title: string, 
-  message: string
+  message: string,
+  type?: 'info' | 'success' | 'warning' | 'error'
 }
 
 export interface User {

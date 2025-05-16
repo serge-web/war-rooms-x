@@ -44,7 +44,7 @@ export const useRoom = (room: RoomType) => {
       const sendMessage = async (message: GameMessage) => {
         const res: SendMessageResult = (await xmppClient.sendRoomMessage(message))
         if (res && !res.success) {
-          setInfoModal({title:'Message sending error', message: 'Error sending message:' + res.error})
+          setInfoModal({title:'Message sending error', message: 'Error sending message:' + res.error, type: 'error'})
         }  
       }
       sendMessage(message)
