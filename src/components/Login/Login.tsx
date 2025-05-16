@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex, Modal, Switch, Tag, Tooltip } from 'antd'
+import { Button, Form, Input, Card, Flex, Switch, Tag, Tooltip } from 'antd'
 import './Login.css'
 import initializeLocalForageDataProvider, { resetLocalForageDataStore } from '../AdminView/localStorageDataProvider'
 import { useWargame } from '../../contexts/WargameContext'
@@ -7,6 +7,8 @@ import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
 // We now use the mockBackend data from the localStorageDataProvider
 import dataProvider from '../AdminView/dataProvider'
+import ErrorModal from '../Utilities/ErrorModal'
+import { UserError } from '../../types/rooms-d'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -18,13 +20,7 @@ const Login: React.FC = () => {
   const [host, setHost] = useState(defaultHost)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  // Interface for modal state
-  interface ModalState {
-    title: string
-    message: string
-  }
-
-  const [modal, setModal] = useState<ModalState | null>(null)
+  const [error, setError] = useState<UserError | null>(null)
   const { setXmppClient, setRaDataProvider, setMockPlayerId } = useWargame()
   const [userLocal, setUseLocal] = useState(false)
 
@@ -77,13 +73,13 @@ const Login: React.FC = () => {
       if (success) {
         setXmppClient(xmpp)
       } else {
-        setModal({
-        title: 'Login Error',
-        message: 'Auth failed, please check username and password'
-      })
+        setError({
+          title: 'Login Error',
+          message: 'Auth failed, please check username and password'
+        })
       }
     } catch (error) {
-      setModal({
+      setError({
         title: 'Login Error',
         message: error instanceof Error ? error.message : String(error)
       })
@@ -106,13 +102,13 @@ const Login: React.FC = () => {
       if (restAuth && xmppAuth) {
         setRaDataProvider(dataProvider(RestService, xmppService))
       } else {
-        setModal({
+        setError({
           title: 'Login Error',
           message: 'REST Auth failed, please check username and password'
         })
       }
     } catch (error) {
-      setModal({
+      setError({
         title: 'Login Error',
         message: error instanceof Error ? error.message : String(error)
       })
@@ -128,13 +124,13 @@ const Login: React.FC = () => {
   const handleResetDataStore = async () => {
     try {
       await resetLocalForageDataStore()
-      // Set modal with success message
-      setModal({
+      // Set success message
+      setError({
         title: 'Data Reset Complete',
         message: 'The in-memory local data store has been reset with fresh default data.'
       })
     } catch (error) {
-      setModal({
+      setError({
         title: 'Login Error',
         message: error instanceof Error ? error.message : String(error)
       })
@@ -143,14 +139,10 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Modal 
-        open={!!modal} 
-        title={modal?.title} 
-        onOk={() => setModal(null)} 
-        onCancel={() => setModal(null)}
-      >
-        <p>{modal?.message}</p>
-      </Modal>
+      <ErrorModal 
+        error={error}
+        clearError={() => setError(null)}
+      />
       <div className="login-layout">
         <div className="logo-container">
           <img src="/war-rooms-logo.png" alt="War Rooms Logo" className="war-rooms-logo" />
