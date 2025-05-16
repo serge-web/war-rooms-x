@@ -62,7 +62,8 @@ export interface MockRoom {
   theme?: ThemeConfig
 }
 
-export interface UserError {
+/** composite title and message, for when we wish to show a modal info dialog. */
+export interface UserInfo {
   title: string, 
   message: string
 }

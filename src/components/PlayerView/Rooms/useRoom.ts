@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { RoomType, User, UserError, GameMessage, MessageDetails, OnlineUser, RoomDetails, PresenceVisibility } from '../../../types/rooms-d';
+import { RoomType, User, UserInfo, GameMessage, MessageDetails, OnlineUser, RoomDetails, PresenceVisibility } from '../../../types/rooms-d';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
@@ -17,11 +17,11 @@ export const useRoom = (room: RoomType) => {
   const [theme, setTheme] = useState<ThemeConfig | undefined>(undefined)
   const [canSubmit, setCanSubmit] = useState(true)
   const messagesReceived = useRef<boolean | null>(null)
-  const [error, setError] = useState<UserError | null>(null)
+  const [infoModal, setInfoModal] = useState<UserInfo | null>(null)
   const { data: mockRooms, loading } = useIndexedDBData<RRoom[]>('chatrooms')
 
-  const clearError = () => {
-    setError(null)
+  const clearInfoModal = () => {
+    setInfoModal(null)
   }
 
   // TODO - also handle details, extract from the room description
@@ -44,7 +44,7 @@ export const useRoom = (room: RoomType) => {
       const sendMessage = async (message: GameMessage) => {
         const res: SendMessageResult = (await xmppClient.sendRoomMessage(message))
         if (res && !res.success) {
-          setError({title:'Message sending error', message: 'Error sending message:' + res.error})
+          setInfoModal({title:'Message sending error', message: 'Error sending message:' + res.error})
         }  
       }
       sendMessage(message)
@@ -184,5 +184,5 @@ export const useRoom = (room: RoomType) => {
     }
   }, [room])
 
-  return { messages, users, theme, canSubmit, sendMessage, error, clearError, presenceVisibility };
+  return { messages, users, theme, canSubmit, sendMessage, infoModal, setInfoModal, presenceVisibility, clearInfoModal };
 }

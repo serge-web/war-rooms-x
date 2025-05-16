@@ -44,6 +44,7 @@ export const DurationInput = (props: InputProps) => {
       </Stack>
       <Select
         value={unit}
+        id={props.id + '-units'}
         onChange={(e) => {
           const newUnit = e.target.value
           setUnit(newUnit)

@@ -7,8 +7,8 @@ import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
 // We now use the mockBackend data from the localStorageDataProvider
 import dataProvider from '../AdminView/dataProvider'
-import ErrorModal from '../Utilities/ErrorModal'
-import { UserError } from '../../types/rooms-d'
+import InfoModal from '../Utilities/InfoModal'
+import { UserInfo } from '../../types/rooms-d'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -20,7 +20,7 @@ const Login: React.FC = () => {
   const [host, setHost] = useState(defaultHost)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<UserError | null>(null)
+  const [error, setError] = useState<UserInfo | null>(null)
   const { setXmppClient, setRaDataProvider, setMockPlayerId } = useWargame()
   const [userLocal, setUseLocal] = useState(false)
 
@@ -139,10 +139,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <ErrorModal 
-        error={error}
-        clearError={() => setError(null)}
-      />
+      <InfoModal info={error} clearModal={() => setError(null)}/>
       <div className="login-layout">
         <div className="logo-container">
           <img src="/war-rooms-logo.png" alt="War Rooms Logo" className="war-rooms-logo" />
