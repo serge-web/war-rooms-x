@@ -71,7 +71,8 @@ const createWargameContextMock = (xmppClientValue: XMPPService | undefined | nul
   getPlayerDetails: jest.fn().mockResolvedValue({}),
   gameProperties: null,
   gameState: null,
-  nextTurn: jest.fn().mockResolvedValue(undefined)
+  nextTurn: jest.fn().mockResolvedValue(undefined),
+  rooms: []
 })
 
 describe('useTemplates hook', () => {
