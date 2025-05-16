@@ -160,21 +160,16 @@ export class MUCService {
           if (before && queryOpts.paging) {
             queryOpts.paging.index = Number(before)
           }
-
-          console.log('query opts', roomJid, queryOpts)
           
           // Execute the search to retrieve messages from all users in the room
           const result = await this.xmppService.client?.searchHistory(queryOpts)
 
-          console.log('search results', roomJid, result)
-          
           // Process the results
           if (result && result.results && result.results.length > 0) {
             // Process each message in the result set
             for (const item of result.results) {
               // Check for different possible message formats in MAM results
               if (item.item && item.item.delay && item.item.message) {
-                console.log('archived message', item.item.message)
                 // Format 1: item.item.message structure
                 messageHandler(item.item.message as ReceivedMessage)
               } else {
@@ -197,7 +192,7 @@ export class MUCService {
       }
       
       // If we have a message handler, retrieve archived messages
-      if (messageHandler && roomJid.includes('map')) {
+      if (messageHandler) {
         retrieveArchivedMessages(roomJid, messageHandler).catch(err => {
           console.error('Failed to retrieve archived messages:', err)
         })

@@ -121,7 +121,6 @@ export const useRooms = (xmppClient: XMPPService | null | undefined, mockPlayerI
     }
     // Only run this effect when xmppClient changes and is not null or undefined
     if (xmppClient && xmppClient.mucServiceUrl && !hasInitializedRooms) {
-      console.log('Initial room fetch')
       // Initial fetch of rooms
       fetchRooms(xmppClient)
     }
