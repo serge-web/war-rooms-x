@@ -195,7 +195,7 @@ test.describe('Admin wargame editing functionality', () => {
     await intervalNumberInput.fill('2')
     
     // Select 'hours' from the dropdown
-    const intervalUnitSelect = page.locator('#interval-input').locator('xpath=../..').locator('select')
+    const intervalUnitSelect = page.locator('#interval-input-units')
     await intervalUnitSelect.click()
     await page.locator('text=hours').click()
     
@@ -208,7 +208,7 @@ test.describe('Admin wargame editing functionality', () => {
     // Update current time field - first get the current date in ISO format
     const currentDate = new Date()
     const isoDate = currentDate.toISOString().split('T')[0] // Get YYYY-MM-DD part
-    const timeString = '14:30' // Set a specific time
+    const timeString = '08:32' // Set a specific time
     
     // Fill the current time field
     const currentTimeInput = page.locator('input[name="currentTime"]')
@@ -224,7 +224,7 @@ test.describe('Admin wargame editing functionality', () => {
     
     // Verify the interval has been updated in the list
     const intervalCell = await page.locator('tbody tr.RaDatagrid-row:first-child .column-interval').textContent()
-    expect(intervalCell).toBe('2 hours')
+    expect(intervalCell).toBe('PT2H')
     
     // Verify the turn has been updated in the list
     const turnCell = await page.locator('tbody tr.RaDatagrid-row:first-child .column-turn').textContent()
@@ -232,6 +232,6 @@ test.describe('Admin wargame editing functionality', () => {
     
     // Verify the current time has been updated (partial match since formatting might differ)
     const currentTimeCell = await page.locator('tbody tr.RaDatagrid-row:first-child .column-currentTime').textContent()
-    expect(currentTimeCell).toContain('14:30')
+    expect(currentTimeCell).toContain('8:32')
   })
 })
