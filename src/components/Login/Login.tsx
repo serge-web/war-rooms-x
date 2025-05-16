@@ -19,6 +19,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const { setXmppClient, setRaDataProvider, setMockPlayerId } = useWargame()
   const [userLocal, setUseLocal] = useState(false)
 
@@ -110,22 +111,28 @@ const Login: React.FC = () => {
   const handleResetDataStore = async () => {
     try {
       await resetLocalForageDataStore()
-      Modal.success({
-        title: 'Data Reset Complete',
-        content: 'The ra-data-local-forage data store has been reset with fresh default data.',
-      })
+      // Set success message to trigger the modal
+      setSuccessMessage('The in-memory local data store has been reset with fresh default data.')
     } catch (error) {
-      Modal.error({
-        title: 'Data Reset Failed',
-        content: error instanceof Error ? error.message : String(error),
-      })
+      setError(error instanceof Error ? error.message : String(error))
     }
   }
 
   return (
     <div className="login-container">
+      {/* Error Modal */}
       <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
         <p>{error}</p>
+      </Modal>
+      
+      {/* Success Modal */}
+      <Modal 
+        open={!!successMessage} 
+        title="Data Reset Complete" 
+        onOk={() => setSuccessMessage(null)} 
+        onCancel={() => setSuccessMessage(null)}
+      >
+        <p>{successMessage}</p>
       </Modal>
       <div className="login-layout">
         <div className="logo-container">
