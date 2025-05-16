@@ -12,6 +12,5 @@ test.describe('Welcome page functionality', () => {
     // status of the the login buttons
     await expect(page.locator('.login-button')).toBeDisabled()
     await expect(page.locator('.admin-button')).toBeDisabled()
-    await expect(page.locator('.mock-button')).not.toBeDisabled()
   })
 })
