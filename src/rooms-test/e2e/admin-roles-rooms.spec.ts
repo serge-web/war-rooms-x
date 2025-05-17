@@ -80,8 +80,8 @@ test.describe('Admin Roles and Rooms', () => {
     await expect(page.getByText('Test Room')).toBeVisible()
     
     // Edit the room
-    await page.getByRole('row', { name: 'test-room' }).click()
-    await page.getByLabel('Name').fill('Updated Test Room')
+    await page.getByRole('row', { name: 'Test Room' }).click()
+    await page.locator('#edit-name').fill('Updated Test Room')
     await page.getByRole('button', { name: 'Save' }).click()
     
     // Verify room was updated
@@ -91,20 +91,19 @@ test.describe('Admin Roles and Rooms', () => {
   test('should create a form room with templates', async ({ page }) => {
     // First, create a template if it doesn't exist
     await page.getByRole('menuitem', { name: 'Templates' }).click()
-    await page.getByRole('button', { name: 'Create' }).click()
     await page.locator('#create-id').fill('test-template')
     await page.locator('#create-name').fill('Test Template')
-    await page.getByRole('button', { name: 'Create' }).click()
+    await page.getByRole('button', { name: 'Save' }).click()
     
     // Now create a form room
-    await page.getByRole('link', { name: 'Rooms' }).click()
+    await page.getByRole('menuitem', { name: 'Rooms' }).click()
     await page.getByRole('button', { name: 'Create' }).click()
-    await page.getByLabel('Id').fill('form-room')
-    await page.getByLabel('Name').fill('Form Room')
-    await page.getByLabel('Description').fill('Room with form template')
+    await page.locator('#create-id').fill('form-room')
+    await page.locator('#create-name').fill('Form Room')
+    await page.locator('#create-description').fill('Room with form template')
     
     // Select form room type
-    await page.getByLabel('Room Type').click()
+    await page.getByRole('combobox', { name: 'Room Type' }).click()
     await page.getByText('Simple Forms - A room that uses forms to create messages').click()
     
     // Select template
@@ -112,8 +111,9 @@ test.describe('Admin Roles and Rooms', () => {
     await page.getByText('Test Template').click()
     
     // Set access control
-    await page.getByLabel('Public').click()
-    await page.getByLabel('Presence').selectOption('all')
+    await page.getByRole('button', { name: 'Public' }).click()
+    await page.getByRole('combobox', { name: 'Presence' }).click()
+    await page.getByRole('option', { name: 'All' }).click()
     
     // Save the room
     await page.getByRole('button', { name: 'Create' }).click()
