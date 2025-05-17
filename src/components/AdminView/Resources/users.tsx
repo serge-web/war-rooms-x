@@ -23,7 +23,7 @@ export const EditUser = ({ id }: { id?: string }) => (
   <Edit title='> Edit role' id={id} undoable={false} mutationMode='pessimistic'>
     <SimpleForm>
       <TextInput helperText="id values cannot be changed" source="id" />
-      <TextInput source="name" />
+      <TextInput source="name" id="edit-name" />
     </SimpleForm>
   </Edit>
 )
@@ -39,8 +39,8 @@ export const CreateUser = ({ embedded = false }: { embedded?: boolean }) => (
     }}
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-      <TextInput source="id" />
-      <TextInput source="name" />
+      <TextInput source="id" id="create-id" />
+      <TextInput source="name" id="create-name" />
       <Typography.Paragraph><strong>Note:</strong>Password for new user will be set to `pwd`</Typography.Paragraph>
     </SimpleForm>
   </Create>

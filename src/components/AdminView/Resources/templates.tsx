@@ -108,8 +108,8 @@ export const CreateTemplates: React.FC = () => {
     <Create title=" - Create new template" transform={transform}>
       <SimpleForm>
         <Typography.Title level={4}>Create new template</Typography.Title>
-        <TextInput source="id" helperText="id values cannot be changed after creation" />
-        <TextInput source="name" helperText="human-readable name for template"/>
+        <TextInput id="create-id" source="id" helperText="id values cannot be changed after creation" />
+        <TextInput id="create-name" source="name" helperText="human-readable name for template"/>
       </SimpleForm>
     </Create>
   )
