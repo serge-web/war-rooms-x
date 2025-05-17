@@ -39,8 +39,8 @@ export const CreateUser = ({ embedded = false }: { embedded?: boolean }) => (
     }}
   >
     <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-      <TextInput source="id" id="create-id" />
-      <TextInput source="name" id="create-name" />
+      <TextInput required source="id" id="create-id" />
+      <TextInput required source="name" id="create-name" />
       <Typography.Paragraph><strong>Note:</strong>Password for new user will be set to `pwd`</Typography.Paragraph>
     </SimpleForm>
   </Create>
