@@ -117,3 +117,15 @@ export interface PresenceData {
  * Presence handler function type
  */
 export type PresenceHandler = (jid: string, available: boolean) => void
+
+/**
+ * Room change event type
+ */
+export type RoomChangeEvent = 'enter' | 'leave'
+
+/**
+ * Room change listener function type
+ * @param roomJid The JID of the room that was entered or left
+ * @param event The type of event (enter or leave)
+ */
+export type RoomChangeListener = (roomJid: string, event: RoomChangeEvent) => void

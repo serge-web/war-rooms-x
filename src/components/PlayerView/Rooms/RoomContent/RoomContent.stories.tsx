@@ -142,7 +142,8 @@ const createForceDecorator = (forceId: string | 'ALL') => {
       getPlayerDetails: mockGetPlayerDetails,
       gameProperties: null,
       gameState,
-      nextTurn: async () => {}
+      nextTurn: async () => {},
+      rooms: []
     }
 
     console.log('context', wargameContextValue)

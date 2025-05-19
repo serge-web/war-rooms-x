@@ -5,6 +5,10 @@ import { renderObjectContent } from './renderObjectContent'
 import { useWargame } from '../../../../../contexts/WargameContext'
 
 const renderMessage = (mType: string, jsonObject: object, templates: Template[]): React.ReactNode => {
+  // special case. Messages from other clients may be plain text.  If they are, just return them
+  if (typeof jsonObject === 'string') {
+    return jsonObject
+  }
   switch(mType) {
   case 'chat': {
     return (jsonObject as ChatMessage).value

@@ -22,8 +22,10 @@ export class ConnectionService {
    */
   async connect(ip: string, host: string, username: string, password: string): Promise<boolean> {
     try {
+      const jid = `${username}@${host}`
+      console.log('logging into ', jid, ip)
       this.xmppService.client = XMPP.createClient({
-        jid: `${username}@${host}`,
+        jid,
         password,
         transports: {
           websocket: `ws://${ip}:7070/ws/`

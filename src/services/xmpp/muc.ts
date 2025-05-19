@@ -1,7 +1,8 @@
-import { DiscoItem } from 'stanza/protocol'
+import { DiscoItem, Presence, ReceivedMessage } from 'stanza/protocol'
 import { GameMessage, User } from '../../types/rooms-d'
 import { JoinRoomResult, LeaveRoomResult, Room, RoomMessageHandler, SendMessageResult } from '../types'
 import { XMPPService, ALL_ROOMS } from './index'
+import { MAMQueryOptions } from 'stanza'
 
 /**
  * Service for handling Multi-User Chat (MUC) operations
@@ -124,16 +125,77 @@ export class MUCService {
     try {
       // Set up message handler for this room if not already done
       this.setupRoomMessageHandler()
-      
-      // Join the room
-      await this.xmppService.client.joinRoom(roomJid, this.xmppService.bareJid)
-      
-      // Add to our joined rooms set
-      this.joinedRooms.add(roomJid)
-      
+
       // Register the message handler if provided
       if (messageHandler) {
         this.onRoomMessage(messageHandler, roomJid)
+      }
+
+      // Join the room
+      const historyOpts = {
+        history: {
+          maxStanzas: 20 // number of previous messages to fetch
+        } 
+      } as unknown as Presence
+      await this.xmppService.client.joinRoom(roomJid, this.xmppService.bareJid, historyOpts)
+      
+      // Add to our joined rooms set
+      this.joinedRooms.add(roomJid)   
+      
+      // recursively retrieve archived messages using client.searchHistory
+      const retrieveArchivedMessages = async (roomJid: string, 
+        messageHandler: RoomMessageHandler, 
+        before?: string, 
+        maxResults: number = 50): Promise<void> => {
+        try {          
+          // Set up MAM query options for MUC room archives
+          // Using a more specific type to avoid ESLint errors while still allowing the necessary properties
+          // This enables us to query the room's archive for messages from all users
+          const queryOpts: Partial<MAMQueryOptions> = {
+            paging: {count: maxResults},
+            with: roomJid
+          }
+          
+          // Add pagination if needed
+          if (before && queryOpts.paging) {
+            queryOpts.paging.index = Number(before)
+          }
+          
+          // Execute the search to retrieve messages from all users in the room
+          const result = await this.xmppService.client?.searchHistory(queryOpts)
+
+          // Process the results
+          if (result && result.results && result.results.length > 0) {
+            // Process each message in the result set
+            for (const item of result.results) {
+              // Check for different possible message formats in MAM results
+              if (item.item && item.item.delay && item.item.message) {
+                // Format 1: item.item.message structure
+                messageHandler(item.item.message as ReceivedMessage)
+              } else {
+                console.warn('Unrecognized message format in archive result:', item)
+              }
+            }
+            
+            // Check if we need to fetch more (if we got the maximum number of results)
+            if (result.results.length === maxResults && result.paging && result.paging.first) {
+              // Get the timestamp of the oldest message for pagination
+              const oldestMessageTime = result.paging.first
+              
+              // Recursively fetch older messages
+              await retrieveArchivedMessages(roomJid, messageHandler, oldestMessageTime, maxResults)
+            }
+          }
+        } catch (error) {
+          console.error('Error retrieving archived messages:', error)
+        }
+      }
+      
+      // If we have a message handler, retrieve archived messages
+      if (messageHandler) {
+        retrieveArchivedMessages(roomJid, messageHandler).catch(err => {
+          console.error('Failed to retrieve archived messages:', err)
+        })
       }
       
       return { success: true, roomJid }

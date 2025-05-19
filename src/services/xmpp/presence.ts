@@ -1,5 +1,5 @@
-import { ReceivedPresence, MUCInfo } from 'stanza/protocol'
-import { PresenceHandler } from '../types'
+import { ReceivedPresence, MUCInfo, MUCUserItem } from 'stanza/protocol'
+import { PresenceHandler, RoomChangeListener, RoomChangeEvent } from '../types'
 import { XMPPService } from './index'
 
 /**
@@ -7,6 +7,7 @@ import { XMPPService } from './index'
  */
 export class PresenceService {
   private xmppService: XMPPService
+  private roomChangeListeners: RoomChangeListener[] = []
 
   constructor(xmppService: XMPPService) {
     this.xmppService = xmppService
@@ -36,6 +37,7 @@ export class PresenceService {
     
     // Return a function to unsubscribe from presence updates
     return () => {
+      console.log('unsubscribing from presence')
       // Get the current handlers for this room
       const currentHandlers = this.xmppService.presenceHandlers.get(roomJid) || []
       
@@ -69,6 +71,8 @@ export class PresenceService {
       const mucData = presence.muc as MUCInfo
       if (mucData.statusCodes?.includes('110')) {
         // message refers to current user
+        // Check if this is a room membership change for the current user
+        this.handleSelfRoomPresence(presence)
         return
       }
     }
@@ -98,6 +102,41 @@ export class PresenceService {
           handler(userJid, available)
         }
       }
+    }
+  }
+
+  /**
+   * Subscribe to room change events
+   * @param listener The listener function to call when room changes occur
+   * @returns A function to unsubscribe from room change events
+   */
+  public subscribeToRoomChanges(listener: RoomChangeListener): () => void {
+    this.roomChangeListeners.push(listener)
+    
+    // Return a function to unsubscribe from room change events
+    return () => {
+      this.roomChangeListeners = this.roomChangeListeners.filter(l => l !== listener)
+    }
+  }
+
+  /**
+   * Handle presence updates that refer to the current user's room membership
+   * @param presence The presence stanza
+   */
+  private handleSelfRoomPresence(presence: ReceivedPresence): void {
+    if (!presence || !presence.from) {
+      return
+    }
+
+    const from = presence.from
+    const roomJid = from.split('/')[0]
+    if (!presence.muc) return
+    const muc = presence.muc as MUCUserItem
+    const event: RoomChangeEvent = muc.affiliation !== 'none' ? 'enter' : 'leave'
+    
+    // Notify all room change listeners
+    for (const listener of this.roomChangeListeners) {
+      listener(roomJid, event)
     }
   }
 }

@@ -1,12 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { useRooms } from '../../components/PlayerView/Rooms/RoomsList/useRooms'
-import { XMPPService } from '../../services/XMPPService'
-
-// Mock the WargameContext to control xmppClient value
-const mockUseWargame = jest.fn()
-jest.mock('../../contexts/WargameContext', () => ({
-  useWargame: () => mockUseWargame()
-}))
+import { XMPPService } from '../../services/xmpp'
 
 // Mock useIndexedDBData to avoid localforage issues
 const mockUseIndexedDBData = jest.fn()
@@ -23,12 +17,7 @@ describe('useRooms hook', () => {
     jest.clearAllMocks()
   })
 
-  it('should return empty array when waiting for login', () => {
-    // Mock undefined xmppClient (waiting for login state)
-    mockUseWargame.mockReturnValue({
-      xmppClient: undefined
-    })
-    
+  it('should return empty array when waiting for login', () => {   
     // Mock useIndexedDBData to return a default value
     mockUseIndexedDBData.mockReturnValue({
       data: null,
@@ -36,7 +25,7 @@ describe('useRooms hook', () => {
     })
 
     // Render the hook
-    const { result } = renderHook(() => useRooms())
+    const { result } = renderHook(() => useRooms(null, null))
     
     // Verify initial state is empty array
     expect(result.current.rooms).toEqual([])
@@ -71,19 +60,13 @@ describe('useRooms hook', () => {
       }
     ]
 
-    // Set up mocks for null xmppClient and mock data
-    mockUseWargame.mockReturnValue({
-      xmppClient: null,
-      mockPlayerId: { playerId: 'test-user', forceId: 'test-force' }
-    })
-
     mockUseIndexedDBData.mockReturnValue({
       data: mockRooms,
       loading: false
     })
 
     // Render the hook
-    const { result } = renderHook(() => useRooms())
+    const { result } = renderHook(() => useRooms(null, { playerId: 'test-user', forceId: 'test-force' }))
     
     // Verify rooms are filtered correctly for the user
     expect(result.current.rooms).toHaveLength(3) // Should include room1, room3, and __admin
@@ -119,19 +102,13 @@ describe('useRooms hook', () => {
       }
     ]
 
-    // Set up mocks for null xmppClient and admin user
-    mockUseWargame.mockReturnValue({
-      xmppClient: null,
-      mockPlayerId: { playerId: 'admin', forceId: 'admin' }
-    })
-
     mockUseIndexedDBData.mockReturnValue({
       data: mockRooms,
       loading: false
     })
 
     // Render the hook
-    const { result } = renderHook(() => useRooms())
+    const { result } = renderHook(() => useRooms(null, { playerId: 'admin', forceId: 'admin' }))
     
     // Verify all rooms are included for admin
     expect(result.current.rooms).toHaveLength(2)
@@ -143,19 +120,13 @@ describe('useRooms hook', () => {
   })
   
   it('should handle loading state correctly', () => {
-    // Set up mocks for null xmppClient and loading state
-    mockUseWargame.mockReturnValue({
-      xmppClient: null,
-      mockPlayerId: { playerId: 'test-user', forceId: 'test-force' }
-    })
-
     mockUseIndexedDBData.mockReturnValue({
       data: null,
       loading: true
     })
 
     // Render the hook
-    const { result } = renderHook(() => useRooms())
+    const { result } = renderHook(() => useRooms(null, { playerId: 'test-user', forceId: 'test-force' }))
     
     // Verify empty array is returned during loading
     expect(result.current.rooms).toEqual([])
@@ -163,18 +134,13 @@ describe('useRooms hook', () => {
 
   it('should handle missing mockPlayerId correctly', () => {
     // Set up mocks for null xmppClient but missing mockPlayerId
-    mockUseWargame.mockReturnValue({
-      xmppClient: null,
-      mockPlayerId: null
-    })
-
     mockUseIndexedDBData.mockReturnValue({
       data: [{ id: 'room1', name: 'Room 1' }],
       loading: false
     })
 
     // Render the hook
-    const { result } = renderHook(() => useRooms())
+    const { result } = renderHook(() => useRooms(null, null))
     
     // Verify empty array is returned when mockPlayerId is missing
     expect(result.current.rooms).toEqual([])
@@ -186,6 +152,14 @@ describe('useRooms hook', () => {
       { jid: 'room1@conference.example.com', name: 'Room 1' },
       { jid: 'room2@conference.example.com', name: 'Room 2' }
     ]
+
+    // Mock useIndexedDBData to return a default value (we won't 
+    // use indexed db in this test, but it's necessary at runtime)
+    mockUseIndexedDBData.mockReturnValue({
+      data: null,
+      loading: false
+    })
+
 
     // Mock room info data
     const mockRoomInfos = [
@@ -218,19 +192,13 @@ describe('useRooms hook', () => {
     const mockXmppClient = {
       mucServiceUrl: 'conference.example.com',
       listRooms: mockListRooms,
+      subscribeToRoomChanges: () => { return () => {} },
       client: {
         getDiscoInfo: mockGetDiscoInfo
       }
     }
-
-    // Set up mock for xmppClient
-    mockUseWargame.mockReturnValue({
-      xmppClient: mockXmppClient as unknown as XMPPService,
-      mockPlayerId: { playerId: 'test-user', forceId: 'test-force' }
-    })
-
     // Render the hook
-    const { result } = renderHook(() => useRooms())
+    const { result } = renderHook(() => useRooms(mockXmppClient as unknown as XMPPService, { playerId: 'test-user', forceId: 'test-force'}))
     
     // Wait for async operations to complete
     await waitFor(() => {
@@ -255,6 +223,6 @@ describe('useRooms hook', () => {
       const room2 = result.current.rooms.find(room => room.roomName === 'room2@conference.example.com')
       expect(room2).toHaveProperty('naturalName', 'Room 2')
       expect(room2).toHaveProperty('description', 'Description for Room 2')
-    })
+    }, { timeout: 1000 })
   })
 })

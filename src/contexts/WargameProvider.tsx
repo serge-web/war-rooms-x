@@ -9,6 +9,7 @@ import { useGameProperties } from '../components/PlayerView/GameState/useGameSet
 import { useGameState } from '../components/PlayerView/GameState/useGameState'
 import { usePlayerDetails } from '../components/PlayerView/UserDetails/usePlayerDetails'
 import { FORCES_PREFIX, USERS_PREFIX } from '../types/constants'
+import { useRooms } from '../components/PlayerView/Rooms/RoomsList/useRooms'
 
 interface WargameProviderProps {
   children: ReactNode
@@ -26,6 +27,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
   const { gameState, nextTurn } = useGameState(xmppClient)
   const { playerDetails, mockPlayerId, setMockPlayerId } = usePlayerDetails(xmppClient)
   const [userCache] = useState<Record<string, UserConfigType>>({})
+  const { rooms } = useRooms(xmppClient, mockPlayerId)
 
   const getPlayerDetails = useCallback(async (userId: string): Promise<UserConfigType | undefined> => {
     if (!userId) {
@@ -51,7 +53,7 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
       if (cachedDoc) {
         return cachedDoc
       } else {
-        console.log('about to get xmpp doc:', USERS_PREFIX + userId)
+        // console.log('about to get xmpp doc:', USERS_PREFIX + userId)
         const user = await xmppClient.getPubSubDocument(USERS_PREFIX + userId)
         if (user) {
           userCache[userId] = user as UserConfigType
@@ -134,7 +136,8 @@ export const WargameProvider = ({ children }: WargameProviderProps) => {
     getForce,
     gameProperties,
     gameState,
-    nextTurn
+    nextTurn,
+    rooms
   }
 
   return (

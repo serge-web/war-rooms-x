@@ -20,7 +20,8 @@ test.describe('Welcome page functionality', () => {
     // open the wargames item
     await page.getByRole('menuitem', { name: 'Wargames' }).click();
 
-    await page.getByText('Wargame', { exact: true }).click();
+    // Click on the name cell in the first row of the data table (within tbody)
+    await page.locator('tbody tr.RaDatagrid-row:first-child .column-name').click();
 
     await expect(page.getByText('Configuration', { exact: true })).toBeVisible();
 
