@@ -48,6 +48,7 @@
     "deep-object-diff": "^1.1.9",
     "dotenv": "^16.4.7",
     "events": "^3.3.0",
+    "express": "^5.1.0",
     "flexlayout-react": "^0.8.9",
     "http-proxy-middleware": "^3.0.5",
     "leaflet": "^1.9.4",
