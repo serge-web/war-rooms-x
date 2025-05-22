@@ -22,11 +22,20 @@ app.use(
   createProxyMiddleware({
     target: 'http://134.209.31.87:9090',
     changeOrigin: true,
-    pathRewrite: {
-      '^/openfire-rest': '/plugins/restapi/v1'
+    pathRewrite: (path, req) => {
+      console.log('Rewriting path:', path)
+      return path.replace(/^\/openfire-rest/, '/plugins/restapi/v1')
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      console.log('Proxying request to:', proxyReq.path)
+      // proxyReq.setHeader('Authorization', 'YOUR_SECRET_KEY_HERE') 
+    },
+    onError(err, req, res) {
+      console.error('Proxy error:', err)
+      res.status(500).send('Proxy error')
     }
   })
-);
+)
 
 app.use(
   '/ws',
