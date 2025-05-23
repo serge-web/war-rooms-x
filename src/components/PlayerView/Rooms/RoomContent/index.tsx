@@ -16,6 +16,12 @@ interface RoomProps {
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, infoModal, setInfoModal, users, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
+  
+  // Placeholder for message editing functionality
+  const handleEditMessage = (messageId: string, newContent: string) => {
+    console.log(`Editing message ${messageId} with new content:`, newContent)
+    // TODO: Implement actual message editing logic
+  }
   return (
     <ConfigProvider theme={theme}>
       <div className='room-content' data-testid={`room-content-${room.roomName}`}>
@@ -31,7 +37,12 @@ const RoomContent: React.FC<RoomProps> = ({ room }) => {
           />
         )}
         
-        <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={[]} />
+        <MessageList 
+          messages={messages} 
+          currentUser={playerDetails?.id || ''} 
+          templates={[]}
+          onEditMessage={handleEditMessage}
+        />
         
         {canSubmit && (
           <MessageInputForm 

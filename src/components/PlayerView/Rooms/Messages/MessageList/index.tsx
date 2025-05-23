@@ -8,12 +8,14 @@ interface MessageListProps {
   messages: GameMessage[]
   currentUser: string
   templates: Template[]
+  onEditMessage?: (messageId: string, newContent: string) => void
 }
 
 const MessageList: React.FC<MessageListProps> = ({ 
   messages, 
   currentUser,
-  templates
+  templates,
+  onEditMessage
 }) => {
   const renderer = (message: GameMessage) => (
     <MessageBubble 
@@ -21,6 +23,7 @@ const MessageList: React.FC<MessageListProps> = ({
       message={message} 
       isSelf={message.details.senderId === currentUser} 
       templates={templates}
+      onEditMessage={onEditMessage}
     />
   )
   return (
