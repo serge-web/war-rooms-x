@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { EditOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons'
-import { Input } from 'antd'
+import { EditOutlined, CheckOutlined, CloseOutlined, CodeOutlined } from '@ant-design/icons'
+import { Input, Modal } from 'antd'
 import './index.css'
 import { ChatMessage, FormMessage, GameMessage, Template } from '../../../../../types/rooms-d'
 import { renderObjectContent } from './renderObjectContent'
@@ -34,7 +34,7 @@ interface MessageBubbleProps {
   message: GameMessage
   isSelf: boolean
   templates: Template[]
-  onEditMessage?: (messageId: string, newContent: string) => void
+  onEditMessage?: (messageId: string, newContent: string | object) => void
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ 
@@ -43,15 +43,27 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   templates,
   onEditMessage 
 }) => {
+  // Debug logging
+  console.log('MessageBubble render:', {
+    messageId: message.id,
+    isSelf,
+    hasOnEditMessage: !!onEditMessage,
+    messageType: message.details.messageType,
+    content: message.content
+  })
   const [forceColor, setForceColor] = useState<string | undefined>(undefined)
   const [isEditing, setIsEditing] = useState(false)
+  const [showJsonEditor, setShowJsonEditor] = useState(false)
   const [editedContent, setEditedContent] = useState('')
+  const [jsonContent, setJsonContent] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const jsonEditorRef = useRef<HTMLTextAreaElement>(null)
   const { getForce } = useWargame()
   const from = message.details.senderName
   const fromForce = message.details.senderForce
-  const isEditable = isSelf && message.details.messageType === 'chat' && onEditMessage
-  
+  const isEditable = isSelf && !!onEditMessage
+  const isChatMessage = message.details.messageType === 'chat'
+
   useEffect(() => {
     if (fromForce) {
       getForce(fromForce).then((force) => {
@@ -60,13 +72,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
   }, [fromForce, getForce])
   
+  // Initialize content when editing starts
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
-      // Set initial content when starting to edit
-      setEditedContent((message.content as ChatMessage).value || '')
+      setEditedContent(
+        message.details.messageType === 'chat' 
+          ? (message.content as ChatMessage).value || ''
+          : JSON.stringify(message.content, null, 2)
+      )
     }
-  }, [isEditing, message.content])
+  }, [isEditing, message.content, message.details.messageType])
+  
+  // Initialize JSON content when opening the editor
+  useEffect(() => {
+    if (showJsonEditor && jsonEditorRef.current) {
+      jsonEditorRef.current.focus()
+      setJsonContent(JSON.stringify(message.content, null, 2))
+    }
+  }, [showJsonEditor, message.content])
   
   const handleEditClick = () => {
     setIsEditing(true)
@@ -74,15 +98,37 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   
   const handleSave = () => {
     if (editedContent.trim() && onEditMessage) {
-      onEditMessage(message.id, editedContent)
+      if (message.details.messageType === 'chat') {
+        onEditMessage(message.id, editedContent)
+      } else {
+        try {
+          const parsedContent = JSON.parse(editedContent)
+          onEditMessage(message.id, parsedContent)
+        } catch (e) {
+          console.error('Invalid JSON content', e)
+          return
+        }
+      }
     }
     setIsEditing(false)
+  }
+  
+  const handleSaveJson = () => {
+    if (jsonContent.trim() && onEditMessage) {
+      try {
+        const parsedContent = JSON.parse(jsonContent)
+        onEditMessage(message.id, parsedContent)
+        setShowJsonEditor(false)
+      } catch (e) {
+        console.error('Invalid JSON content', e)
+      }
+    }
   }
   
   const handleCancel = () => {
     setIsEditing(false)
   }
-  
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -132,18 +178,54 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div className="message-footer">
         <div className="message-timestamp">
           {message.details.timestamp}
-          {isEditable && !isEditing && (
-            <button 
-              className="edit-button" 
-              onClick={handleEditClick}
-              aria-label="Edit message"
-            >
-              <EditOutlined />
-            </button>
+          {isEditable && !isEditing && !showJsonEditor && (
+            <>
+              <button 
+                className="edit-button" 
+                onClick={handleEditClick}
+                aria-label="Edit message"
+                title={isChatMessage ? 'Edit message' : 'Edit JSON'}
+              >
+                {isChatMessage ? <EditOutlined /> : <CodeOutlined />}
+              </button>
+            </>
           )}
           {/* {message.details.isEdited && <span className="edited-indicator">(edited)</span>} */}
         </div>
       </div>
+      
+      {/* JSON Editor Modal */}
+      <Modal
+        title="Edit JSON Content"
+        open={showJsonEditor}
+        onOk={handleSaveJson}
+        onCancel={() => setShowJsonEditor(false)}
+        okText="Save"
+        cancelText="Cancel"
+        width={800}
+        className="json-editor-modal"
+      >
+        <div className="json-editor-container">
+          <Input.TextArea
+            ref={jsonEditorRef}
+            value={jsonContent}
+            onChange={(e) => setJsonContent(e.target.value)}
+            className="json-editor"
+            autoSize={{ minRows: 10, maxRows: 20 }}
+            spellCheck={false}
+          />
+          <div className="json-validation-error">
+            {(() => {
+              try {
+                JSON.parse(jsonContent)
+                return null
+              } catch (e) {
+                return 'Invalid JSON: ' + (e as Error).message
+              }
+            })()}
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

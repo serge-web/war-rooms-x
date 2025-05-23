@@ -18,6 +18,13 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, infoModal, setInfoModal, users, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
   const { templates } = useTemplates()
+  
+  // Handle message editing for both chat and form messages
+  const handleEditMessage = (messageId: string, newContent: string | object) => {
+    console.log(`Editing message ${messageId} with new content:`, newContent)
+    // TODO: Implement actual message editing logic
+    // The actual implementation will need to handle both string (for chat) and object (for forms) content
+  }
   // const { users, presenceVisibility, loading } = useRoomUsers(room)
   const myTemplates = useMemo(() => {
     if (!room.description)
@@ -46,7 +53,12 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
           isAdmin={playerDetails?.role === 'admin'}
         />
       
-      <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={templates || []} />
+      <MessageList 
+        messages={messages} 
+        currentUser={playerDetails?.id || ''} 
+        templates={templates || []} 
+        onEditMessage={handleEditMessage}
+      />
       { canSubmit && myTemplates && <FormMessageBuilder 
         onSendMessage={sendMessage} 
         disabled={false} 
