@@ -203,7 +203,7 @@ const Login: React.FC = () => {
           <div className="button-groups">
             {/* Development Player Interface Buttons */}
             <div className="button-group">
-              <div className="dev-title">
+              <div className="dev-title-real">
                 Development quick-links (real server)
               </div>
               <Flex align="center" className="button-group-row">
@@ -231,14 +231,14 @@ const Login: React.FC = () => {
           <div className="button-groups">
             {/* Development Player Interface Buttons */}
             <div className="button-group">
-              <div className="dev-title">
+              <div className="dev-title-mock">
                 Development quick-links (mock backend)
               </div>
               <Flex align="center" className="button-group-row">
                 <div className="button-group-label">Player UI</div>
                 <Flex justify='center' vertical={false} className="dev-player-buttons">
                   { mockRoles.map((item) => (
-                    <Button key={item[0]} onClick={() => handleMock(item[0], item[1])}>
+                    <Button key={item[0]} className={"login-mock-" + item[0]} onClick={() => handleMock(item[0], item[1])}>
                       {item[0]}
                     </Button>
                   ))}

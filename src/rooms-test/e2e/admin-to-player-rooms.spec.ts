@@ -1,0 +1,245 @@
+import { test, expect, Page } from '@playwright/test'
+
+/**
+ * E2E test to verify that changes made in the admin interface are reflected in the player view
+ * This test creates different room types in the admin interface and verifies they appear in the player view
+ */
+test.describe('Admin changes reflected in player view', () => {
+  // Helper function to set up and reset the test environment
+  async function setupTestEnvironment(page: Page) {
+    // Navigate to the homepage
+    await page.goto('/')
+    
+    // Verify the page has loaded by checking for the login card
+    await expect(page.locator('.login-card')).toBeVisible()
+
+    // Reset the data store first
+    await expect(page.locator('.reset-data-button')).toBeVisible()
+    await page.locator('.reset-data-button').click()
+    
+    // Wait a moment for the reset to complete
+    await page.waitForTimeout(100)
+    
+    // If the modal is visible, close it, but don't fail if it's not
+    try {
+      const okButton = page.getByRole('button', { name: 'OK' })
+      if (await okButton.isVisible())
+        await okButton.click()
+    } catch {
+      // Modal might not be visible, continue with the test
+      console.log('Modal not visible or already closed')
+    }
+  }
+
+  // Helper function to log in as admin
+  async function loginAsAdmin(page: Page) {
+    // Log in with mock REST admin
+    await expect(page.locator('.mock-rest-button')).toBeVisible()
+    await page.locator('.mock-rest-button').click()
+    
+    // Verify we're on the admin page by checking for the welcome title
+    await expect(page.locator('.maintainer-welcome-title')).toBeVisible()
+  }
+
+  // Helper function to log in as a player
+  async function loginAsPlayer(page: Page) {
+    // Log in with mock player (blue force) using development quick-links
+    // Find the blue-co button in the mock backend section
+    const mockPlayerButtons = page.locator('.login-mock-blue-co')
+    await expect(mockPlayerButtons).toBeVisible()
+    await mockPlayerButtons.click()
+    
+    // Wait for the player view to load
+    await expect(page.locator('.rooms-list-container')).toBeVisible()
+  }
+
+  // Helper function to verify a room exists in the admin interface, handling pagination
+  async function verifyRoomExists(page: Page, roomName: string) {
+    // Wait for the rooms list to be visible instead of waiting for a specific URL
+    await page.waitForSelector('tbody tr.RaDatagrid-row', { timeout: 5000 })
+    
+    // Try to find the room on the first page
+    const roomOnFirstPage = await page.getByText(roomName).isVisible().catch(() => false)
+    
+    // If not found on first page, check the second page
+    if (!roomOnFirstPage) {
+      // Navigate to the second page
+      const nextPageButton = page.getByRole('button', { name: 'Go to next page' })
+      if (await nextPageButton.isVisible()) {
+        await nextPageButton.click()
+        // Wait for the page to load
+        await page.waitForTimeout(500)
+      }
+    }
+    
+    // Now verify the room is visible
+    await expect(page.getByText(roomName)).toBeVisible()
+  }
+
+  // Helper function to create a chat room in the admin interface
+  async function createChatRoom(page: Page, roomId: string, roomName: string) {
+    // Navigate to Rooms
+    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    
+    // Create a new chat room
+    await page.getByRole('button', { name: 'Create' }).click()
+    await page.locator('#create-id').fill(roomId)
+    await page.locator('#create-name').fill(roomName)
+    await page.locator('#create-description').fill(`Test chat room created at ${new Date().toISOString()}`)
+    
+    // Select room type
+    await page.locator('#edit-room-type').click()
+    await page.getByRole('option', { name: 'Chat Room - A standard chat room' }).click()
+    
+    // Set access control to public and visible to all
+    await page.getByRole('button', { name: 'Public' }).click()
+    await page.getByRole('combobox', { name: 'Presence' }).click()
+    await page.getByRole('option', { name: 'All' }).click()
+    
+    // Save the room
+    await page.getByRole('button', { name: 'Create' }).click()
+    
+    // Verify room was created (with pagination handling)
+    await verifyRoomExists(page, roomName)
+  }
+
+  // Helper function to create a form room in the admin interface
+  async function createFormRoom(page: Page, roomId: string, roomName: string) {
+    // First, make sure we have a template to use
+    // Navigate to Templates directly via URL to avoid click interception issues
+    await page.goto('/#/templates')
+    await page.waitForSelector('tbody tr.RaDatagrid-row', { timeout: 5000 })
+    
+    // Check if the Situation Report template exists
+    const situationReportExists = await page.locator('tbody tr.RaDatagrid-row').filter({ 
+      hasText: 'Situation Report' 
+    }).count() > 0
+    
+    if (!situationReportExists) {
+      // Create a simple template if it doesn't exist
+      await page.getByRole('button', { name: 'Create' }).click()
+      await page.locator('#create-id').fill('situation-report')
+      await page.locator('#create-name').fill('Situation Report')
+      await page.getByRole('button', { name: 'Save' }).click()
+      
+      // Verify template was created
+      await expect(page.getByText('Situation Report')).toBeVisible()
+    }
+    
+    // Navigate to Rooms
+    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    
+    // Create a new form room
+    await page.getByRole('button', { name: 'Create' }).click()
+    await page.locator('#create-id').fill(roomId)
+    await page.locator('#create-name').fill(roomName)
+    await page.locator('#create-description').fill(`Test form room created at ${new Date().toISOString()}`)
+    
+    // Select form room type
+    await page.getByRole('combobox', { name: 'Room Type' }).click()
+    await page.getByText('Simple Forms - A room that uses forms to create messages').click()
+    
+    // Select template
+    await page.getByLabel('Templates').click()
+    // Use getByRole with option to be more specific
+    await page.getByRole('option', { name: 'Situation Report' }).click()
+    
+    // Set access control to public and visible to all
+    await page.getByRole('button', { name: 'Public' }).click()
+    await page.getByRole('combobox', { name: 'Presence' }).click()
+    await page.getByRole('option', { name: 'All' }).click()
+    
+    // Save the room
+    await page.getByRole('button', { name: 'Create' }).click()
+    
+    // Verify room was created (with pagination handling)
+    await verifyRoomExists(page, roomName)
+  }
+
+  // Helper function to create a map room in the admin interface
+  async function createMapRoom(page: Page, roomId: string, roomName: string) {
+    // Navigate to Rooms
+    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    
+    // Create a new map room
+    await page.getByRole('button', { name: 'Create' }).click()
+    await page.locator('#create-id').fill(roomId)
+    await page.locator('#create-name').fill(roomName)
+    
+    // Create a description with map room specifics
+    // Use a more controlled map configuration to prevent CSS leakage
+    const mapRoomDetails = {
+      specifics: {
+        roomType: 'map',
+        mapUrl: 'https://example.com/map.png',
+        cssOverride: '.leaflet-container { display: none; }'
+      }
+    }
+    await page.locator('#create-description').fill(JSON.stringify(mapRoomDetails))
+    
+    // Select room type
+    await page.locator('#edit-room-type').click()
+    await page.getByRole('option', { name: 'Chat Room - A standard chat room' }).click()
+    
+    // Set access control to public and visible to all
+    await page.getByRole('button', { name: 'Public' }).click()
+    await page.getByRole('combobox', { name: 'Presence' }).click()
+    await page.getByRole('option', { name: 'All' }).click()
+    
+    // Save the room
+    await page.getByRole('button', { name: 'Create' }).click()
+    
+    // Verify room was created (with pagination handling)
+    await verifyRoomExists(page, roomName)
+  }
+
+  test('should create rooms in admin view and verify they appear in player view', async ({ page }) => {
+    // Set up the test environment
+    await setupTestEnvironment(page)
+    
+    // Log in as admin
+    await loginAsAdmin(page)
+    
+    // Generate unique IDs for the test rooms
+    const timestamp = Date.now()
+    const chatRoomId = `chat-room-${timestamp}`
+    const chatRoomName = `Chat Room ${timestamp}`
+    const formRoomId = `form-room-${timestamp}`
+    const formRoomName = `Form Room ${timestamp}`
+    const mapRoomId = `map-room-${timestamp}`
+    const mapRoomName = `Map Room ${timestamp}`
+    
+    // Create different types of rooms
+    await createChatRoom(page, chatRoomId, chatRoomName)
+    await createFormRoom(page, formRoomId, formRoomName)
+    await createMapRoom(page, mapRoomId, mapRoomName)
+    
+    // Log out from admin
+    await page.goto('/')
+    
+    // Log in as player
+    await loginAsPlayer(page)
+    
+    // Wait for the rooms to load in the player view
+    await page.waitForTimeout(1000)
+    
+    // Verify all created rooms are visible in the player view
+    // We look for the room names in the FlexLayout tabs
+    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName })).toBeVisible()
+    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName })).toBeVisible()
+    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName })).toBeVisible()
+    
+    // Click on each room tab to verify the content loads correctly
+    // Chat room
+    await page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName }).click()
+    await expect(page.locator('.room-content')).toBeVisible()
+    
+    // Form room
+    await page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName }).click()
+    await expect(page.locator('.simple-form-content')).toBeVisible()
+    
+    // Map room
+    await page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).click()
+    await expect(page.locator('.map-content')).toBeVisible()
+  })
+})
