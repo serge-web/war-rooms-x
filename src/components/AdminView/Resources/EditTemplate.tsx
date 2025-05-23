@@ -1,6 +1,35 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react' // Add createContext, useContext
 import { Edit, useRecordContext, useRedirect, useNotify, useSaveContext } from 'react-admin'
-import { Card, Button, Space } from 'antd'
+import { Card, Tabs, Button as AntButton, Space as AntSpace } from 'antd' // Renamed Button and Space to avoid conflict if any, and keep Card, Tabs
+const { TabPane } = Tabs
+
+// 1. Define TemplateFormActionsContext and EditTemplateActions
+interface IFormActions {
+  doSave?: () => void;
+  handleCancel?: () => void;
+}
+const TemplateFormActionsContext = createContext<IFormActions>({});
+
+const EditTemplateActions = () => {
+  const { doSave, handleCancel } = useContext(TemplateFormActionsContext);
+  // Note: The save button here in react-admin's TopToolbar by default uses react-admin's own save mechanism.
+  // We are overriding it to call our custom doSave.
+  // If `doSave` itself calls react-admin's `save` from `useSaveContext`, it should work.
+  // The `useSaveContext` provides a `saving` boolean, which could be useful here.
+  // For now, let's keep it simple as per instructions.
+  
+  // Retrieve the saving state from useSaveContext to disable the button during save
+  // This part is an enhancement but good for UX. It assumes EditTemplateActions is rendered within SaveContextProvider
+  const { saving } = useSaveContext();
+
+
+  return (
+    <AntSpace>
+      <AntButton onClick={handleCancel} disabled={!handleCancel || saving}>Cancel</AntButton>
+      <AntButton type="primary" onClick={doSave} disabled={!doSave || saving}>Save</AntButton>
+    </AntSpace>
+  );
+};
 import { RJSFSchema, UiSchema, FieldTemplateProps } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
@@ -75,134 +104,189 @@ const FormPreview = ({ schema, uiSchema }: { schema: RJSFSchema, uiSchema: UiSch
 }
 
 // Template editor form component
+// 2. Modify TemplateEditorForm
 interface TemplateEditorFormProps {
-  initialSchema?: RJSFSchema
-  initialUiSchema?: UiSchema
+  schema: RJSFSchema; // Changed from initialSchema
+  uiSchema: UiSchema; // Changed from initialUiSchema
+  setSchema: (schema: RJSFSchema) => void;
+  setUiSchema: (uiSchema: UiSchema) => void;
 }
 
 const TemplateEditorForm = ({ 
-  initialSchema, 
-  initialUiSchema
+  schema, 
+  uiSchema,
+  setSchema,
+  setUiSchema
 }: TemplateEditorFormProps) => {
-  const redirect = useRedirect()
-  const notify = useNotify()
-  const record = useRecordContext() as Template
+  // Removed hooks: useRedirect, useNotify, useRecordContext, useSaveContext
+  // Removed state: localState
+  // Removed functions: doSave, handleCancel, performUpdate
+  // Removed useEffect for performUpdate
   
-  // Local state for the form data
-  const [schema, setSchema] = useState<RJSFSchema>(initialSchema || { type: 'object', properties: {} })
-  const [uiSchema, setUiSchema] = useState<UiSchema>(initialUiSchema || {})
-
-  const [localState, setLocalState] = useState({ schema: record?.schema, uiSchema: record?.uiSchema })
-  const { save } = useSaveContext()
-
-  const doSave = useCallback(() => {
-    const insertId = { id: record?.id, ...localState }
-    if (save) {
-      save(insertId)
-    }
-  }, [save, localState, record])
-
-  const performUpdate = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
-    const newSchema = JSON.stringify(schema)
-    const newUiSchema = JSON.stringify(uiSchema)
-    const oldSchema = JSON.stringify(localState?.schema)
-    const oldUiSchema = JSON.stringify(localState?.uiSchema)
-    
-    if (newSchema !== oldSchema || newUiSchema !== oldUiSchema) {
-      setLocalState({ schema, uiSchema })
-    }
-  }, [ localState])
+  const [schemaError, setSchemaError] = useState<string | null>(null); // Keep local error state for textareas
+  const [uiSchemaError, setUiSchemaError] = useState<string | null>(null); // Keep local error state for textareas
   
-  // Propagate changes to parent component
-  useEffect(() => {
-    performUpdate(schema, uiSchema)
-  }, [schema, uiSchema, performUpdate])
-  
-  // No longer need a save handler as React Admin handles saving
-
-  // Handle cancel
-  const handleCancel = useCallback(() => {
-    redirect('list', 'templates')
-  }, [redirect])
-
-
-  // No need to check for record anymore as we're getting data from props
+  // notify is not available here anymore, direct console log for now or pass down if needed.
+  // const notify = useNotify(); 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>      
-      <DraggableContainer
-        initialLeftPanelWidth={50}
-        leftPanel={
-          <Card
-            title="Form Builder"
-            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            extra={
-              <Space>
-                <Button onClick={handleCancel}>Cancel</Button>
-                <Button type='primary' onClick={() => {
-                  // We don't need to manually save here as React Admin's Edit component
-                  // will handle the save action when its save button is clicked
-                  notify('Ready to save', { type: 'info' })
-                  doSave()
-                }}>
-                  Save
-                </Button>
-              </Space>
+    // Removed TemplateFormActionsContext.Provider from here
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Tabs defaultActiveKey="1">
+        <TabPane tab="Builder" key="1">
+            <DraggableContainer
+              initialLeftPanelWidth={50}
+              leftPanel={
+                <Card
+                  title="Form Builder"
+                  style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                  // REMOVE 'extra' prop with buttons from here
+                  bodyStyle={{ flex: 1, overflow: 'auto' }}
+                >
+                  <div style={{ height: '100%' }}>
+                    <FormBuilder
+                    className='form-builder'
+                    schema={schema ? JSON.stringify(schema) : "{}"}
+                    uischema={uiSchema ? JSON.stringify(uiSchema) : "{}"}
+                    onChange={(newSchemaString: string, newUiSchemaString: string) => {
+                      try {
+                        setSchema(JSON.parse(newSchemaString));
+                        setUiSchema(JSON.parse(newUiSchemaString));
+                        setSchemaError(null); // Clear errors if FormBuilder updates successfully
+                        setUiSchemaError(null);
+                      } catch (error) {
+                        console.error('Error parsing schema from FormBuilder:', error);
+                        // Optionally set an error state to display to the user if FormBuilder itself can produce invalid JSON
+                      }
+                    }}
+                    mods={{
+                      customFormInputs: {}
+                    }}
+                  />
+                </div>
+              </Card>
             }
-            bodyStyle={{ flex: 1, overflow: 'auto' }}
-          >
-            <div style={{ height: '100%' }}>
-              <FormBuilder
-                className='form-builder'
-                schema={JSON.stringify(schema)}
-                uischema={JSON.stringify(uiSchema)}
-                onChange={(newSchema: string, newUiSchema: string) => {
-                  try {
-                    setSchema(JSON.parse(newSchema))
-                    setUiSchema(JSON.parse(newUiSchema))
-                  } catch (error) {
-                    console.error('Error parsing schema:', error)
-                  }
-                }}
-                mods={{
-                  customFormInputs: {}
-                }}
-              />
-            </div>
-          </Card>
-        }
-        rightPanel={
-          <Card 
-            title="Live Preview"
-            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            bodyStyle={{ flex: 1, overflow: 'auto' }}
-          >
-            <FormPreview 
-              schema={schema} 
-              uiSchema={uiSchema}
+            rightPanel={
+              <Card 
+                title="Live Preview"
+                style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                bodyStyle={{ flex: 1, overflow: 'auto' }}
+              >
+                <FormPreview 
+                  schema={schema} 
+                  uiSchema={uiSchema}
+                />
+              </Card>
+            }
+          />
+        </TabPane>
+        <TabPane tab="Manual" key="2">
+          <div>
+            <h3>JSON Schema</h3>
+            <textarea
+              style={{ width: '100%', minHeight: '200px', fontFamily: 'monospace' }}
+              value={schema ? JSON.stringify(schema, null, 2) : ''}
+              onChange={(e) => {
+                try {
+                  const newSchema = JSON.parse(e.target.value);
+                  setSchema(newSchema);
+                  setSchemaError(null); // Clear error on successful parse
+                } catch (err) {
+                  console.error("Error parsing schema JSON:", err);
+                  setSchemaError("Invalid JSON format");
+                }
+              }}
             />
-          </Card>
-        }
-      />
+            {schemaError && (
+              <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9em' }}>
+                {schemaError}
+              </div>
+            )}
+            <h3>UI Schema</h3>
+            <textarea
+              style={{ width: '100%', minHeight: '200px', fontFamily: 'monospace' }}
+              value={uiSchema ? JSON.stringify(uiSchema, null, 2) : ''}
+              onChange={(e) => {
+                try {
+                  const newUiSchema = JSON.parse(e.target.value);
+                  setUiSchema(newUiSchema);
+                  setUiSchemaError(null); // Clear error on successful parse
+                } catch (err) {
+                  console.error("Error parsing uiSchema JSON:", err);
+                  setUiSchemaError("Invalid JSON format");
+                }
+              }}
+            />
+            {uiSchemaError && (
+              <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9em' }}>
+                {uiSchemaError}
+              </div>
+            )}
+          </div>
+        </TabPane>
+      </Tabs>
     </div>
   )
 }
 
-// This component will be rendered inside the Edit context
+// 3. Modify EditForm
 const EditForm: React.FC = () => {
-  const record = useRecordContext() as Template
+  const record = useRecordContext<Template>();
+  const redirect = useRedirect();
+  const notify = useNotify();
+  const { save } = useSaveContext();
+
+  // Define state for schema and uiSchema
+  const [schema, setSchema] = useState<RJSFSchema>({ type: 'object', title: 'New Form', properties: {} });
+  const [uiSchema, setUiSchema] = useState<UiSchema>({});
+
+  // Effect to initialize/update schema and uiSchema when record is loaded/changed
+  useEffect(() => {
+    if (record) {
+      setSchema(record.schema || { type: 'object', title: 'New Form', properties: {} });
+      setUiSchema(record.uiSchema || {});
+    }
+  }, [record]);
+
+  const handleCancel = useCallback(() => {
+    redirect('list', 'templates');
+  }, [redirect]);
+
+  const doSave = useCallback(() => {
+    if (!record) {
+      notify("Cannot save: record not loaded.", { type: 'error' });
+      return;
+    }
+    // Ensure schema and uiSchema are not undefined before saving.
+    // This should be handled by initializing them properly.
+    const dataToSave = { 
+      id: record.id, 
+      schema: schema || { type: 'object', properties: {} }, 
+      uiSchema: uiSchema || {} 
+    };
+    // notify('Saving template...', { type: 'info' }); // React Admin handles this with optimistic/pessimistic mode
+    if (save) {
+      save(dataToSave);
+    }
+  }, [record, schema, uiSchema, save, notify]);
+
   if (!record) {
-    return null
+    // Still loading or record is not found
+    return null; 
   }
 
   return (
-    <div data-testid="edit-form">
-      <TemplateEditorForm 
-        initialSchema={record.schema} 
-        initialUiSchema={record.uiSchema}
-      />
-    </div>
-  )
+    <TemplateFormActionsContext.Provider value={{ doSave, handleCancel }}>
+      <div data-testid="edit-form">
+        <TemplateEditorForm 
+          schema={schema} // Pass schema state
+          uiSchema={uiSchema} // Pass uiSchema state
+          setSchema={setSchema} // Pass setter
+          setUiSchema={setUiSchema} // Pass setter
+        />
+      </div>
+    </TemplateFormActionsContext.Provider>
+  );
 }
 
 // Main edit template component that wraps the form with the Edit component
@@ -212,10 +296,11 @@ export const EditTemplate = () => {
     <Edit 
       title="Edit Template" 
       redirect="list"
-      component="div"
+      // component="div" // Removed as it might interfere with actions rendering
       mutationMode="pessimistic"
+      actions={<EditTemplateActions />} // 3. Use EditTemplateActions
     >
-      <EditForm/>
+      <EditForm />
     </Edit>
   )
 }
