@@ -41,11 +41,21 @@ test.describe('Admin changes reflected in player view', () => {
     await expect(page.locator('.maintainer-welcome-title')).toBeVisible()
   }
 
-  // Helper function to log in as a player
-  async function loginAsPlayer(page: Page) {
+  // Helper function to log in as blue-co player
+  async function loginAsBluePlayer(page: Page) {
     // Log in with mock player (blue force) using development quick-links
-    // Find the blue-co button in the mock backend section
     const mockPlayerButtons = page.locator('.login-mock-blue-co')
+    await expect(mockPlayerButtons).toBeVisible()
+    await mockPlayerButtons.click()
+    
+    // Wait for the player view to load
+    await expect(page.locator('.rooms-list-container')).toBeVisible()
+  }
+  
+  // Helper function to log in as red-co player
+  async function loginAsRedPlayer(page: Page) {
+    // Log in with mock player (red force) using development quick-links
+    const mockPlayerButtons = page.locator('.login-mock-red-co')
     await expect(mockPlayerButtons).toBeVisible()
     await mockPlayerButtons.click()
     
@@ -55,7 +65,10 @@ test.describe('Admin changes reflected in player view', () => {
 
   // Helper function to verify a room exists in the admin interface, handling pagination
   async function verifyRoomExists(page: Page, roomName: string) {
-    // Wait for the rooms list to be visible instead of waiting for a specific URL
+    // Navigate to the rooms list to ensure we're not on the create form
+    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    
+    // Wait for the rooms list to be visible
     await page.waitForSelector('tbody tr.RaDatagrid-row', { timeout: 5000 })
     
     // Try to find the room on the first page
@@ -90,6 +103,10 @@ test.describe('Admin changes reflected in player view', () => {
     // Select room type
     await page.locator('#edit-room-type').click()
     await page.getByRole('option', { name: 'Chat Room - A standard chat room' }).click()
+    
+    // Add blue-co as a member
+    await page.getByLabel('Members').click()
+    await page.getByRole('option', { name: 'Blue CO' }).click()
     
     // Set access control to public and visible to all
     await page.getByRole('button', { name: 'Public' }).click()
@@ -144,6 +161,10 @@ test.describe('Admin changes reflected in player view', () => {
     // Use getByRole with option to be more specific
     await page.getByRole('option', { name: 'Situation Report' }).click()
     
+    // Add blue-co as a member
+    await page.getByLabel('Members').click()
+    await page.getByRole('option', { name: 'Blue CO' }).click()
+    
     // Set access control to public and visible to all
     await page.getByRole('button', { name: 'Public' }).click()
     await page.getByRole('combobox', { name: 'Presence' }).click()
@@ -181,6 +202,10 @@ test.describe('Admin changes reflected in player view', () => {
     await page.locator('#edit-room-type').click()
     await page.getByRole('option', { name: 'Chat Room - A standard chat room' }).click()
     
+    // Add blue-co as a member
+    await page.getByLabel('Members').click()
+    await page.getByRole('option', { name: 'Blue CO' }).click()
+    
     // Set access control to public and visible to all
     await page.getByRole('button', { name: 'Public' }).click()
     await page.getByRole('combobox', { name: 'Presence' }).click()
@@ -193,7 +218,7 @@ test.describe('Admin changes reflected in player view', () => {
     await verifyRoomExists(page, roomName)
   }
 
-  test('should create rooms in admin view and verify they appear in player view', async ({ page }) => {
+  test('should create rooms in admin view and verify access control works correctly', async ({ page }) => {
     // Set up the test environment
     await setupTestEnvironment(page)
     
@@ -209,7 +234,7 @@ test.describe('Admin changes reflected in player view', () => {
     const mapRoomId = `map-room-${timestamp}`
     const mapRoomName = `Map Room ${timestamp}`
     
-    // Create different types of rooms
+    // Create different types of rooms with blue-co as a member
     await createChatRoom(page, chatRoomId, chatRoomName)
     await createFormRoom(page, formRoomId, formRoomName)
     await createMapRoom(page, mapRoomId, mapRoomName)
@@ -217,13 +242,13 @@ test.describe('Admin changes reflected in player view', () => {
     // Log out from admin
     await page.goto('/')
     
-    // Log in as player
-    await loginAsPlayer(page)
+    // Log in as blue-co player
+    await loginAsBluePlayer(page)
     
     // Wait for the rooms to load in the player view
     await page.waitForTimeout(1000)
     
-    // Verify all created rooms are visible in the player view
+    // Verify all created rooms are visible to blue-co in the player view
     // We look for the room names in the FlexLayout tabs
     await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName })).toBeVisible()
     await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName })).toBeVisible()
@@ -241,5 +266,25 @@ test.describe('Admin changes reflected in player view', () => {
     // Map room
     await page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).click()
     await expect(page.locator('.map-content')).toBeVisible()
+    
+    // Log out from blue-co player
+    await page.goto('/')
+    
+    // Log in as red-co player
+    await loginAsRedPlayer(page)
+    
+    // Wait for the rooms to load in the player view
+    await page.waitForTimeout(1000)
+    
+    // Verify the rooms are NOT visible to red-co player
+    // We check that the room names are not present in the FlexLayout tabs
+    const chatRoomVisible = await page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName }).count() > 0
+    const formRoomVisible = await page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName }).count() > 0
+    const mapRoomVisible = await page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).count() > 0
+    
+    // Assert that none of the rooms are visible to red-co
+    expect(chatRoomVisible).toBe(false)
+    expect(formRoomVisible).toBe(false)
+    expect(mapRoomVisible).toBe(false)
   })
 })
