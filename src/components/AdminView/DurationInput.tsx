@@ -30,6 +30,7 @@ export const DurationInput = (props: InputProps) => {
         <TextField
           type="number"
           value={quantity}
+          id={props.id}
           onChange={(e) => {
             const newValue = parseInt(e.target.value)
             setQuantity(newValue)
@@ -43,6 +44,7 @@ export const DurationInput = (props: InputProps) => {
       </Stack>
       <Select
         value={unit}
+        id={props.id + '-units'}
         onChange={(e) => {
           const newUnit = e.target.value
           setUnit(newUnit)

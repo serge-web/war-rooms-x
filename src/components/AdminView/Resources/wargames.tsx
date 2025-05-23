@@ -42,6 +42,7 @@ const CurrentPhaseInput = () => {
     <RadioButtonGroupInput
       source="currentPhase"
       label="Phase"
+      id="currentPhase"
       helperText="The current phase of the game"
       required
       choices={items}
@@ -138,7 +139,7 @@ export const WargameEdit = () => {
                 <TextInput helperText="A description of the wargame" source="description" />
                 <Stack direction="row" spacing={12}>
                   <DateTimeInput style={{ width: '40%' }} required helperText="The start date and time" source="startTime" />
-                  <DurationInput helperText="The step interval" source="interval" />
+                  <DurationInput id="interval-input" helperText="The step interval" source="interval" />
                 </Stack>
                 <Stack direction="row">
                   <RadioButtonGroupInput required helperText="The turn model" source="turnType" choices={turnModels} />

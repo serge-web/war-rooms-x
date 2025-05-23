@@ -105,7 +105,7 @@ describe('useRoom hook', () => {
     expect(result.current.users).toEqual([])
     expect(result.current.theme).toBeUndefined()
     expect(result.current.canSubmit).toBe(true)
-    expect(result.current.error).toBeNull()
+    expect(result.current.infoModal).toBeNull()
   })
   
   it('should load mock messages when xmppClient is null', () => {
@@ -159,7 +159,7 @@ describe('useRoom hook', () => {
     expect(result.current.theme).toEqual({ token: { colorPrimary: '#ff0000' } })
     expect(result.current.users).toEqual(mockUsers)
     expect(result.current.canSubmit).toBe(true)
-    expect(result.current.error).toBeNull()
+    expect(result.current.infoModal).toBeNull()
   })
   
   it('should return empty messages array when loading', () => {
@@ -185,7 +185,7 @@ describe('useRoom hook', () => {
     expect(result.current.users).toEqual([])
     expect(result.current.theme).toBeUndefined()
     expect(result.current.canSubmit).toBe(true)
-    expect(result.current.error).toBeNull()
+    expect(result.current.infoModal).toBeNull()
   })
   
   it('should add message to local state when sending message with null xmppClient', () => {
@@ -358,7 +358,7 @@ describe('useRoom hook', () => {
     const { result } = renderHook(() => useRoom(testRoom))
     
     // Verify initial error state
-    expect(result.current.error).toBeNull()
+    expect(result.current.infoModal).toBeNull()
     
     // Send a message that will fail
     await act(async () => {
@@ -368,18 +368,18 @@ describe('useRoom hook', () => {
     })
     
     // Verify error was set
-    expect(result.current.error).toEqual({
+    expect(result.current.infoModal).toEqual({
       title: 'Message sending error',
       message: 'Error sending message:Failed to send message'
     })
     
-    // Test clearError function
+    // Test clearInfoModal function
     act(() => {
-      result.current.clearError()
+      result.current.clearInfoModal()
     })
     
     // Verify error was cleared
-    expect(result.current.error).toBeNull()
+    expect(result.current.infoModal).toBeNull()
   })
 
   it('should handle incoming messages from XMPP', async () => {

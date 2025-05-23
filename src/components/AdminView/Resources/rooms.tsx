@@ -90,7 +90,7 @@ const RoomSpecifics = () => {
     <>
       <Box style={roundBox}>
         <LegendLabel>Custom room properties</LegendLabel>
-        <SelectInput source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
+        <SelectInput id="edit-room-type" source="details.specifics.roomType" label="Room Type" choices={roomTypeNames} onChange={(e) => updateRoomType(e.target.value as string)} />
         {renderStrategyComponent}
       </Box>
     </>
@@ -107,7 +107,7 @@ const AccessControl = () => {
           <AutocompleteArrayInput optionText="id" helperText="Forces that are members of this room" />          
         </ReferenceArrayInput>  
         <BooleanInput helperText="Public rooms are visible to all users" source="public" />    
-        <SelectInput source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
+        <SelectInput id="edit-presence-visibility" source="details.presenceVisibility" label="Presence" helperText="Who can see the presence of others in this room" choices={[
         { id: 'all', name: 'All' },
         { id: 'umpires-only', name: 'Umpires Only' },
         { id: 'none', name: 'None' }
@@ -122,8 +122,8 @@ export const EditRoom = ({ id }: { id?: string }) => {
     <Edit title='> Edit room' key={id} id={id} mutationMode='pessimistic' undoable={false}>
       <SimpleForm>
       <Stack direction='row' spacing={2}>
-        <TextInput helperText="Name of the room" source="name" style={{ width: '33%' }} />
-        <TextInput helperText="Description of the room" source="details.description" label="Description" style={{ width: '88%' }} />
+        <TextInput id="edit-name" helperText="Name of the room" source="name" style={{ width: '33%' }} />
+        <TextInput id="edit-description" helperText="Description of the room" source="details.description" label="Description" style={{ width: '88%' }} />
       </Stack>  
         <RoomSpecifics/>
         <AccessControl/>
@@ -132,33 +132,50 @@ export const EditRoom = ({ id }: { id?: string }) => {
   )
 }
 
-export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => (
-  <Create
-    title='> Create new room'
-    record={{
-      details: {
-        presenceVisibility: 'all',
-        specifics: {
-          roomType: 'chat'
-        }
+export const CreateRoom = ({ embedded = false }: { embedded?: boolean }) => {
+  // Default initial values for the form
+  const defaultRecord = {
+    details: {
+      presenceVisibility: 'all',
+      specifics: {
+        roomType: 'chat'
       }
-    }}
-    // Use redirect prop instead of mutationOptions to control navigation
-    redirect={embedded ? false : false}
-    // The redirect prop accepts 'list', 'show', 'edit', false (to stay on the form)
-    // or a custom path like '/some-path'
-  >
-    <SimpleForm toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}>
-      <Stack direction='row' spacing={2}>
-        <TextInput source="id" required style={{ width: '33%' }} />
-        <TextInput source="name" required style={{ width: '66%' }} />
-      </Stack>
-      <TextInput source="details.description" label="Description" fullWidth helperText="Description of the room" />
-      <RoomSpecifics/>
-      <AccessControl/>
-    </SimpleForm>
-  </Create>
-)
+    }
+  }
+  
+  // Create a form key to force re-render when needed
+  const [formKey, setFormKey] = useState(Date.now())
+  
+  // Custom success handler for embedded forms
+  const onSuccess = () => {
+    if (embedded) {
+      // Force form reset by changing the key
+      setFormKey(Date.now())
+    }
+  }
+  
+  return (
+    <Create
+      title='> Create new room'
+      record={defaultRecord}
+      redirect={embedded ? false : 'list'}
+      mutationOptions={{ onSuccess }}
+    >
+      <SimpleForm 
+        key={formKey} 
+        toolbar={<Toolbar><SaveButton label='Create' alwaysEnable /></Toolbar>}
+      >
+        <Stack direction='row' spacing={2}>
+          <TextInput source="id" id="create-id" required style={{ width: '33%' }} />
+          <TextInput source="name" id="create-name" required style={{ width: '66%' }} />
+        </Stack>
+        <TextInput source="details.description" id="create-description" label="Description" fullWidth helperText="Description of the room" />
+        <RoomSpecifics/>
+        <AccessControl/>
+      </SimpleForm>
+    </Create>
+  )
+}
 
 export const ListRoom = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Form, Input, Card, Flex, Modal, Switch, Tag, Tooltip } from 'antd'
+import { Button, Form, Input, Card, Flex, Switch, Tag, Tooltip } from 'antd'
 import './Login.css'
 import initializeLocalForageDataProvider, { resetLocalForageDataStore } from '../AdminView/localStorageDataProvider'
 import { useWargame } from '../../contexts/WargameContext'
@@ -7,6 +7,8 @@ import { XMPPService } from '../../services/XMPPService'
 import { XMPPRestService } from '../../services/XMPPRestService'
 // We now use the mockBackend data from the localStorageDataProvider
 import dataProvider from '../AdminView/dataProvider'
+import InfoModal from '../Utilities/InfoModal'
+import { UserInfo } from '../../types/rooms-d'
 
 const defaultIp = '10.211.55.16'
 const defaultHost = 'ubuntu-linux-2404'
@@ -18,7 +20,7 @@ const Login: React.FC = () => {
   const [host, setHost] = useState(defaultHost)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<UserInfo | null>(null)
   const { setXmppClient, setRaDataProvider, setMockPlayerId } = useWargame()
   const [userLocal, setUseLocal] = useState(false)
 
@@ -71,10 +73,18 @@ const Login: React.FC = () => {
       if (success) {
         setXmppClient(xmpp)
       } else {
-        setError('Auth failed, please check username and password')
+        setError({
+          title: 'Login Error',
+          message: 'Auth failed, please check username and password',
+          type: 'error'
+        })
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error))
+      setError({
+        title: 'Login Error',
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error'
+      })
     }
   }
 
@@ -94,10 +104,18 @@ const Login: React.FC = () => {
       if (restAuth && xmppAuth) {
         setRaDataProvider(dataProvider(RestService, xmppService))
       } else {
-        setError('REST Auth failed, please check username and password')
+        setError({
+          title: 'Login Error',
+          message: 'REST Auth failed, please check username and password',
+          type: 'error'
+        })
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error))
+      setError({
+        title: 'Login Error',
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error'
+      })
     }
   }  
 
@@ -110,23 +128,24 @@ const Login: React.FC = () => {
   const handleResetDataStore = async () => {
     try {
       await resetLocalForageDataStore()
-      Modal.success({
+      // Set success message
+      setError({
         title: 'Data Reset Complete',
-        content: 'The ra-data-local-forage data store has been reset with fresh default data.',
+        message: 'The in-memory local data store has been reset with fresh default data.',
+        type: 'success'
       })
     } catch (error) {
-      Modal.error({
-        title: 'Data Reset Failed',
-        content: error instanceof Error ? error.message : String(error),
+      setError({
+        title: 'Login Error',
+        message: error instanceof Error ? error.message : String(error),
+        type: 'error'
       })
     }
   }
 
   return (
     <div className="login-container">
-      <Modal open={!!error} title="Login Error" onOk={() => setError(null)} onCancel={() => setError(null)}>
-        <p>{error}</p>
-      </Modal>
+      <InfoModal info={error} clearModal={() => setError(null)}/>
       <div className="login-layout">
         <div className="logo-container">
           <img src="/war-rooms-logo.png" alt="War Rooms Logo" className="war-rooms-logo" />
@@ -184,7 +203,7 @@ const Login: React.FC = () => {
           <div className="button-groups">
             {/* Development Player Interface Buttons */}
             <div className="button-group">
-              <div className="dev-title">
+              <div className="dev-title-real">
                 Development quick-links (real server)
               </div>
               <Flex align="center" className="button-group-row">
@@ -212,14 +231,14 @@ const Login: React.FC = () => {
           <div className="button-groups">
             {/* Development Player Interface Buttons */}
             <div className="button-group">
-              <div className="dev-title">
+              <div className="dev-title-mock">
                 Development quick-links (mock backend)
               </div>
               <Flex align="center" className="button-group-row">
                 <div className="button-group-label">Player UI</div>
                 <Flex justify='center' vertical={false} className="dev-player-buttons">
                   { mockRoles.map((item) => (
-                    <Button key={item[0]} onClick={() => handleMock(item[0], item[1])}>
+                    <Button key={item[0]} className={"login-mock-" + item[0]} onClick={() => handleMock(item[0], item[1])}>
                       {item[0]}
                     </Button>
                   ))}

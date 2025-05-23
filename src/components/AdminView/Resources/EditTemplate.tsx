@@ -158,7 +158,6 @@ const TemplateEditorForm = ({
         })
       }
       // We need schema and uiSchema in the dependency array to detect external changes
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formState.isDirty, formState.schema, formState.uiSchema])
     
     // Cleanup on unmount
@@ -290,6 +289,7 @@ const TemplateEditorForm = ({
           {schemaError && <Alert message={schemaError} type="error" style={{ marginBottom: '12px' }} />}
           <div style={textAreaContainerStyle}>
             <Input.TextArea
+              className='schema-text-area'
               value={schemaText}
               onChange={(e) => handleSchemaChange(e.target.value)}
               onBlur={applySchemaChanges}
@@ -308,6 +308,7 @@ const TemplateEditorForm = ({
           {uiSchemaError && <Alert message={uiSchemaError} type="error" style={{ marginBottom: '12px' }} />}
           <div style={textAreaContainerStyle}>
             <Input.TextArea
+              className='ui-schema-text-area'
               value={uiSchemaText}
               onChange={(e) => handleUiSchemaChange(e.target.value)}
               onBlur={applyUiSchemaChanges}
