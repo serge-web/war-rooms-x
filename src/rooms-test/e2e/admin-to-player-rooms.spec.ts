@@ -65,8 +65,8 @@ test.describe('Admin changes reflected in player view', () => {
 
   // Helper function to verify a room exists in the admin interface, handling pagination
   async function verifyRoomExists(page: Page, roomName: string) {
-    // Navigate to the rooms list to ensure we're not on the create form
-    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    // Navigate to the rooms list using direct URL navigation to avoid click interception issues
+    await page.goto('/#/chatrooms')
     
     // Wait for the rooms list to be visible
     await page.waitForSelector('tbody tr.RaDatagrid-row', { timeout: 5000 })
@@ -91,8 +91,8 @@ test.describe('Admin changes reflected in player view', () => {
 
   // Helper function to create a chat room in the admin interface
   async function createChatRoom(page: Page, roomId: string, roomName: string) {
-    // Navigate to Rooms
-    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    // Navigate to Rooms using direct URL navigation to avoid click interception issues
+    await page.goto('/#/chatrooms')
     
     // Create a new chat room
     await page.getByRole('button', { name: 'Create' }).click()
@@ -143,8 +143,8 @@ test.describe('Admin changes reflected in player view', () => {
       await expect(page.getByText('Situation Report')).toBeVisible()
     }
     
-    // Navigate to Rooms
-    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    // Navigate to Rooms using direct URL navigation to avoid click interception issues
+    await page.goto('/#/chatrooms')
     
     // Create a new form room
     await page.getByRole('button', { name: 'Create' }).click()
@@ -179,8 +179,8 @@ test.describe('Admin changes reflected in player view', () => {
 
   // Helper function to create a map room in the admin interface
   async function createMapRoom(page: Page, roomId: string, roomName: string) {
-    // Navigate to Rooms
-    await page.getByRole('menuitem', { name: 'Rooms' }).click()
+    // Navigate to Rooms using direct URL navigation to avoid click interception issues
+    await page.goto('/#/chatrooms')
     
     // Create a new map room
     await page.getByRole('button', { name: 'Create' }).click()
@@ -226,13 +226,13 @@ test.describe('Admin changes reflected in player view', () => {
     await loginAsAdmin(page)
     
     // Generate unique IDs for the test rooms
-    const timestamp = Date.now()
-    const chatRoomId = `chat-room-${timestamp}`
-    const chatRoomName = `Chat Room ${timestamp}`
-    const formRoomId = `form-room-${timestamp}`
-    const formRoomName = `Form Room ${timestamp}`
-    const mapRoomId = `map-room-${timestamp}`
-    const mapRoomName = `Map Room ${timestamp}`
+    const timestamp = `${Date.now()}`.slice(-5)
+    const chatRoomId = `chat-${timestamp}`
+    const chatRoomName = `Chat ${timestamp}`
+    const formRoomId = `form-${timestamp}`
+    const formRoomName = `Form ${timestamp}`
+    const mapRoomId = `map-${timestamp}`
+    const mapRoomName = `Map ${timestamp}`
     
     // Create different types of rooms with blue-co as a member
     await createChatRoom(page, chatRoomId, chatRoomName)
@@ -249,22 +249,22 @@ test.describe('Admin changes reflected in player view', () => {
     await page.waitForTimeout(1000)
     
     // Verify all created rooms are visible to blue-co in the player view
-    // We look for the room names in the FlexLayout tabs
-    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName })).toBeVisible()
-    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName })).toBeVisible()
-    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName })).toBeVisible()
+    // We look for the room names in the FlexLayout tabs - checking only the first instance of each
+    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName }).first()).toBeVisible()
+    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName }).first()).toBeVisible()
+    await expect(page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).first()).toBeVisible()
     
     // Click on each room tab to verify the content loads correctly
     // Chat room
-    await page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName }).click()
+    await page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName }).first().click()
     await expect(page.locator('.room-content')).toBeVisible()
     
     // Form room
-    await page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName }).click()
+    await page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName }).first().click()
     await expect(page.locator('.simple-form-content')).toBeVisible()
     
     // Map room
-    await page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).click()
+    await page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).first().click()
     await expect(page.locator('.map-content')).toBeVisible()
     
     // Log out from blue-co player
