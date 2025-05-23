@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { EditOutlined, CheckOutlined, CloseOutlined, CodeOutlined } from '@ant-design/icons'
-import { Input, Modal } from 'antd'
+import { Input } from 'antd'
+import JSONEditorModal from './JSONEditorModal'
 import './index.css'
 import { ChatMessage, FormMessage, GameMessage, Template } from '../../../../../types/rooms-d'
 import { renderObjectContent } from './renderObjectContent'
@@ -194,38 +195,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
       </div>
       
-      {/* JSON Editor Modal */}
-      <Modal
-        title="Edit JSON Content"
-        open={showJsonEditor}
-        onOk={handleSaveJson}
+      <JSONEditorModal
+        visible={showJsonEditor}
+        content={jsonContent}
+        onSave={handleSaveJson}
         onCancel={() => setShowJsonEditor(false)}
-        okText="Save"
-        cancelText="Cancel"
-        width={800}
-        className="json-editor-modal"
-      >
-        <div className="json-editor-container">
-          <Input.TextArea
-            ref={jsonEditorRef}
-            value={jsonContent}
-            onChange={(e) => setJsonContent(e.target.value)}
-            className="json-editor"
-            autoSize={{ minRows: 10, maxRows: 20 }}
-            spellCheck={false}
-          />
-          <div className="json-validation-error">
-            {(() => {
-              try {
-                JSON.parse(jsonContent)
-                return null
-              } catch (e) {
-                return 'Invalid JSON: ' + (e as Error).message
-              }
-            })()}
-          </div>
-        </div>
-      </Modal>
+      />
     </div>
   )
 }
