@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react' // Add createContext, useContext
 import { Edit, useRecordContext, useRedirect, useNotify, useSaveContext } from 'react-admin'
-import { Card, Tabs, Button as AntButton, Space as AntSpace } from 'antd' // Renamed Button and Space to avoid conflict if any, and keep Card, Tabs
-const { TabPane } = Tabs
+import { Card, Tabs, Button as AntButton, Space as AntSpace, type TabsProps } from 'antd' // Renamed Button and Space, Added TabsProps
+// const { TabPane } = Tabs; // No longer needed
 
 // 1. Define TemplateFormActionsContext and EditTemplateActions
 interface IFormActions {
@@ -129,104 +129,118 @@ const TemplateEditorForm = ({
   // notify is not available here anymore, direct console log for now or pass down if needed.
   // const notify = useNotify(); 
 
+  const tabItems: TabsProps['items'] = [
+    {
+      key: '1',
+      label: 'Builder',
+      style: { height: '100%', display: 'flex', flexDirection: 'column' }, // Apply style to item if needed, or ensure content fills
+      children: (
+        <Card 
+          title="Form Builder" 
+          style={{ height: '100%', display: 'flex', flexDirection: 'column', flexGrow: 1 }} 
+          styles={{ body: { flex: 1, overflow: 'auto' } }} // Updated bodyStyle
+        >
+          <div style={{ height: '100%' }}> {/* Ensure FormBuilder container takes full height */}
+            <FormBuilder
+              className='form-builder' // Ensure this class allows height: 100% if needed
+              schema={schema ? JSON.stringify(schema) : "{}"}
+              uischema={uiSchema ? JSON.stringify(uiSchema) : "{}"}
+              onChange={(newSchemaString: string, newUiSchemaString: string) => {
+                try {
+                  setSchema(JSON.parse(newSchemaString));
+                  setUiSchema(JSON.parse(newUiSchemaString));
+                  setSchemaError(null); 
+                  setUiSchemaError(null);
+                } catch (error) {
+                  console.error('Error parsing schema from FormBuilder:', error);
+                }
+              }}
+              mods={{
+                customFormInputs: {}
+              }}
+            />
+          </div>
+        </Card>
+      ),
+    },
+    {
+      key: '2',
+      label: 'Manual',
+      style: { height: '100%', display: 'flex', flexDirection: 'column' }, // Apply style to item
+      children: (
+        <Card 
+          title="Manual Edit" 
+          style={{ height: '100%', display: 'flex', flexDirection: 'column', flexGrow: 1 }} 
+          styles={{ body: { flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' } }} // Updated bodyStyle
+        >
+          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div>
+              <h3>JSON Schema</h3>
+              <textarea
+                style={{ width: '100%', minHeight: '150px', fontFamily: 'monospace', flexGrow: 1, border: schemaError ? '1px solid red' : undefined }}
+                value={schema ? JSON.stringify(schema, null, 2) : ''}
+                onChange={(e) => {
+                  try {
+                    const newSchema = JSON.parse(e.target.value);
+                    setSchema(newSchema);
+                    setSchemaError(null);
+                  } catch (err) {
+                    console.error("Error parsing schema JSON:", err);
+                    setSchemaError("Invalid JSON format");
+                  }
+                }}
+              />
+              {schemaError && (
+                <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9em' }}>
+                  {schemaError}
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: '1rem', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+              <h3>UI Schema</h3>
+              <textarea
+                style={{ width: '100%', minHeight: '150px', fontFamily: 'monospace', flexGrow: 1, border: uiSchemaError ? '1px solid red' : undefined }}
+                value={uiSchema ? JSON.stringify(uiSchema, null, 2) : ''}
+                onChange={(e) => {
+                  try {
+                    const newUiSchema = JSON.parse(e.target.value);
+                    setUiSchema(newUiSchema);
+                    setUiSchemaError(null);
+                  } catch (err) {
+                    console.error("Error parsing uiSchema JSON:", err);
+                    setUiSchemaError("Invalid JSON format");
+                  }
+                }}
+              />
+              {uiSchemaError && (
+                <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9em' }}>
+                  {uiSchemaError}
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      ),
+    },
+  ];
+
   return (
     <DraggableContainer
-      initialLeftPanelWidth={50} // Or your existing desired width
+      initialLeftPanelWidth={50} 
       leftPanel={
-        <Tabs defaultActiveKey="1" style={{ height: '100%', display: 'flex', flexDirection: 'column' }} 
-              // Add type="card" or other antd Tab props if needed for styling, ensure panes stretch
-              // The antd Tabs component might need its tab panes to be styled to fill height too.
-              // Or ensure the content within TabPane takes full height.
-        >
-          <TabPane tab="Builder" key="1" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Card 
-              title="Form Builder" 
-              style={{ height: '100%', display: 'flex', flexDirection: 'column', flexGrow: 1 }} 
-              bodyStyle={{ flex: 1, overflow: 'auto' }}
-            >
-              <div style={{ height: '100%' }}> {/* Ensure FormBuilder container takes full height */}
-                <FormBuilder
-                  className='form-builder' // Ensure this class allows height: 100% if needed
-                  schema={schema ? JSON.stringify(schema) : "{}"}
-                  uischema={uiSchema ? JSON.stringify(uiSchema) : "{}"}
-                  onChange={(newSchemaString: string, newUiSchemaString: string) => {
-                    try {
-                      setSchema(JSON.parse(newSchemaString));
-                      setUiSchema(JSON.parse(newUiSchemaString));
-                      setSchemaError(null); 
-                      setUiSchemaError(null);
-                    } catch (error) {
-                      console.error('Error parsing schema from FormBuilder:', error);
-                    }
-                  }}
-                  mods={{
-                    customFormInputs: {}
-                  }}
-                />
-              </div>
-            </Card>
-          </TabPane>
-          <TabPane tab="Manual" key="2" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Card 
-              title="Manual Edit" 
-              style={{ height: '100%', display: 'flex', flexDirection: 'column', flexGrow: 1 }} 
-              bodyStyle={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}
-            >
-              <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}> {/* Added flex properties to allow textareas to grow */}
-                <div>
-                  <h3>JSON Schema</h3>
-                  <textarea
-                    style={{ width: '100%', minHeight: '150px', fontFamily: 'monospace', flexGrow: 1, border: schemaError ? '1px solid red' : undefined }}
-                    value={schema ? JSON.stringify(schema, null, 2) : ''}
-                    onChange={(e) => {
-                      try {
-                        const newSchema = JSON.parse(e.target.value);
-                        setSchema(newSchema);
-                        setSchemaError(null);
-                      } catch (err) {
-                        console.error("Error parsing schema JSON:", err);
-                        setSchemaError("Invalid JSON format");
-                      }
-                    }}
-                  />
-                  {schemaError && (
-                    <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9em' }}>
-                      {schemaError}
-                    </div>
-                  )}
-                </div>
-                <div style={{ marginTop: '1rem', flexGrow: 1, display: 'flex', flexDirection: 'column' }}> {/* Added flex properties */}
-                  <h3>UI Schema</h3>
-                  <textarea
-                    style={{ width: '100%', minHeight: '150px', fontFamily: 'monospace', flexGrow: 1, border: uiSchemaError ? '1px solid red' : undefined }}
-                    value={uiSchema ? JSON.stringify(uiSchema, null, 2) : ''}
-                    onChange={(e) => {
-                      try {
-                        const newUiSchema = JSON.parse(e.target.value);
-                        setUiSchema(newUiSchema);
-                        setUiSchemaError(null);
-                      } catch (err) {
-                        console.error("Error parsing uiSchema JSON:", err);
-                        setUiSchemaError("Invalid JSON format");
-                      }
-                    }}
-                  />
-                  {uiSchemaError && (
-                    <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9em' }}>
-                      {uiSchemaError}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          </TabPane>
-        </Tabs>
+        <Tabs 
+          defaultActiveKey="1" 
+          items={tabItems} 
+          style={{ height: '100%', display: 'flex', flexDirection: 'column' }} 
+          // The Tab component itself might need `destroyInactiveTabPane` if content height is an issue between tab switches
+          // or ensure child items correctly manage their height (flexGrow: 1 on Card within tab item's children)
+        />
       }
       rightPanel={
         <Card 
           title="Live Preview" 
           style={{ height: '100%', display: 'flex', flexDirection: 'column' }} 
-          bodyStyle={{ flex: 1, overflow: 'auto' }}
+          styles={{ body: { flex: 1, overflow: 'auto' } }} // Updated bodyStyle
         >
           <FormPreview 
             schema={schema} 
