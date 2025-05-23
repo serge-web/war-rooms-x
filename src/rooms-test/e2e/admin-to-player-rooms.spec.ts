@@ -257,11 +257,11 @@ test.describe('Admin changes reflected in player view', () => {
     // Click on each room tab to verify the content loads correctly
     // Chat room
     await page.locator('.flexlayout__tab_button_content').filter({ hasText: chatRoomName }).first().click()
-    await expect(page.locator('.room-content')).toBeVisible()
+    await expect(page.locator('.room-content').first()).toBeVisible()
     
     // Form room
     await page.locator('.flexlayout__tab_button_content').filter({ hasText: formRoomName }).first().click()
-    await expect(page.locator('.simple-form-content')).toBeVisible()
+    await expect(page.locator('.simple-form-content').first()).toBeVisible()
     
     // Map room
     await page.locator('.flexlayout__tab_button_content').filter({ hasText: mapRoomName }).first().click()
