@@ -187,20 +187,15 @@ test.describe('Admin changes reflected in player view', () => {
     await page.locator('#create-id').fill(roomId)
     await page.locator('#create-name').fill(roomName)
     
-    // Create a description with map room specifics
-    // Use a more controlled map configuration to prevent CSS leakage
-    const mapRoomDetails = {
-      specifics: {
-        roomType: 'map',
-        mapUrl: 'https://example.com/map.png',
-        cssOverride: '.leaflet-container { display: none; }'
-      }
-    }
-    await page.locator('#create-description').fill(JSON.stringify(mapRoomDetails))
+    // Create a description for the map room
+    await page.locator('#create-description').fill(`Test map room created at ${new Date().toISOString()}`)
     
-    // Select room type
+    // Select map room type
     await page.locator('#edit-room-type').click()
-    await page.getByRole('option', { name: 'Chat Room - A standard chat room' }).click()
+    await page.getByRole('option', { name: 'Map - A room that contains a series of map overlays' }).click()
+    
+    // Set the backdrop URL for the map
+    await page.locator('input[name="details.specifics.backdropUrl"]').fill('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
     
     // Add blue-co as a member
     await page.getByLabel('Members').click()
