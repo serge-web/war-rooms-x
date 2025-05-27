@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Edit, useRecordContext, useRedirect, useNotify, useSaveContext } from 'react-admin'
-import { Card, Button, Space } from 'antd'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import { Edit, useRecordContext, useRedirect, useSaveContext } from 'react-admin'
+import { Card, Button, Space, Tabs, Input, Alert } from 'antd'
 import { RJSFSchema, UiSchema, FieldTemplateProps } from '@rjsf/utils'
 import validator from '@rjsf/validator-ajv8'
 import { withTheme } from '@rjsf/core'
@@ -75,6 +75,8 @@ const FormPreview = ({ schema, uiSchema }: { schema: RJSFSchema, uiSchema: UiSch
 }
 
 // Template editor form component
+
+// Template editor form component
 interface TemplateEditorFormProps {
   initialSchema?: RJSFSchema
   initialUiSchema?: UiSchema
@@ -85,7 +87,6 @@ const TemplateEditorForm = ({
   initialUiSchema
 }: TemplateEditorFormProps) => {
   const redirect = useRedirect()
-  const notify = useNotify()
   const record = useRecordContext() as Template
   
   // Local state for the form data
@@ -93,14 +94,14 @@ const TemplateEditorForm = ({
   const [uiSchema, setUiSchema] = useState<UiSchema>(initialUiSchema || {})
 
   const [localState, setLocalState] = useState({ schema: record?.schema, uiSchema: record?.uiSchema })
-  const { save } = useSaveContext()
+  const { save: saveRecord } = useSaveContext()
 
   const doSave = useCallback(() => {
     const insertId = { id: record?.id, ...localState }
-    if (save) {
-      save(insertId)
+    if (saveRecord) {
+      saveRecord(insertId)
     }
-  }, [save, localState, record])
+  }, [saveRecord, localState, record])
 
   const performUpdate = useCallback((schema: RJSFSchema, uiSchema: UiSchema) => {
     const newSchema = JSON.stringify(schema)
@@ -128,8 +129,202 @@ const TemplateEditorForm = ({
 
   // No need to check for record anymore as we're getting data from props
 
+  // Visual builder component with isolated state management
+  const VisualBuilder = () => {
+    // Create a completely separate state for the form builder
+    const [formState, setFormState] = useState({
+      schema: JSON.stringify(schema),
+      uiSchema: JSON.stringify(uiSchema),
+      isDirty: false
+    })
+    
+    // Reference to track if component is mounted
+    const isMounted = useRef(true)
+    
+    // Update form state only when parent schema/uiSchema changes and not during editing
+    useEffect(() => {
+      // Skip if we're in the middle of editing
+      if (formState.isDirty) return
+      
+      const newSchemaStr = JSON.stringify(schema)
+      const newUiSchemaStr = JSON.stringify(uiSchema)
+      
+      // Only update if the values are actually different
+      if (newSchemaStr !== formState.schema || newUiSchemaStr !== formState.uiSchema) {
+        setFormState({
+          schema: newSchemaStr,
+          uiSchema: newUiSchemaStr,
+          isDirty: false
+        })
+      }
+      // We need schema and uiSchema in the dependency array to detect external changes
+    }, [formState.isDirty, formState.schema, formState.uiSchema])
+    
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => {
+        isMounted.current = false
+      }
+    }, [])
+    
+    // Apply changes to parent state when user is done editing
+    const applyChanges = useCallback(() => {
+      try {
+        const parsedSchema = JSON.parse(formState.schema)
+        const parsedUiSchema = JSON.parse(formState.uiSchema)
+        
+        setSchema(parsedSchema)
+        setUiSchema(parsedUiSchema)
+        
+        // Mark as clean after applying changes
+        if (isMounted.current) {
+          setFormState(prev => ({ ...prev, isDirty: false }))
+        }
+      } catch (error) {
+        console.error('Error applying changes:', error)
+      }
+    }, [formState.schema, formState.uiSchema])
+    
+    // Debounced apply changes to reduce updates while typing
+    useEffect(() => {
+      if (!formState.isDirty) return
+      
+      const timer = setTimeout(() => {
+        applyChanges()
+      }, 1000) // 1 second debounce
+      
+      return () => clearTimeout(timer)
+    }, [formState.isDirty, applyChanges])
+    
+    // Handle form builder changes - only update local state
+    const handleFormChange = useCallback((newSchema: string, newUiSchema: string) => {
+      setFormState({
+        schema: newSchema,
+        uiSchema: newUiSchema,
+        isDirty: true
+      })
+    }, [])
+    
+    return (
+      <div style={{ height: '60%' }}>
+        <FormBuilder
+          className='form-builder'
+          schema={formState.schema}
+          uischema={formState.uiSchema}
+          onChange={handleFormChange}
+          mods={{
+            customFormInputs: {}
+          }}
+        />
+      </div>
+    )
+  }
+
+  // Manual JSON editor component
+  const ManualEditor = () => {
+    const [schemaText, setSchemaText] = useState(JSON.stringify(schema, null, 2))
+    const [uiSchemaText, setUiSchemaText] = useState(JSON.stringify(uiSchema, null, 2))
+    const [schemaError, setSchemaError] = useState('')
+    const [uiSchemaError, setUiSchemaError] = useState('')
+
+    // Initialize text values once
+    useEffect(() => {
+      setSchemaText(JSON.stringify(schema, null, 2))
+      setUiSchemaText(JSON.stringify(uiSchema, null, 2))
+    }, [])
+
+    // Update schema only when input loses focus or on manual apply
+    const applySchemaChanges = useCallback(() => {
+      try {
+        const parsed = JSON.parse(schemaText)
+        setSchema(parsed)
+        setSchemaError('')
+      } catch (error) {
+        setSchemaError('Invalid JSON: ' + (error as Error).message)
+      }
+    }, [schemaText])
+
+    // Update uiSchema only when input loses focus or on manual apply
+    const applyUiSchemaChanges = useCallback(() => {
+      try {
+        const parsed = JSON.parse(uiSchemaText)
+        setUiSchema(parsed)
+        setUiSchemaError('')
+      } catch (error) {
+        setUiSchemaError('Invalid JSON: ' + (error as Error).message)
+      }
+    }, [uiSchemaText])
+
+    // Handle schema text changes - only update local state
+    const handleSchemaChange = (value: string) => {
+      setSchemaText(value)
+    }
+
+    // Handle uiSchema text changes - only update local state
+    const handleUiSchemaChange = (value: string) => {
+      setUiSchemaText(value)
+    }
+
+    // Define styles for consistency
+    const textAreaContainerStyle = {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      height: 'calc(100% - 40px)' // Leave space for button
+    }
+    
+    const textAreaStyle = {
+      fontFamily: 'monospace',
+      height: '300px', // Taller initial height
+      resize: 'vertical' as const, // Allow vertical resizing
+      minHeight: '200px' // Ensure a minimum height
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+        <Card
+          title="JSON Schema"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+          bodyStyle={{ padding: '12px', overflow: 'visible' }}
+        >
+          {schemaError && <Alert message={schemaError} type="error" style={{ marginBottom: '12px' }} />}
+          <div style={textAreaContainerStyle}>
+            <Input.TextArea
+              className='schema-text-area'
+              value={schemaText}
+              onChange={(e) => handleSchemaChange(e.target.value)}
+              onBlur={applySchemaChanges}
+              style={textAreaStyle}
+            />
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <Button size='small' onClick={applySchemaChanges}>Apply Changes</Button>
+          </div>
+        </Card>
+        <Card
+          title="UI Schema"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', marginTop: '16px' }}
+          bodyStyle={{ padding: '12px', overflow: 'visible' }}
+        >
+          {uiSchemaError && <Alert message={uiSchemaError} type="error" style={{ marginBottom: '12px' }} />}
+          <div style={textAreaContainerStyle}>
+            <Input.TextArea
+              className='ui-schema-text-area'
+              value={uiSchemaText}
+              onChange={(e) => handleUiSchemaChange(e.target.value)}
+              onBlur={applyUiSchemaChanges}
+              style={textAreaStyle}
+            />
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <Button size='small' onClick={applyUiSchemaChanges}>Apply Changes</Button>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>      
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <DraggableContainer
         initialLeftPanelWidth={50}
         leftPanel={
@@ -139,36 +334,27 @@ const TemplateEditorForm = ({
             extra={
               <Space>
                 <Button onClick={handleCancel}>Cancel</Button>
-                <Button type='primary' onClick={() => {
-                  // We don't need to manually save here as React Admin's Edit component
-                  // will handle the save action when its save button is clicked
-                  notify('Ready to save', { type: 'info' })
-                  doSave()
-                }}>
-                  Save
-                </Button>
+                <Button type='primary' onClick={() => doSave()}>Save</Button>
               </Space>
             }
             bodyStyle={{ flex: 1, overflow: 'auto' }}
           >
-            <div style={{ height: '100%' }}>
-              <FormBuilder
-                className='form-builder'
-                schema={JSON.stringify(schema)}
-                uischema={JSON.stringify(uiSchema)}
-                onChange={(newSchema: string, newUiSchema: string) => {
-                  try {
-                    setSchema(JSON.parse(newSchema))
-                    setUiSchema(JSON.parse(newUiSchema))
-                  } catch (error) {
-                    console.error('Error parsing schema:', error)
-                  }
-                }}
-                mods={{
-                  customFormInputs: {}
-                }}
-              />
-            </div>
+            <Tabs
+              defaultActiveKey="builder"
+              items={[
+                {
+                  key: 'builder',
+                  label: 'Visual Builder',
+                  children: <VisualBuilder />
+                },
+                {
+                  key: 'manual',
+                  label: 'Manual JSON',
+                  children: <ManualEditor />
+                }
+              ]}
+              style={{ height: '100%' }}
+            />
           </Card>
         }
         rightPanel={

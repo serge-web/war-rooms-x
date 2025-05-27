@@ -5,7 +5,7 @@ import MessageList from '../Messages/MessageList'
 import { useRoom } from '../useRoom'
 import { RoomType, Template } from '../../../../types/rooms-d'
 import { ConfigProvider } from 'antd'
-import ErrorModal from '../../../Utilities/ErrorModal'
+import InfoModal from '../../../Utilities/InfoModal'
 import { useTemplates } from '../../../../hooks/useTemplates'
 import { useWargame } from '../../../../contexts/WargameContext'
 import RoomPresenceBar from '../RoomPresenceBar'
@@ -15,7 +15,7 @@ interface SimpleFormProps {
 }
 
 const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, error, clearError, users, presenceVisibility } = useRoom(room)
+  const { messages, theme, canSubmit, sendMessage, infoModal, setInfoModal, users, presenceVisibility } = useRoom(room)
   const { playerDetails } = useWargame()
   const { templates } = useTemplates()
   // const { users, presenceVisibility, loading } = useRoomUsers(room)
@@ -36,7 +36,7 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
     <ConfigProvider
     theme={theme}>
     <div className='simple-form-content' data-testid={`simple-form-content-${room.roomName}`}>
-      <ErrorModal error={error} clearError={clearError} />
+      <InfoModal info={infoModal} clearModal={() => setInfoModal(null)} />
       
       {/* Room Presence Bar */}
       <RoomPresenceBar 
