@@ -4,8 +4,10 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import cors from 'cors';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createServer } from 'http'
 
 const app = express();
+const server = createServer(app);
 const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -37,19 +39,37 @@ app.use(
   })
 )
 
-app.use(
-  '/ws',
-  createProxyMiddleware({
-    target: 'ws://134.209.31.87:7070',
-    changeOrigin: true,
-    ws: true,
+const wsProxy = createProxyMiddleware({
+  target: 'ws://134.209.31.87:7070/',
+  changeOrigin: true,
+  ws: true,
+  pathRewrite: { '^/wss': '/ws' },
+  router: {
+    // Convert wss:// requests on port 7443 to ws:// on port 7070
+    'wss://134.209.31.87:7443': 'ws://134.209.31.87:7070'
+  },
+  pathRewrite: {
     pathRewrite: { '^/wss': '/ws' },
-    router: {
-      // Convert wss:// requests on port 7443 to ws:// on port 7070
-      'wss://134.209.31.87:7443': 'ws://134.209.31.87:7070'
-    }
-  })
-);
+
+  },
+  onProxyReqWs: (proxyReq, req, socket, options, head) => {
+    console.log('Proxying WS:', req.url)
+  },
+  onError: (err, req, res) => {
+    console.error('WS proxy error:', err)
+  }
+})
+
+server.on('upgrade', (req, socket, head) => {
+  if (req.url.startsWith('/ws')) {
+    // req.url = req.url.replace(/^\/ws/, '')
+    console.log('Updated req.url:', req.url) // ✅ Ավելացրու սա
+    // req.url = '/xmpp'
+    wsProxy.upgrade(req, socket, head)
+  } else {
+    socket.destroy()
+  }
+})
 
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -57,6 +77,8 @@ app.use(express.static(path.join(__dirname, 'dist')));
 //     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 // });
 
-app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
-});
+// Start server
+server.listen(PORT, () => {
+  console.log(`Server listening at http://localhost:${PORT}`)
+})
+
