@@ -21,11 +21,11 @@ export class ConnectionService {
    * @returns Promise resolving to true if connection was successful
    */
   async connect(ip: string, host: string, username: string, password: string): Promise<boolean> {
-    const isHttps = window.location.protocol === 'https:'
-
-    const websocketUrl = isHttps
-      ? `ws://${window.location.host}/ws`
-      : `ws://${window.location.hostname}:3000/ws`
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    const pathHost = isLocalhost ? 'localhost:3000' : window.location.host
+    const wsUrl = `${protocol}://${pathHost}/ws`
+    console.log('Test-wsUrl', wsUrl)
     try {
       const jid = `${username}@${host}`
       console.log('logging into ', jid, ip)
@@ -33,7 +33,7 @@ export class ConnectionService {
         jid,
         password,
         transports: {
-          websocket: websocketUrl
+          websocket: wsUrl
         }
       })
 
