@@ -201,7 +201,7 @@ export class XMPPRestService {
       this.client.defaults.headers.common['Authorization'] = apiKey
       
       // Test authentication by making a simple request
-      const response = await this.client.get('/groups')
+      const response = await this.client.get('/groups/')
       
       if (response.status === 200) {
         this.authenticated = true

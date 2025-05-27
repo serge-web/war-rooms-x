@@ -20,7 +20,7 @@ app.use('/openfire-rest', (req, res, next) => {
 });
 
 app.use(
-  '/openfire-rest/',
+  '/openfire-rest/groups/',
   createProxyMiddleware({
     target: 'http://134.209.31.87:9090',
     changeOrigin: true,
