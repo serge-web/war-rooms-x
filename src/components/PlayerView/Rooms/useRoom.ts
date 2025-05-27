@@ -24,30 +24,69 @@ export const useRoom = (room: RoomType) => {
     setInfoModal(null)
   }
 
-  const editMessage = useCallback((existingMessageId: string, newContent: string | object) => {
-    console.log('room editing message', existingMessageId, newContent, xmppClient)
-    if (xmppClient === undefined) {
-      // logged out
-    } else if (xmppClient ===  null) {
-      const updateMessage = (msg: GameMessage, newContent: string | object) => {
-        return {
-          ...msg,
-          content: newContent as object | ChatMessage,
-          details: {
-            ...msg.details,
-            editedAt: new Date().toISOString()
-          }
-        }
+  const editMessage = useCallback(async (messageId: string, newContent: string | object) => {
+    const existingMessageId = messageId
+    const updateMessage = (msg: GameMessage, content: string | object): GameMessage => ({
+      ...msg,
+      content: content as object | ChatMessage,
+      details: {
+        ...msg.details,
+        editedAt: new Date().toISOString()
       }
+    })
+    
+    if (xmppClient === undefined) {
+      console.log('editMessage: xmppClient is undefined')
+    } else if (xmppClient === null) {
+        // Local mock update for development
       setMessages(prev => prev.map(msg => 
         msg.id === existingMessageId ? updateMessage(msg, newContent) : msg
       ))
     } else {
-      console.log('editMessage: xmppClient is defined, but not implemented')
-      // send to server
-      
+      if (xmppClient && !xmppClient.connected) {
+        console.log('editMessage: xmppClient is not connected')
+        return
+      }
+      try {
+        // Get the original message
+        const originalMessage = messages.find(msg => msg.id === existingMessageId)
+        if (!originalMessage) {
+          console.error('Original message not found:', existingMessageId)
+          return
+        }
+
+        // Create the corrected message with the same ID as the original
+        const correctedMessage: GameMessage = {
+          ...originalMessage,
+          content: newContent as object | ChatMessage,
+          details: {
+            ...originalMessage.details,
+            editedAt: new Date().toISOString()
+          }
+        }
+
+        // Send the corrected message using the MUC service
+        const result = await xmppClient.sendRoomMessage(correctedMessage)
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to send corrected message')
+        }
+
+        // Update local state optimistically
+        setMessages(prev => prev.map(msg => 
+          msg.id === existingMessageId ? correctedMessage : msg
+        ))
+
+      } catch (error) {
+        console.error('Error editing message:', error)
+        setInfoModal({
+          title: 'Error Editing Message',
+          message: 'Failed to update the message. Please try again.',
+          type: 'error'
+        })
+      }
     }
-  }, [xmppClient])
+  }, [messages, xmppClient, setInfoModal])
 
   // TODO - also handle details, extract from the room description
   const sendMessage = useCallback((messageType: MessageDetails['messageType'], content: object) => {
