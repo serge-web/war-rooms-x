@@ -30,6 +30,7 @@ export interface MessageDetails {
   phase: string
   timestamp: string
   channel: string
+  editedAt?: string // time of edit
 }
 
 export interface ChatMessage {

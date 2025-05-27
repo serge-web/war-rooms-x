@@ -87,6 +87,7 @@ export class ConnectionService {
           resolve(false)
         })
 
+        this.xmppService.client.enableCarbons()
         this.xmppService.client.connect()
       })
     } catch (error) {

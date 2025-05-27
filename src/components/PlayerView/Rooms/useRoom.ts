@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { RoomType, User, UserInfo, GameMessage, MessageDetails, OnlineUser, RoomDetails, PresenceVisibility } from '../../../types/rooms-d';
+import { RoomType, User, UserInfo, GameMessage, MessageDetails, OnlineUser, RoomDetails, PresenceVisibility, ChatMessage } from '../../../types/rooms-d';
 import { useWargame } from '../../../contexts/WargameContext';
 import { ThemeConfig } from 'antd';
 import { SendMessageResult } from '../../../services/types';
@@ -23,6 +23,31 @@ export const useRoom = (room: RoomType) => {
   const clearInfoModal = () => {
     setInfoModal(null)
   }
+
+  const editMessage = useCallback((existingMessageId: string, newContent: string | object) => {
+    console.log('room editing message', existingMessageId, newContent, xmppClient)
+    if (xmppClient === undefined) {
+      // logged out
+    } else if (xmppClient ===  null) {
+      const updateMessage = (msg: GameMessage, newContent: string | object) => {
+        return {
+          ...msg,
+          content: newContent as object | ChatMessage,
+          details: {
+            ...msg.details,
+            editedAt: new Date().toISOString()
+          }
+        }
+      }
+      setMessages(prev => prev.map(msg => 
+        msg.id === existingMessageId ? updateMessage(msg, newContent) : msg
+      ))
+    } else {
+      console.log('editMessage: xmppClient is defined, but not implemented')
+      // send to server
+      
+    }
+  }, [xmppClient])
 
   // TODO - also handle details, extract from the room description
   const sendMessage = useCallback((messageType: MessageDetails['messageType'], content: object) => {
@@ -184,5 +209,5 @@ export const useRoom = (room: RoomType) => {
     }
   }, [room])
 
-  return { messages, users, theme, canSubmit, sendMessage, infoModal, setInfoModal, presenceVisibility, clearInfoModal };
+  return { messages, users, theme, canSubmit, sendMessage, infoModal, setInfoModal, presenceVisibility, clearInfoModal, editMessage };
 }

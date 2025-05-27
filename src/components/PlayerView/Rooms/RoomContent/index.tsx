@@ -14,14 +14,14 @@ interface RoomProps {
 }
 
 const RoomContent: React.FC<RoomProps> = ({ room }) => {
-  const { messages, theme, canSubmit, sendMessage, infoModal, setInfoModal, users, presenceVisibility } = useRoom(room)
+  const { messages, theme, canSubmit, sendMessage, infoModal, setInfoModal, 
+    users, presenceVisibility, editMessage } = useRoom(room)
   const { playerDetails } = useWargame()
   
   // Handle message editing for both chat and form messages
   const handleEditMessage = (messageId: string, newContent: string | object) => {
-    console.log(`Editing message ${messageId} with new content:`, newContent)
-    // TODO: Implement actual message editing logic
-    // The actual implementation will need to handle both string (for chat) and object (for forms) content
+    console.log(`Editing message ${messageId} with new content:`, {value: newContent})
+    editMessage(messageId, {value: newContent})
   }
   return (
     <ConfigProvider theme={theme}>
