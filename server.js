@@ -20,7 +20,7 @@ app.use('/openfire-rest', (req, res, next) => {
 });
 
 app.use(
-  '/openfire-rest',
+  '/openfire-rest/',
   createProxyMiddleware({
     target: 'http://134.209.31.87:9090',
     changeOrigin: true,
@@ -63,9 +63,6 @@ const wsProxy = createProxyMiddleware({
 server.on('upgrade', (req, socket, head) => {
   console.log('test url', req.url)
   if (req.url.startsWith('/ws')) {
-    // req.url = req.url.replace(/^\/ws/, '')
-    console.log('Updated req.url:', req.url)
-    // req.url = '/xmpp'
     wsProxy.upgrade(req, socket, head)
   } else {
     socket.destroy()
