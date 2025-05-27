@@ -43,7 +43,11 @@ app.use(
     target: 'ws://134.209.31.87:7070',
     changeOrigin: true,
     ws: true,
-    pathRewrite: { '^/ws': '' }
+    pathRewrite: { '^/wss': '/ws' },
+    router: {
+      // Convert wss:// requests on port 7443 to ws:// on port 7070
+      'wss://134.209.31.87:7443': 'ws://134.209.31.87:7070'
+    }
   })
 );
 

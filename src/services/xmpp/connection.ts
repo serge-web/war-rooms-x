@@ -28,7 +28,7 @@ export class ConnectionService {
         jid,
         password,
         transports: {
-          websocket: `ws://${ip}:7070/ws/`
+          websocket: `wss://${ip}:7443/ws/`
         }
       })
 
