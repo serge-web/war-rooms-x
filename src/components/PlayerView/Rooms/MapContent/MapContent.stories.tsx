@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react'
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import MapContent from '.'
-import type { RoomType, MapRoomConfig } from '../../../../types/rooms-d'
+import type { GameMessage, RoomType } from '../../../../types/rooms-d'
 import { WargameContext } from '../../../../contexts/WargameContext'
 import type { 
   WargameContextType, 
@@ -14,7 +14,23 @@ import type {
 } from '../../../../types/wargame-d'
 import { XMPPService } from '../../../../services/XMPPService'
 import { DataProvider } from 'react-admin'
-import type { SendMessageResult } from '../../../../services/types'
+import { mockBackend } from '../../../../mockData/mockAdmin'
+
+// Create a mock room with map configuration
+const createMapRoom = (name: string): RoomType => ({
+  roomName: name,
+  description: JSON.stringify({
+    name,
+    description: 'A map room',
+    specifics: {
+      roomType: 'map',
+      backdropUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    },
+  }),
+})
+
+// Create a mock room instance
+const mapRoom = createMapRoom('Map Room')
 
 // Mock player details
 const mockPlayerDetails: GamePlayerDetails = {
@@ -40,41 +56,37 @@ const mockGameProperties: GamePropertiesType = {
   turnType: 'Plan/Adjudicate' as const
 }
 
-// Mock XMPP service with minimal implementation for stories
+// Mock XMPP service
 class MockXMPPService extends XMPPService {
-  async sendRoomMessage(): Promise<SendMessageResult> {
-    return {
-      success: true,
-      id: `msg-${Date.now()}`,
-      error: undefined
-    }
+  async sendRoomMessage() {
+    return { success: true, id: `msg-${Date.now()}`, error: undefined }
   }
 }
 
 // Wrapper component to provide required context
 const WargameDecorator = (Story: React.ComponentType) => {
-  const [xmppClient] = useState<XMPPService | null | undefined>(new MockXMPPService())
-  const [raDataProvider, setRaDataProvider] = useState<DataProvider | undefined>(undefined)
-  const [mockPlayerId, setMockPlayerId] = useState<MockId | null>({
+  const [xmppClient] = React.useState<XMPPService | null>(new MockXMPPService())
+  const [raDataProvider] = React.useState<DataProvider | undefined>(undefined)
+  const [mockPlayerId] = React.useState<MockId | null>({
     playerId: 'test-player-1',
     forceId: 'blue'
   })
   
-  const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => ({
+  const getForce = React.useCallback(async (forceId: string): Promise<ForceConfigType> => ({
     type: 'force-config-type-v1' as const,
     id: forceId,
     name: `${forceId} Force`,
     color: '#1890ff'
   }), [])
 
-  const getPlayerDetails = useCallback(async (userId: string): Promise<UserConfigType> => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getPlayerDetails = React.useCallback(async (_: string): Promise<UserConfigType | undefined> => ({
     type: 'user-config-type-v1' as const,
     name: 'Test User',
-    forceId: 'blue',
-    id: userId
-  } as UserConfigType), [])
+    forceId: 'blue'
+  }), [])
 
-  const nextTurn = useCallback(async () => {
+  const nextTurn = React.useCallback(async () => {
     console.log('Next turn called')
   }, [])
 
@@ -83,16 +95,15 @@ const WargameDecorator = (Story: React.ComponentType) => {
     xmppClient,
     setXmppClient: () => {},
     raDataProvider,
-    setRaDataProvider,
+    setRaDataProvider: () => {},
     mockPlayerId,
-    setMockPlayerId,
+    setMockPlayerId: () => {},
     playerDetails: mockPlayerDetails,
     getForce,
     getPlayerDetails,
     gameProperties: mockGameProperties,
     gameState: mockGameState,
     nextTurn,
-    // Mock empty rooms array since it's required by the context
     rooms: []
   }
 
@@ -103,33 +114,31 @@ const WargameDecorator = (Story: React.ComponentType) => {
   )
 }
 
-// Helper to create a properly typed RoomType with MapRoomConfig
-const createMapRoom = (name: string, config: Partial<MapRoomConfig> = {}): RoomType => ({
-  roomName: name,
-  description: JSON.stringify({
-    name,
-    description: 'A map room',
-    specifics: {
-      roomType: 'map',
-      backdropUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      ...config
-    },
-  }),
+// Mock the useRoom hook
+const mockUseRoom = (messages: GameMessage[] = []) => ({
+  messages,
+  users: [],
+  theme: undefined,
+  canSubmit: true,
+  infoModal: null,
+  clearInfoModal: () => {},
+  sendMessage: async () => ({ success: true })
 })
 
-// Mock rooms with different configurations
-const emptyMapRoom = createMapRoom('Empty Map')
-const populatedMapRoom = createMapRoom('Populated Map')
-const customBackdropRoom = createMapRoom('Custom Backdrop Map', {
-  backdropUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-})
+// Get map messages from mock admin data
+const mapMessages = mockBackend.chatrooms.find((room) => room.id === 'main-map')?.dummyMessages
 
-// Wrapper component to handle map state in Storybook
-const MapContentWrapper: React.FC<{ room: RoomType }> = ({ room }) => (
-  <div style={{ width: '100%', height: '600px' }}>
-    <MapContent room={room} />
-  </div>
-)
+// Create a wrapper component that mocks useRoom
+const MapContentWithMocks: React.FC<{ room: RoomType; messages: GameMessage[] }> = ({ room, messages }) => {
+  // Mock the useRoom hook
+  jest.spyOn(require('../useRoom'), 'useRoom').mockImplementation(() => mockUseRoom(messages))
+  
+  return (
+    <div style={{ width: '100%', height: '600px' }}>
+      <MapContent room={room} />
+    </div>
+  )
+}
 
 const meta = {
   title: 'PlayerView/Rooms/MapContent',
@@ -137,72 +146,35 @@ const meta = {
   decorators: [WargameDecorator],
   parameters: {
     layout: 'fullscreen',
-    // Mock the useRoom hook
-    msw: {
-      handlers: [
-        // Add mock handlers if needed for API calls
-      ],
-    },
-    // Disable Chromatic for this story as it's interactive
-    chromatic: { disableSnapshot: true },
   },
-} as Meta<typeof MapContent>
+} satisfies Meta<typeof MapContent>
 
 export default meta
-
-type Story = StoryObj<typeof MapContent>
+type Story = StoryObj<typeof meta>
 
 export const EmptyMap: Story = {
-  render: () => <MapContentWrapper room={emptyMapRoom} />,
+  args: {
+    room: mapRoom
+  },
+  render: (args) => <MapContentWithMocks {...args} messages={[]} />,
   parameters: {
     docs: {
       description: {
-        story: 'A fresh map with no existing features. Users can start drawing on the map using the toolbar on the left.',
+        story: 'A fresh map with no existing features.',
       },
     },
   },
 }
 
-export const WithInitialFeatures: Story = {
-  render: () => <MapContentWrapper room={populatedMapRoom} />,
-  parameters: {
-    docs: {
-      description: {
-        story: 'Map with some initial features loaded. Users can modify existing features or add new ones.',
-      },
-    },
+export const WithMockData: Story = {
+  args: {
+    room: mapRoom
   },
-}
-
-export const WithCustomBackdrop: Story = {
-  render: () => <MapContentWrapper room={customBackdropRoom} />,
+  render: (args) => <MapContentWithMocks {...args} messages={mapMessages as GameMessage[]} />,
   parameters: {
     docs: {
       description: {
-        story: 'Map with a custom satellite imagery backdrop. Demonstrates how different map styles can be applied.',
-      },
-    },
-  },
-}
-
-// Interactive map story
-export const InteractiveMap: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <div style={{ marginLeft: 'auto', fontStyle: 'italic' }}>
-          Use the drawing tools on the left to add features to the map
-        </div>
-      </div>
-      <div style={{ width: '100%', height: '600px', border: '1px solid #ddd' }}>
-        <MapContent room={emptyMapRoom} />
-      </div>
-    </div>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Interactive map that allows you to test the drawing functionality directly in Storybook.',
+        story: 'Map with features loaded from mock admin data.',
       },
     },
   },

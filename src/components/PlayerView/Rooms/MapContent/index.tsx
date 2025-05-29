@@ -229,6 +229,8 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
     }
   }, [latestMessage])
 
+  console.log('currentFeatures', currentFeatures, messages  )
+
   useEffect(() => {
     // manually created features get added to the map.  But, once user has `saved`, when
     // they get a new message (with all features) there will be both the manually added one, 
