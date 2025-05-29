@@ -129,6 +129,6 @@ export const HoursUnit: Story = {
 
 export const DaysUnit: Story = {
   args: {
-    defaultValue: 'P1D', // 1 day
+    defaultValue: 'P4D', // 1 day
   },
 }
