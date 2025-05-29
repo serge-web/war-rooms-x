@@ -1,6 +1,50 @@
+import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import { Form } from 'react-admin'
+import type { ControllerFieldState } from 'react-hook-form'
 import { DurationInput } from '../DurationInput'
+
+// Mock the useInput hook with proper TypeScript types
+const mockUseInput = jest.fn()
+
+interface UseInputProps {
+  defaultValue?: string
+  field?: Record<string, unknown>
+  fieldState?: Partial<ControllerFieldState>
+}
+
+// Mock the module with proper types
+jest.mock('react-admin', () => {
+  const originalModule = jest.requireActual('react-admin')
+  
+  return {
+    ...originalModule,
+    useInput: ({ defaultValue, field = {}, fieldState = {} }: UseInputProps = {}) => {
+      const [value, setValue] = React.useState<string>(defaultValue || '')
+      
+      return {
+        field: {
+          value,
+          onChange: (newValue: string) => setValue(newValue),
+          ...field
+        },
+        fieldState: { error: null, ...fieldState }
+      }
+    },
+    Form: ({ children }: { children: React.ReactNode }) => (
+      <form>{children}</form>
+    )
+  }
+})
+
+// Reset mock before each story
+beforeEach(() => {
+  mockUseInput.mockClear()
+})
+
+// Clean up after all tests
+afterAll(() => {
+  jest.restoreAllMocks()
+})
 
 const meta: Meta<typeof DurationInput> = {
   title: 'Admin/DurationInput',
@@ -8,9 +52,9 @@ const meta: Meta<typeof DurationInput> = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <Form>
+      <div style={{ padding: '20px' }}>
         <Story />
-      </Form>
+      </div>
     ),
   ],
   argTypes: {
@@ -30,25 +74,52 @@ const meta: Meta<typeof DurationInput> = {
 export default meta
 type Story = StoryObj<typeof DurationInput>
 
-export const Default: Story = {}
-
-export const WithInitialValue: Story = {
+export const Default: Story = {
   args: {
-    defaultValue: 'PT30M', // 30 minutes
+    source: 'duration',
+    label: 'Duration',
   },
 }
 
-export const Required: Story = {
+export const WithDefaultValue: Story = {
   args: {
-    isRequired: true,
-    helperText: 'This field is required',
+    source: 'duration',
+    label: 'Duration',
+    defaultValue: 'PT30M',
   },
 }
 
-export const CustomLabel: Story = {
+export const WithError: Story = {
   args: {
-    label: 'Session Duration',
+    source: 'duration',
+    label: 'Duration',
+    fieldState: { 
+      error: { 
+        type: 'validate',
+        message: 'Duration must be at least 1 minute' 
+      },
+      invalid: true,
+      isTouched: true,
+      isDirty: false,
+      isValidating: false
+    },
+  },
+}
+
+export const WithHelperText: Story = {
+  args: {
+    source: 'timeout',
+    label: 'Session Timeout',
     helperText: 'How long should this session last?',
+  },
+}
+
+export const Disabled: Story = {
+  args: {
+    source: 'duration',
+    label: 'Duration',
+    disabled: true,
+    defaultValue: 'PT1H',
   },
 }
 
