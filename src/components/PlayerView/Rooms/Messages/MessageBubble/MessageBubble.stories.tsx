@@ -113,7 +113,7 @@ export const SelfMessage: Story = {
   }
 }
 
-export const OtherUserMessage: Story = {
+export const OtherUserMessageRed: Story = {
   args: {
     isSelf: false,
     templates: [],
@@ -129,7 +129,28 @@ export const OtherUserMessage: Story = {
         phase: 'planning',
         channel: 'room-1'
       },
-      content: { value: 'This is a message from another user' }
+      content: { value: 'This is a message from a red force user' }
+    }
+  }
+}
+
+export const OtherUserMessageBlue: Story = {
+  args: {
+    isSelf: false,
+    templates: [],
+    message: {
+      id: '2',
+      details: {
+        senderId: 'user-2',
+        senderName: 'Team Member',
+        senderForce: 'blue',
+        messageType: 'chat',
+        timestamp: '10:31 AM',
+        turn: '1',
+        phase: 'planning',
+        channel: 'room-1'
+      },
+      content: { value: 'This is a message from another blue force user' }
     }
   }
 }
