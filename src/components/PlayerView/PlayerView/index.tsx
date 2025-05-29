@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { ConfigProvider, Layout } from 'antd'
 import { Header, Footer } from 'antd/es/layout/layout'
 import GameState from '../GameState'
@@ -10,7 +10,10 @@ import { useWargame } from '../../../contexts/WargameContext'
 const { Sider, Content } = Layout
 
 const PlayerView: React.FC = () => {
-  const { gameProperties, gameState, nextTurn } = useWargame()
+  const { gameProperties, gameState, nextTurn, playerDetails } = useWargame()
+  const canTurn = useMemo(() => {
+    return playerDetails?.id === 'admin'
+  }, [playerDetails])
   const gameStateStyle: React.CSSProperties = {
     height: '170px',
     backgroundColor: '#ccc',
@@ -62,7 +65,7 @@ const PlayerView: React.FC = () => {
                 gameState={gameState}
                 gameProperties={gameProperties}
                 onNextTurn={nextTurn}
-                canTurn={true} // TODO: Replace with actual admin check
+                canTurn={canTurn}
               />
             </Header>
             <Content style={adminMessagesStyle}>
