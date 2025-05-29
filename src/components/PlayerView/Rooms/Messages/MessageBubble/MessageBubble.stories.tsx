@@ -1,11 +1,79 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import React from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import MessageBubble from './index'
 import { Template } from '../../../../../types/rooms-d'
+import { WargameContext } from '../../../../../contexts/WargameContext'
+import { WargameContextType } from '../../../../../types/wargame-d'
+import { LINEAR_TURNS } from '../../../../../types/constants'
+
+// Mock WargameContext
+const mockWargameContext: WargameContextType = {
+  loggedIn: true,
+  xmppClient: null,
+  setXmppClient: () => {},
+  raDataProvider: undefined,
+  setRaDataProvider: () => {},
+  mockPlayerId: { playerId: 'user-1', forceId: 'blue' },
+  setMockPlayerId: () => {},
+  playerDetails: {
+    id: 'user-1',
+    role: 'player',
+    forceId: 'blue',
+    forceName: 'Blue Force'
+  },
+  getForce: async (forceId: string) => ({
+    type: 'force-config-type-v1',
+    id: forceId,
+    name: `${forceId} Force`,
+    color: forceId === 'blue' ? '#1890ff' : forceId === 'red' ? '#f5222d' : '#d9d9d9',
+    objectives: 'Complete the mission objectives'
+  }),
+  getPlayerDetails: async () => ({
+    type: 'user-config-type-v1',
+    name: 'Test User',
+    forceId: 'blue'
+  }),
+  gameProperties: {
+    name: 'Test Game',
+    startTime: new Date().toISOString(),
+    interval: 'PT1H',
+    turnType: LINEAR_TURNS,
+    description: 'Test game description'
+  },
+  gameState: {
+    turn: '1',
+    currentTime: new Date().toISOString(),
+    currentPhase: 'planning'
+  },
+  nextTurn: async () => {},
+  rooms: []
+}
+
+// Wrapper component to provide mock context
+const MockWargameProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  return (
+    <WargameContext.Provider value={mockWargameContext}>
+      {children}
+    </WargameContext.Provider>
+  )
+}
 
 const meta: Meta<typeof MessageBubble> = {
   title: 'Rooms/Messages/MessageBubble',
   component: MessageBubble,
   tags: ['autodocs'],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <MockWargameProvider>
+          <div style={{ padding: '20px', maxWidth: '600px' }}>
+            <Story />
+          </div>
+        </MockWargameProvider>
+      </MemoryRouter>
+    ),
+  ],
   argTypes: {
     isSelf: { control: 'boolean' },
   },
