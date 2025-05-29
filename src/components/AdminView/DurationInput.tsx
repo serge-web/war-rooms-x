@@ -29,6 +29,7 @@ export const DurationInput = (props: InputProps) => {
       <Stack direction="column" spacing={1}>
         <TextField
           type="number"
+          disabled={props.disabled}
           value={quantity}
           id={props.id}
           onChange={(e) => {
@@ -45,6 +46,7 @@ export const DurationInput = (props: InputProps) => {
       <Select
         value={unit}
         id={props.id + '-units'}
+        disabled={props.disabled}
         onChange={(e) => {
           const newUnit = e.target.value
           setUnit(newUnit)
