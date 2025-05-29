@@ -39,8 +39,6 @@ const GameState: React.FC<GameStateProps> = ({
     }
   }
 
-  console.log('can turn', canTurn)
-
   return (
     <Card
       size='small'
@@ -71,14 +69,14 @@ const GameState: React.FC<GameStateProps> = ({
             <ClockCircleOutlined style={{ marginRight: 8, color: '#1677ff' }} />
             <Text style={{ marginLeft: 8 }} data-testid='current-time'>{formattedDate}</Text>
           </div>
-          <Button 
+          { gameState && canTurn && <Button 
             type="primary" 
             onClick={() => onNextTurn(gameProperties)}
             icon={<AimOutlined />}
             disabled={!gameState || !canTurn}
           >
             Next Turn
-          </Button>
+          </Button> }
         </Space>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>

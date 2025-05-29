@@ -45,7 +45,7 @@ const defaultGameStates: Record<string, GameStateType> = {
 }
 
 // Template for stories
-const Template = (args: GameStateProps) => {
+const Template = ({ canTurn: argsCanTurn, ...args }: GameStateProps) => {
   const [turnModel, setTurnModel] = useState<TurnModelType>(LINEAR_TURNS)
   const [interval, setInterval] = useState<string>(defaultGameProperties.intervals[LINEAR_TURNS])
   const [isValidInterval, setIsValidInterval] = useState<boolean>(true)
@@ -155,7 +155,7 @@ const Template = (args: GameStateProps) => {
             gameState={gameState}
             gameProperties={gameProperties}
             onNextTurn={handleNextTurn}
-            canTurn={isValidInterval && interval.length > 0}
+            canTurn={argsCanTurn !== undefined ? argsCanTurn : (isValidInterval && interval.length > 0)}
           />
         </div>
       </Space>
