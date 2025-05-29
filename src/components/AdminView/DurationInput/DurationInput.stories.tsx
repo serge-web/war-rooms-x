@@ -1,50 +1,45 @@
-import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
-import type { ControllerFieldState } from 'react-hook-form'
+import { useForm, FormProvider } from 'react-hook-form'
 import { DurationInput } from '../DurationInput'
 
-// Mock the useInput hook with proper TypeScript types
-const mockUseInput = jest.fn()
-
-interface UseInputProps {
-  defaultValue?: string
-  field?: Record<string, unknown>
-  fieldState?: Partial<ControllerFieldState>
+// Type for our form values
+type FormValues = {
+  duration: string
+  timeout?: string
+  // Add other fields as needed
 }
 
-// Mock the module with proper types
-jest.mock('react-admin', () => {
-  const originalModule = jest.requireActual('react-admin')
-  
-  return {
-    ...originalModule,
-    useInput: ({ defaultValue, field = {}, fieldState = {} }: UseInputProps = {}) => {
-      const [value, setValue] = React.useState<string>(defaultValue || '')
-      
-      return {
-        field: {
-          value,
-          onChange: (newValue: string) => setValue(newValue),
-          ...field
-        },
-        fieldState: { error: null, ...fieldState }
-      }
+// Wrapper component that provides form context and handles submission
+const FormWrapper = ({ children }: { children: React.ReactNode }) => {
+  const methods = useForm<FormValues>({
+    defaultValues: {
+      duration: 'PT1H', // Default value for the duration field
     },
-    Form: ({ children }: { children: React.ReactNode }) => (
-      <form>{children}</form>
-    )
+  })
+
+  const onSubmit = (data: FormValues) => {
+    console.log('Form submitted:', data)
   }
-})
 
-// Reset mock before each story
-beforeEach(() => {
-  mockUseInput.mockClear()
-})
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <div style={{ padding: '20px', maxWidth: '400px' }}>
+          {children}
+          <button 
+            type="submit" 
+            style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </FormProvider>
+  )
+}
 
-// Clean up after all tests
-afterAll(() => {
-  jest.restoreAllMocks()
-})
+// Define the story meta
+type Story = StoryObj<typeof DurationInput>
 
 const meta: Meta<typeof DurationInput> = {
   title: 'Admin/DurationInput',
@@ -52,28 +47,16 @@ const meta: Meta<typeof DurationInput> = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <div style={{ padding: '20px' }}>
+      <FormWrapper>
         <Story />
-      </div>
+      </FormWrapper>
     ),
   ],
-  argTypes: {
-    source: { control: 'text' },
-    label: { control: 'text' },
-    helperText: { control: 'text' },
-    isRequired: { control: 'boolean' },
-  },
-  args: {
-    source: 'duration',
-    label: 'Duration',
-    helperText: 'Enter the duration',
-    isRequired: false,
-  },
 }
 
 export default meta
-type Story = StoryObj<typeof DurationInput>
 
+// Stories
 export const Default: Story = {
   args: {
     source: 'duration',
