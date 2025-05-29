@@ -50,12 +50,8 @@ const mockWargameContext: WargameContextType = {
 }
 
 // Wrapper component to provide mock context
-const MockWargameProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  return (
-    <WargameContext.Provider value={mockWargameContext}>
-      {children}
-    </WargameContext.Provider>
-  )
+const MockWargameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <WargameContext.Provider value={mockWargameContext}>{children}</WargameContext.Provider>
 }
 
 const meta: Meta<typeof MessageBubble> = {
@@ -69,11 +65,11 @@ const meta: Meta<typeof MessageBubble> = {
           <Story />
         </div>
       </MockWargameProvider>
-    ),
+    )
   ],
   argTypes: {
-    isSelf: { control: 'boolean' },
-  },
+    isSelf: { control: 'boolean' }
+  }
 }
 
 export default meta
@@ -138,7 +134,35 @@ export const OtherUserMessage: Story = {
   }
 }
 
-export const FormMessage: Story = {
+export const SelfFormMessage: Story = {
+  args: {
+    isSelf: true,
+    templates: mockTemplates,
+    message: {
+      id: '3',
+      details: {
+        senderId: 'system-1',
+        senderName: 'System',
+        senderForce: 'white',
+        messageType: 'form',
+        timestamp: '10:32 AM',
+        turn: '1',
+        phase: 'planning',
+        channel: 'room-1'
+      },
+      content: {
+        templateId: 'template-1',
+        data: {
+          status: 'Active',
+          notes: 'All systems operational'
+        }
+      }
+    }
+  }
+}
+
+
+export const OtherFormMessage: Story = {
   args: {
     isSelf: false,
     templates: mockTemplates,
