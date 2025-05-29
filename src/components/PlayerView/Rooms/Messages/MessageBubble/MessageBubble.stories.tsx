@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
 import MessageBubble from './index'
 import { Template } from '../../../../../types/rooms-d'
 import { WargameContext } from '../../../../../contexts/WargameContext'
@@ -65,13 +64,11 @@ const meta: Meta<typeof MessageBubble> = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <MockWargameProvider>
-          <div style={{ padding: '20px', maxWidth: '600px' }}>
-            <Story />
-          </div>
-        </MockWargameProvider>
-      </MemoryRouter>
+      <MockWargameProvider>
+        <div style={{ padding: '20px', maxWidth: '600px' }}>
+          <Story />
+        </div>
+      </MockWargameProvider>
     ),
   ],
   argTypes: {
