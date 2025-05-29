@@ -70,13 +70,24 @@ const WargameProviderDecorator = (Story: React.ComponentType, { parameters }: { 
   const nextTurn = useCallback(async () => {
     if (!gameState || !gameProperties) return
     
-    const newState = advanceTurn(
-      gameState,
-      gameProperties.turnType,
-      gameProperties.interval
-    )
-    
-    setGameState(newState)
+    try {
+      const newState = advanceTurn(
+        gameState,
+        gameProperties.turnType,
+        gameProperties.interval
+      )
+      
+      setGameState(newState)
+    } catch (error) {
+      console.error('Error advancing turn:', error)
+      // Fallback to default interval if there's an error with the current one
+      const newState = advanceTurn(
+        gameState,
+        gameProperties.turnType,
+        '1h' // Default to 1 hour if there's an error
+      )
+      setGameState(newState)
+    }
   }, [gameState, gameProperties])
   
   // Change turn model
@@ -147,6 +158,7 @@ const WargameProviderDecorator = (Story: React.ComponentType, { parameters }: { 
         <h4>Turn Model: {currentModel.name}</h4>
         <p>{currentModel.description}</p>
         <Space wrap>
+          Turn models:             
           {Object.entries(TURN_MODELS).map(([key, model]) => (
             <Button 
               key={key}
@@ -158,9 +170,36 @@ const WargameProviderDecorator = (Story: React.ComponentType, { parameters }: { 
           ))}
         </Space>
         <br/>
-        <Button type="primary" onClick={nextTurn}>
-          Next Turn/Phase
-        </Button>
+        <Space.Compact style={{ marginTop: '0.5rem' }}>
+          Next turn/phase:
+          <Button type="primary" onClick={nextTurn}>
+            Next Turn/Phase
+          </Button>
+        </Space.Compact>
+        <br/>
+        <Space.Compact style={{ marginTop: '0.5rem' }}>
+          Time interval:
+          <input
+            type="text"
+            value={gameProperties?.interval || 'PT1H'}
+            onChange={(e) => {
+              if (gameProperties) {
+                setGameProperties({
+                  ...gameProperties,
+                  interval: e.target.value || 'PT1H'
+                })
+              }
+            }}
+            style={{
+              marginLeft: '8px',
+              padding: '4px 8px',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              width: '100px'
+            }}
+            placeholder="PT1H"
+          />
+        </Space.Compact>
         <div style={{ marginTop: '0.5rem' }}>
           <strong>Current State:</strong> Turn {gameState.turn}, Phase: {gameState.currentPhase}
         </div>
@@ -204,7 +243,7 @@ export const LinearTurns: Story = {
         name: 'Operation Thunderstrike',
         description: 'Linear turn model demo',
         startTime: new Date().toISOString(),
-        interval: '1h',
+        interval: 'PT1H', // Using ISO 8601 format
         turnType: LINEAR_TURNS
       },
     },
@@ -223,7 +262,7 @@ export const PlanAdjudicateTurns: Story = {
         name: 'Operation Thunderstrike',
         description: 'Plan/Adjudicate turn model demo',
         startTime: new Date().toISOString(),
-        interval: '1h',
+        interval: 'PT1H', // Using ISO 8601 format
         turnType: PLAN_ADJUDICATE_TURNS
       },
     },
