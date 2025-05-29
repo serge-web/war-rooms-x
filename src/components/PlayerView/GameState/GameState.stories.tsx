@@ -1,54 +1,163 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import React, { useState } from 'react'
-import { Button, Space } from 'antd'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Button, Space, Input, Typography } from 'antd'
 import GameState, { GameStateProps } from './index'
 import { GameStateType, GamePropertiesType } from '../../../../src/types/wargame-d'
+import { advanceTurn } from '../../../../src/helpers/turn-model'
+import { LINEAR_TURNS, PLAN_ADJUDICATE_TURNS } from '../../../../src/types/constants'
 
 // Mock data for different states
-const mockGameProperties: GamePropertiesType = {
+// Define turn model types
+type TurnModelType = GamePropertiesType['turnType']
+
+// Default game properties for each turn model
+const defaultGameProperties: Omit<GamePropertiesType, 'turnType' | 'interval'> & {
+  intervals: Record<string, string>
+} = {
   name: 'Operation Desert Storm',
   description: 'A test wargame scenario',
-  turnType: 'Linear',
-  interval: 'PT1H', // 1 hour
-  startTime: new Date().toISOString()
+  startTime: new Date().toISOString(),
+  // Default intervals for each turn model
+  intervals: {
+    [LINEAR_TURNS as string]: 'PT1H',        // 1 hour
+    [PLAN_ADJUDICATE_TURNS as string]: 'PT30M'  // 30 minutes
+  } as Record<string, string>
 }
 
-const mockGameState: GameStateType = {
-  turn: '5',
-  currentPhase: 'Action',
-  currentTime: new Date().toISOString()
+// Helper to create a valid GameStateType with required fields
+const createGameState = (overrides: Partial<GameStateType> = {}): GameStateType => ({
+  turn: '1',
+  currentPhase: 'Active',
+  currentTime: new Date().toISOString(),
+  ...overrides
+})
+
+// Default game state for each turn model
+const defaultGameStates: Record<string, GameStateType> = {
+  [LINEAR_TURNS]: createGameState({
+    turn: '1',
+    currentPhase: 'Active'
+  }),
+  [PLAN_ADJUDICATE_TURNS]: createGameState({
+    turn: '1.a',
+    currentPhase: 'Planning'
+  })
 }
 
 // Template for stories
 const Template = (args: GameStateProps) => {
-  const [gameState, setGameState] = useState<GameStateType | null>(args.gameState)
-  const [gameProperties, setGameProperties] = useState<GamePropertiesType | null>(args.gameProperties)
+  const [turnModel, setTurnModel] = useState<TurnModelType>(LINEAR_TURNS)
+  const [interval, setInterval] = useState<string>(defaultGameProperties.intervals[LINEAR_TURNS])
+  const [gameState, setGameState] = useState<GameStateType>(
+    args.gameState || defaultGameStates[LINEAR_TURNS]
+  )
+  const [gameProperties, setGameProperties] = useState<GamePropertiesType>(() => ({
+    ...defaultGameProperties,
+    turnType: LINEAR_TURNS,
+    interval: defaultGameProperties.intervals[LINEAR_TURNS],
+    ...(args.gameProperties || {})
+  }))
 
-  const handleNextTurn = () => {
-    if (!gameState) return
-    
-    setGameState(prev => ({
-      ...prev!,
-      turn: prev!.turn + 1,
-      currentPhase: prev!.currentPhase === 'Planning' ? 'Action' : 'Planning',
-      currentTime: new Date().toISOString(),
-      phaseStartTime: new Date().toISOString(),
-      turnEndTime: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour from now
+  // Update turn model when game properties change
+  useEffect(() => {
+    setTurnModel(gameProperties.turnType)
+    setInterval(gameProperties.interval)
+  }, [gameProperties.turnType, gameProperties.interval])
+
+  // Handle turn model change
+  const handleTurnModelChange = useCallback((model: TurnModelType) => {
+    const newInterval = defaultGameProperties.intervals[model]
+    setTurnModel(model)
+    setInterval(newInterval)
+    setGameState({
+      ...defaultGameStates[model as keyof typeof defaultGameStates]
+    })
+    setGameProperties(prev => ({
+      ...prev,
+      turnType: model,
+      interval: newInterval
+    }))
+  }, [])
+
+  // Handle interval change
+  const handleIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newInterval = e.target.value
+    setInterval(newInterval)
+    setGameProperties(prev => ({
+      ...prev,
+      interval: newInterval
     }))
   }
 
+  // Handle next turn using the real advanceTurn function
+  const handleNextTurn = useCallback(() => {
+    if (!gameState) return
+    
+    try {
+      const newState = advanceTurn(
+        gameState,
+        gameProperties.turnType,
+        interval
+      )
+      setGameState(newState)
+    } catch (error) {
+      console.error('Error advancing turn:', error)
+    }
+  }, [gameState, gameProperties, interval])
+
   return (
-    <div style={{ maxWidth: '400px' }}>
-      <GameState 
-        gameState={gameState}
-        gameProperties={gameProperties}
-        onNextTurn={() => handleNextTurn()}
-      />
-      
-      <Space direction="vertical" style={{ marginTop: '1rem' }}>
+    <div style={{ maxWidth: '500px' }}>
+      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
         <div>
-          <strong>Current State:</strong> Turn {gameState?.turn || 'N/A'}, Phase: {gameState?.currentPhase || 'N/A'}
+          <Typography.Title level={5}>Turn Model</Typography.Title>
+          <Space>
+            <Button 
+              type={turnModel === LINEAR_TURNS ? 'primary' : 'default'}
+              onClick={() => handleTurnModelChange(LINEAR_TURNS)}
+            >
+              Linear Turns
+            </Button>
+            <Button 
+              type={turnModel === PLAN_ADJUDICATE_TURNS ? 'primary' : 'default'}
+              onClick={() => handleTurnModelChange(PLAN_ADJUDICATE_TURNS)}
+            >
+              Plan/Adjudicate
+            </Button>
+          </Space>
         </div>
+
+        <div>
+          <Typography.Title level={5}>Turn Interval (ISO 8601)</Typography.Title>
+          <Input 
+            value={interval}
+            onChange={handleIntervalChange}
+            placeholder="e.g., PT1H for 1 hour"
+            style={{ width: '200px' }}
+          />
+          <Typography.Text type="secondary" style={{ display: 'block', marginTop: '4px' }}>
+            Examples: PT1H (1 hour), PT30M (30 minutes), P1D (1 day)
+          </Typography.Text>
+        </div>
+
+        <div style={{ border: '1px solid #d9d9d9', borderRadius: '8px', padding: '16px' }}>
+          <GameState 
+            gameState={gameState}
+            gameProperties={gameProperties}
+            onNextTurn={handleNextTurn}
+          />
+        </div>
+
+        <div>
+          <Typography.Title level={5}>Debug Info</Typography.Title>
+          <div style={{ fontFamily: 'monospace', fontSize: '12px', background: '#f5f5f5', padding: '8px', borderRadius: '4px' }}>
+            <div><strong>Turn:</strong> {gameState?.turn || 'N/A'}</div>
+            <div><strong>Phase:</strong> {gameState?.currentPhase || 'N/A'}</div>
+            <div><strong>Current Time:</strong> {gameState?.currentTime || 'N/A'}</div>
+            <div><strong>Turn Model:</strong> {turnModel}</div>
+            <div><strong>Interval:</strong> {interval}</div>
+          </div>
+        </div>
+
         <Space>
           <Button 
             type="primary" 
@@ -59,8 +168,10 @@ const Template = (args: GameStateProps) => {
           </Button>
           <Button 
             onClick={() => {
-              setGameState(mockGameState)
-              setGameProperties(mockGameProperties)
+              setGameState({
+              ...defaultGameStates[turnModel as keyof typeof defaultGameStates]
+            })
+              setInterval(defaultGameProperties.intervals[turnModel as keyof typeof defaultGameProperties.intervals])
             }}
           >
             Reset State
@@ -96,55 +207,47 @@ const meta: Meta<typeof GameState> = {
 
 type Story = StoryObj<typeof GameState>
 
-export const Default: Story = {
-  render: Template,
-  args: {
-    gameState: mockGameState,
-    gameProperties: mockGameProperties,
-    onNextTurn: () => {}
-  }
-}
-
-export const PlanningPhase: Story = {
+export const LinearTurns: Story = {
   render: Template,
   args: {
     gameState: {
-      ...mockGameState,
-      currentPhase: 'Planning'
+      ...defaultGameStates[LINEAR_TURNS]
     },
-    gameProperties: mockGameProperties,
+    gameProperties: {
+      ...defaultGameProperties,
+      turnType: LINEAR_TURNS,
+      interval: defaultGameProperties.intervals[LINEAR_TURNS]
+    },
     onNextTurn: () => {}
   }
 }
 
-export const ActionPhase: Story = {
+export const PlanAdjudicateTurns: Story = {
+  render: Template,
+  args: {
+    gameState: createGameState({
+      ...defaultGameStates[PLAN_ADJUDICATE_TURNS]
+    }),
+    gameProperties: {
+      ...defaultGameProperties,
+      turnType: PLAN_ADJUDICATE_TURNS,
+      interval: defaultGameProperties.intervals[PLAN_ADJUDICATE_TURNS]
+    },
+    onNextTurn: () => {}
+  }
+}
+
+export const CustomInterval: Story = {
   render: Template,
   args: {
     gameState: {
-      ...mockGameState,
-      currentPhase: 'Action'
+      ...defaultGameStates[LINEAR_TURNS]
     },
-    gameProperties: mockGameProperties,
-    onNextTurn: () => {}
-  }
-}
-
-export const AssessmentPhase: Story = {
-  render: Template,
-  args: {
-    gameState: {
-      ...mockGameState,
-      currentPhase: 'Assessment'
+    gameProperties: {
+      ...defaultGameProperties,
+      turnType: LINEAR_TURNS,
+      interval: 'PT15M' // 15 minutes
     },
-    gameProperties: mockGameProperties,
-    onNextTurn: () => {}
-  }
-}
-
-export const LoadingState: Story = {
-  args: {
-    gameState: null,
-    gameProperties: null,
     onNextTurn: () => {}
   }
 }
