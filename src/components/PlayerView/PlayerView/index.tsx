@@ -10,7 +10,7 @@ import { useWargame } from '../../../contexts/WargameContext'
 const { Sider, Content } = Layout
 
 const PlayerView: React.FC = () => {
-  const { gameProperties } = useWargame()
+  const { gameProperties, gameState, nextTurn } = useWargame()
   const gameStateStyle: React.CSSProperties = {
     height: '170px',
     backgroundColor: '#ccc',
@@ -58,7 +58,12 @@ const PlayerView: React.FC = () => {
         <ConfigProvider theme={gameProperties?.adminTheme}>
           <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Header style={gameStateStyle}>
-              <GameState/>
+              <GameState
+                gameState={gameState}
+                gameProperties={gameProperties}
+                onNextTurn={nextTurn}
+                canTurn={true} // TODO: Replace with actual admin check
+              />
             </Header>
             <Content style={adminMessagesStyle}>
               <AdminRoom />
