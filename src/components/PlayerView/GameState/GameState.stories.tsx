@@ -109,7 +109,7 @@ const Template = (args: GameStateProps) => {
     <div style={{ maxWidth: '500px' }}>
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
         <div>
-          <Typography.Title level={5}>Turn Model</Typography.Title>
+          Turn Model:
           <Space>
             <Button 
               type={turnModel === LINEAR_TURNS ? 'primary' : 'default'}
@@ -127,7 +127,7 @@ const Template = (args: GameStateProps) => {
         </div>
 
         <div>
-          <Typography.Title level={5}>Turn Interval (ISO 8601)</Typography.Title>
+          Turn Interval (ISO 8601):
           <Input 
             value={interval}
             onChange={handleIntervalChange}
@@ -146,37 +146,6 @@ const Template = (args: GameStateProps) => {
             onNextTurn={handleNextTurn}
           />
         </div>
-
-        <div>
-          <Typography.Title level={5}>Debug Info</Typography.Title>
-          <div style={{ fontFamily: 'monospace', fontSize: '12px', background: '#f5f5f5', padding: '8px', borderRadius: '4px' }}>
-            <div><strong>Turn:</strong> {gameState?.turn || 'N/A'}</div>
-            <div><strong>Phase:</strong> {gameState?.currentPhase || 'N/A'}</div>
-            <div><strong>Current Time:</strong> {gameState?.currentTime || 'N/A'}</div>
-            <div><strong>Turn Model:</strong> {turnModel}</div>
-            <div><strong>Interval:</strong> {interval}</div>
-          </div>
-        </div>
-
-        <Space>
-          <Button 
-            type="primary" 
-            onClick={handleNextTurn}
-            disabled={!gameState}
-          >
-            Next Turn
-          </Button>
-          <Button 
-            onClick={() => {
-              setGameState({
-              ...defaultGameStates[turnModel as keyof typeof defaultGameStates]
-            })
-              setInterval(defaultGameProperties.intervals[turnModel as keyof typeof defaultGameProperties.intervals])
-            }}
-          >
-            Reset State
-          </Button>
-        </Space>
       </Space>
     </div>
   )
