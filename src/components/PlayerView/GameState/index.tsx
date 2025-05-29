@@ -1,13 +1,24 @@
 import React from 'react'
 import { Card, Typography, Space, Tag, Button, Tooltip, Empty } from 'antd'
 import { AimOutlined, ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
-import { useWargame } from '../../../contexts/WargameContext'
+import { GamePropertiesType, GameStateType } from '../../../../src/types/wargame-d'
 
 const { Text } = Typography
 
-const GameState: React.FC = () => {
-  const { gameProperties, gameState, nextTurn } = useWargame()
+export interface GameStateProps {
+  /** Game state containing turn, phase, and time information */
+  gameState: GameStateType | null
+  /** Game properties including name, description, and turn model */
+  gameProperties: GamePropertiesType | null
+  /** Callback function to trigger the next turn */
+  onNextTurn: (gameProperties: GamePropertiesType | null) => void
+}
 
+const GameState: React.FC<GameStateProps> = ({ 
+  gameState, 
+  gameProperties, 
+  onNextTurn 
+}) => {
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
 
@@ -24,7 +35,6 @@ const GameState: React.FC = () => {
         return '#8c8c8c' // Gray
     }
   }
-  console.log('game state', gameState)
 
   return (
     <Card
@@ -58,8 +68,9 @@ const GameState: React.FC = () => {
           </div>
           <Button
             type="primary"
-            onClick={() => nextTurn(gameProperties)}
+            onClick={() => onNextTurn(gameProperties)}
             style={{ marginTop: 8 }}
+            disabled={!gameProperties}
           >
             Next Turn
           </Button>
