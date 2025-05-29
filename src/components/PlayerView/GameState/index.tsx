@@ -24,6 +24,7 @@ const GameState: React.FC = () => {
         return '#8c8c8c' // Gray
     }
   }
+  console.log('game state', gameState)
 
   return (
     <Card
@@ -65,7 +66,7 @@ const GameState: React.FC = () => {
         </Space>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-          <Text type='secondary'>No game state available</Text>
+          <Text type='secondary'>Game state pending</Text>
         </div>
       )}
     </Card>
