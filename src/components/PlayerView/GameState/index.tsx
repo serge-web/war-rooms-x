@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, Typography, Space, Tag, Button, Tooltip } from 'antd'
+import { Card, Typography, Space, Tag, Button, Tooltip, Empty } from 'antd'
 import { AimOutlined, ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
 import { useWargame } from '../../../contexts/WargameContext'
 
@@ -66,7 +66,13 @@ const GameState: React.FC = () => {
         </Space>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-          <Text type='secondary'>Game state pending</Text>
+            <Empty
+              description={
+                <Typography.Text>
+                  Game state pending
+                </Typography.Text>
+              }
+            />
         </div>
       )}
     </Card>
