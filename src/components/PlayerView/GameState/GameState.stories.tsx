@@ -48,6 +48,7 @@ const defaultGameStates: Record<string, GameStateType> = {
 const Template = (args: GameStateProps) => {
   const [turnModel, setTurnModel] = useState<TurnModelType>(LINEAR_TURNS)
   const [interval, setInterval] = useState<string>(defaultGameProperties.intervals[LINEAR_TURNS])
+  const [isValidInterval, setIsValidInterval] = useState<boolean>(true)
   const [gameState, setGameState] = useState<GameStateType>(
     args.gameState || defaultGameStates[LINEAR_TURNS]
   )
@@ -83,10 +84,17 @@ const Template = (args: GameStateProps) => {
   const handleIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newInterval = e.target.value
     setInterval(newInterval)
-    setGameProperties(prev => ({
-      ...prev,
-      interval: newInterval
-    }))
+    
+    // Basic ISO 8601 duration validation (simple check for PT prefix and at least one time unit)
+    const isValid = /^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/.test(newInterval)
+    setIsValidInterval(isValid)
+    
+    if (isValid) {
+      setGameProperties(prev => ({
+        ...prev,
+        interval: newInterval
+      }))
+    }
   }
 
   // Handle next turn using the real advanceTurn function
@@ -133,9 +141,12 @@ const Template = (args: GameStateProps) => {
             onChange={handleIntervalChange}
             placeholder="e.g., PT1H for 1 hour"
             style={{ width: '200px' }}
+            status={!isValidInterval ? 'error' : ''}
           />
-          <Typography.Text type="secondary" style={{ display: 'block', marginTop: '4px' }}>
-            Examples: PT1H (1 hour), PT30M (30 minutes), P1D (1 day)
+          <Typography.Text type={isValidInterval ? 'secondary' : 'danger'} style={{ display: 'block', marginTop: '4px' }}>
+            {isValidInterval 
+              ? 'Examples: PT1H (1 hour), PT30M (30 minutes), P1D (1 day)'
+              : 'Invalid interval format. Use ISO 8601 duration format (e.g., PT1H, PT30M, P1D)'}
           </Typography.Text>
         </div>
 
@@ -144,6 +155,7 @@ const Template = (args: GameStateProps) => {
             gameState={gameState}
             gameProperties={gameProperties}
             onNextTurn={handleNextTurn}
+            canTurn={isValidInterval && interval.length > 0}
           />
         </div>
       </Space>
@@ -170,6 +182,10 @@ const meta: Meta<typeof GameState> = {
     onNextTurn: {
       action: 'nextTurn',
       description: 'Callback when the next turn button is clicked'
+    },
+    canTurn: {
+      control: 'boolean',
+      description: 'Whether the current user can advance the turn (e.g., admin check)'
     }
   }
 }

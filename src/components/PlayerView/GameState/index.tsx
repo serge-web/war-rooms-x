@@ -12,12 +12,15 @@ export interface GameStateProps {
   gameProperties: GamePropertiesType | null
   /** Callback function to trigger the next turn */
   onNextTurn: (gameProperties: GamePropertiesType | null) => void
+  /** Whether the current user can advance the turn */
+  canTurn?: boolean
 }
 
 const GameState: React.FC<GameStateProps> = ({ 
   gameState, 
   gameProperties, 
-  onNextTurn 
+  onNextTurn,
+  canTurn = false
 }) => {
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
@@ -66,11 +69,11 @@ const GameState: React.FC<GameStateProps> = ({
             <ClockCircleOutlined style={{ marginRight: 8, color: '#1677ff' }} />
             <Text style={{ marginLeft: 8 }} data-testid='current-time'>{formattedDate}</Text>
           </div>
-          <Button
-            type="primary"
+          <Button 
+            type="primary" 
             onClick={() => onNextTurn(gameProperties)}
-            style={{ marginTop: 8 }}
-            disabled={!gameProperties}
+            icon={<AimOutlined />}
+            disabled={!gameState || !canTurn}
           >
             Next Turn
           </Button>
