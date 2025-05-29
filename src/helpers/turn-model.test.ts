@@ -19,7 +19,7 @@ describe('Turn Model', () => {
     }
 
     it('should advance linear turn and increment time by the specified interval', () => {
-      const result = advanceTurn(baseGameState, baseGameProperties)
+      const result = advanceTurn(baseGameState, baseGameProperties.turnType, baseGameProperties.interval)
       
       // Check turn advancement
       expect(result.turn).toBe('2')
@@ -41,7 +41,7 @@ describe('Turn Model', () => {
         turnType: PLAN_ADJUDICATE_TURNS
       }
       
-      const result = advanceTurn(planAdjudicateState, planAdjudicateProps)
+      const result = advanceTurn(planAdjudicateState, planAdjudicateProps.turnType, planAdjudicateProps.interval)
       
       // Check turn advancement
       expect(result.turn).toBe('1.b')
@@ -58,7 +58,7 @@ describe('Turn Model', () => {
         interval: 'PT30M'
       }
       
-      const thirtyMinResult = advanceTurn(baseGameState, thirtyMinProps)
+      const thirtyMinResult = advanceTurn(baseGameState, thirtyMinProps.turnType, thirtyMinProps.interval)
       expect(thirtyMinResult.currentTime).toBe('2023-01-01T12:30:00.000Z')
       
       // Test with 1 day
@@ -67,7 +67,7 @@ describe('Turn Model', () => {
         interval: 'P1D'
       }
       
-      const oneDayResult = advanceTurn(baseGameState, oneDayProps)
+      const oneDayResult = advanceTurn(baseGameState, oneDayProps.turnType, oneDayProps.interval)
       expect(oneDayResult.currentTime).toBe('2023-01-02T12:00:00.000Z')
     })
 
@@ -77,7 +77,7 @@ describe('Turn Model', () => {
         interval: '45' // 45 minutes in legacy format
       }
       
-      const result = advanceTurn(baseGameState, legacyProps)
+      const result = advanceTurn(baseGameState, legacyProps.turnType, legacyProps.interval)
       expect(result.currentTime).toBe('2023-01-01T12:45:00.000Z')
     })
 
@@ -95,13 +95,13 @@ describe('Turn Model', () => {
       }
       
       // Advance to adjudication phase
-      const adjudicationState = advanceTurn(planningState, planAdjudicateProps)
+      const adjudicationState = advanceTurn(planningState, planAdjudicateProps.turnType, planAdjudicateProps.interval)
       expect(adjudicationState.turn).toBe('1.b')
       expect(adjudicationState.currentPhase).toBe('Adjudication')
       expect(adjudicationState.currentTime).toBe('2023-01-01T13:00:00.000Z')
       
       // Advance to next cycle's planning phase
-      const nextPlanningState = advanceTurn(adjudicationState, planAdjudicateProps)
+      const nextPlanningState = advanceTurn(adjudicationState, planAdjudicateProps.turnType, planAdjudicateProps.interval)
       expect(nextPlanningState.turn).toBe('2.a')
       expect(nextPlanningState.currentPhase).toBe('Planning')
       expect(nextPlanningState.currentTime).toBe('2023-01-01T14:00:00.000Z')

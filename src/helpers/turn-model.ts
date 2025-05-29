@@ -1,4 +1,4 @@
-import { GamePropertiesType, GameStateType } from '../types/wargame-d'
+import { GameStateType } from '../types/wargame-d'
 import { LINEAR_TURNS, PLAN_ADJUDICATE_TURNS } from '../types/constants'
 import { addDurationToDate } from './durationHelper'
 
@@ -10,11 +10,12 @@ export type TurnPhase = 'Active' | 'Planning' | 'Adjudication'
  * @param gameProperties - The game properties containing the turn type and interval
  * @returns The new game state with advanced turn and updated time
  */
+
 export const advanceTurn = (
   currentState: GameStateType,
-  gameProperties: GamePropertiesType
+  turnType: string,
+  interval: string
 ): GameStateType => {
-  const { turnType, interval } = gameProperties
   
   // Advance the turn based on turn type
   let newState: GameStateType
