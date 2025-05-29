@@ -116,7 +116,7 @@ describe('Turn Model Helpers', () => {
         turnType: LINEAR_TURNS
       }
       
-      const result = advanceTurn(baseGameState, properties)
+      const result = advanceTurn(baseGameState, properties.turnType, properties.interval)
       
       expect(result.turn).toBe('2')
       expect(result.currentPhase).toBe('Active')
@@ -134,7 +134,7 @@ describe('Turn Model Helpers', () => {
         currentPhase: 'Adjudication'
       }
       
-      const result = advanceTurn(state, properties)
+      const result = advanceTurn(state, properties.turnType, properties.interval)
       
       expect(result.turn).toBe('2.a')
       expect(result.currentPhase).toBe('Planning')
@@ -152,7 +152,7 @@ describe('Turn Model Helpers', () => {
         currentPhase: 'Planning'
       }
       
-      const result = advanceTurn(state, properties)
+      const result = advanceTurn(state, properties.turnType, properties.interval)
       
       expect(result.turn).toBe('2.b')
       expect(result.currentPhase).toBe('Adjudication')
@@ -170,7 +170,7 @@ describe('Turn Model Helpers', () => {
         currentPhase: 'Planning'
       }
       
-      const result = advanceTurn(state, properties)
+      const result = advanceTurn(state, properties.turnType, properties.interval)
       
       expect(result.turn).toBe('1.b')
       expect(result.currentPhase).toBe('Adjudication')
@@ -182,7 +182,7 @@ describe('Turn Model Helpers', () => {
         turnType: 'UnknownTurnType' as unknown as GamePropertiesType['turnType']
       }
       
-      const result = advanceTurn(baseGameState, properties)
+      const result = advanceTurn(baseGameState, properties.turnType, properties.interval)
       
       expect(result.turn).toBe('2')
       expect(result.currentPhase).toBe('Active')
