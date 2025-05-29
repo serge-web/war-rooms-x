@@ -6,16 +6,17 @@ import { DurationInput } from '../DurationInput'
 type FormValues = {
   duration: string
   timeout?: string
-  // Add other fields as needed
 }
 
 // Wrapper component that provides form context and handles submission
-const FormWrapper = ({ children }: { children: React.ReactNode }) => {
-  const methods = useForm<FormValues>({
-    defaultValues: {
-      duration: 'PT1H', // Default value for the duration field
-    },
-  })
+const FormWrapper = ({
+  children,
+  defaultValues = { duration: 'PT1H' }
+}: {
+  children: React.ReactNode
+  defaultValues?: Record<string, string>
+}) => {
+  const methods = useForm<FormValues>({ defaultValues })
 
   const onSubmit = (data: FormValues) => {
     console.log('Form submitted:', data)
@@ -39,53 +40,41 @@ const FormWrapper = ({ children }: { children: React.ReactNode }) => {
 }
 
 // Define the story meta
-type Story = StoryObj<typeof DurationInput>
+type Story = StoryObj<typeof meta>
+
 
 const meta: Meta<typeof DurationInput> = {
   title: 'Admin/DurationInput',
   component: DurationInput,
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
-      <FormWrapper>
+    (Story, { args }) => (
+      <FormWrapper defaultValues={{ [args.source as string]: args.defaultValue || 'PT1H' }}>
         <Story />
       </FormWrapper>
     ),
   ],
+  argTypes: {
+    source: { control: 'text' },
+    label: { control: 'text' },
+    helperText: { control: 'text' },
+    disabled: { control: 'boolean' },
+    isRequired: { control: 'boolean' },
+  },
+  args: {
+    source: 'duration',
+    label: 'Duration',
+  },
 }
 
 export default meta
 
 // Stories
-export const Default: Story = {
-  args: {
-    source: 'duration',
-    label: 'Duration',
-  },
-}
+export const Default: Story = {}
 
 export const WithDefaultValue: Story = {
   args: {
-    source: 'duration',
-    label: 'Duration',
     defaultValue: 'PT30M',
-  },
-}
-
-export const WithError: Story = {
-  args: {
-    source: 'duration',
-    label: 'Duration',
-    fieldState: { 
-      error: { 
-        type: 'validate',
-        message: 'Duration must be at least 1 minute' 
-      },
-      invalid: true,
-      isTouched: true,
-      isDirty: false,
-      isValidating: false
-    },
   },
 }
 
@@ -99,16 +88,42 @@ export const WithHelperText: Story = {
 
 export const Disabled: Story = {
   args: {
-    source: 'duration',
-    label: 'Duration',
     disabled: true,
     defaultValue: 'PT1H',
+  },
+}
+
+export const WithError: Story = {
+  decorators: [
+    (Story, { args }) => {
+      const methods = useForm({
+        defaultValues: { [args.source as string]: args.defaultValue || 'PT1H' },
+      })
+      
+      // Set error state
+      methods.setError(args.source as string, {
+        type: 'validate',
+        message: 'Duration must be at least 1 minute',
+      })
+
+      return (
+        <FormProvider {...methods}>
+          <div style={{ padding: '20px', maxWidth: '400px' }}>
+            <Story />
+          </div>
+        </FormProvider>
+      )
+    },
+  ],
+  args: {
+    label: 'Duration with Error',
   },
 }
 
 export const HoursUnit: Story = {
   args: {
     defaultValue: 'PT2H', // 2 hours
+    label: 'Duration in Hours',
   },
 }
 
