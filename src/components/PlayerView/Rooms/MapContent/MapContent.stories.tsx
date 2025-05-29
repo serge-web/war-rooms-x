@@ -1,7 +1,107 @@
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import MapContent from '.'
 import type { RoomType, MapRoomConfig } from '../../../../types/rooms-d'
+import { WargameContext } from '../../../../contexts/WargameContext'
+import type { 
+  WargameContextType, 
+  GamePlayerDetails, 
+  GameStateType, 
+  GamePropertiesType, 
+  MockId,
+  ForceConfigType,
+  UserConfigType
+} from '../../../../types/wargame-d'
+import { XMPPService } from '../../../../services/XMPPService'
+import { DataProvider } from 'react-admin'
+import type { SendMessageResult } from '../../../../services/types'
+
+// Mock player details
+const mockPlayerDetails: GamePlayerDetails = {
+  id: 'player-1',
+  role: 'Game Master',
+  forceId: 'blue',
+  forceName: 'Blue Force',
+  color: '#1890ff'
+}
+
+// Mock game state
+const mockGameState: GameStateType = {
+  turn: '1',
+  currentTime: '2023-01-01T12:00:00Z',
+  currentPhase: 'Planning'
+}
+
+// Mock game properties
+const mockGameProperties: GamePropertiesType = {
+  name: 'Test Wargame',
+  startTime: '2023-01-01T00:00:00Z',
+  interval: '1h',
+  turnType: 'Plan/Adjudicate' as const
+}
+
+// Mock XMPP service with minimal implementation for stories
+class MockXMPPService extends XMPPService {
+  async sendRoomMessage(): Promise<SendMessageResult> {
+    return {
+      success: true,
+      id: `msg-${Date.now()}`,
+      error: undefined
+    }
+  }
+}
+
+// Wrapper component to provide required context
+const WargameDecorator = (Story: React.ComponentType) => {
+  const [xmppClient] = useState<XMPPService | null | undefined>(new MockXMPPService())
+  const [raDataProvider, setRaDataProvider] = useState<DataProvider | undefined>(undefined)
+  const [mockPlayerId, setMockPlayerId] = useState<MockId | null>({
+    playerId: 'test-player-1',
+    forceId: 'blue'
+  })
+  
+  const getForce = useCallback(async (forceId: string): Promise<ForceConfigType> => ({
+    type: 'force-config-type-v1' as const,
+    id: forceId,
+    name: `${forceId} Force`,
+    color: '#1890ff'
+  }), [])
+
+  const getPlayerDetails = useCallback(async (userId: string): Promise<UserConfigType> => ({
+    type: 'user-config-type-v1' as const,
+    name: 'Test User',
+    forceId: 'blue',
+    id: userId
+  } as UserConfigType), [])
+
+  const nextTurn = useCallback(async () => {
+    console.log('Next turn called')
+  }, [])
+
+  const contextValue: WargameContextType = {
+    loggedIn: true,
+    xmppClient,
+    setXmppClient: () => {},
+    raDataProvider,
+    setRaDataProvider,
+    mockPlayerId,
+    setMockPlayerId,
+    playerDetails: mockPlayerDetails,
+    getForce,
+    getPlayerDetails,
+    gameProperties: mockGameProperties,
+    gameState: mockGameState,
+    nextTurn,
+    // Mock empty rooms array since it's required by the context
+    rooms: []
+  }
+
+  return (
+    <WargameContext.Provider value={contextValue}>
+      <Story />
+    </WargameContext.Provider>
+  )
+}
 
 // Helper to create a properly typed RoomType with MapRoomConfig
 const createMapRoom = (name: string, config: Partial<MapRoomConfig> = {}): RoomType => ({
@@ -34,6 +134,7 @@ const MapContentWrapper: React.FC<{ room: RoomType }> = ({ room }) => (
 const meta = {
   title: 'PlayerView/Rooms/MapContent',
   component: MapContent,
+  decorators: [WargameDecorator],
   parameters: {
     layout: 'fullscreen',
     // Mock the useRoom hook
@@ -42,9 +143,9 @@ const meta = {
         // Add mock handlers if needed for API calls
       ],
     },
+    // Disable Chromatic for this story as it's interactive
+    chromatic: { disableSnapshot: true },
   },
-  // Disable Chromatic for this story as it's interactive
-  chromatic: { disableSnapshot: true },
 } as Meta<typeof MapContent>
 
 export default meta
