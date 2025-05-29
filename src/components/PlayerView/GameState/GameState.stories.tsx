@@ -237,4 +237,20 @@ export const CustomInterval: Story = {
   }
 }
 
+export const NonAdminUser: Story = {
+  render: Template,
+  args: {
+    gameState: {
+      ...defaultGameStates[LINEAR_TURNS]
+    },
+    gameProperties: {
+      ...defaultGameProperties,
+      turnType: LINEAR_TURNS,
+      interval: 'PT1H' // 1 hour
+    },
+    onNextTurn: () => {},
+    canTurn: false
+  }
+}
+
 export default meta

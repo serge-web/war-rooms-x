@@ -39,6 +39,8 @@ const GameState: React.FC<GameStateProps> = ({
     }
   }
 
+  console.log('can turn', canTurn)
+
   return (
     <Card
       size='small'
