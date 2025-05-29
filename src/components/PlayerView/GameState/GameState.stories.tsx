@@ -144,12 +144,8 @@ export const ActionPhase: Story = {
 export const NoGameState: Story = {
   decorators: [
     (Story) => {
-      // Set up null states for game state and properties
-      const [gameState] = useState<GameStateType | null>(null)
-      const [gameProperties] = useState<GamePropertiesType | null>(null)
-      
       // Mock WargameContext value with null states
-      const wargameContextValue = useMemo(() => ({
+      const wargameContextValue = {
         loggedIn: true,
         xmppClient: null,
         setXmppClient: () => {},
@@ -157,13 +153,7 @@ export const NoGameState: Story = {
         setRaDataProvider: () => {},
         mockPlayerId: null,
         setMockPlayerId: () => {},
-        playerDetails: {
-          id: 'player1',
-          role: 'Game Master',
-          forceId: 'blue',
-          forceName: 'Blue Force',
-          color: '#1890ff'
-        },
+        playerDetails: null,
         getForce: async (): Promise<ForceConfigType> => ({
           type: 'force-config-type-v1',
           id: 'blue',
@@ -176,11 +166,11 @@ export const NoGameState: Story = {
           name: 'Game Master',
           forceId: 'blue'
         }),
-        gameProperties,
-        gameState,
+        gameProperties: null,
+        gameState: null,
         nextTurn: async () => {},
         rooms: []
-      }), [gameState, gameProperties])
+      }
 
       return (
         <WargameContext.Provider value={wargameContextValue}>
