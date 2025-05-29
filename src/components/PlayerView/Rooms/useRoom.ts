@@ -24,9 +24,9 @@ export const useRoom = (room: RoomType) => {
     setInfoModal(null)
   }
 
-  const editMessage = useCallback(async (messageId: string, newContent: string | object) => {
+  const editMessage = useCallback(async (messageId: string, newContent: object) => {
     const existingMessageId = messageId
-    const updateMessage = (msg: GameMessage, content: string | object): GameMessage => ({
+    const updateMessage = (msg: GameMessage, content: object): GameMessage => ({
       ...msg,
       content: content as object | ChatMessage,
       details: {
@@ -65,8 +65,8 @@ export const useRoom = (room: RoomType) => {
           }
         }
 
-        // Send the corrected message using the MUC service
-        const result = await xmppClient.sendRoomMessage(correctedMessage)
+        // Send the corrected message using the `replace` MUC service
+        const result = await xmppClient.replaceRoomMessage(originalMessage, newContent)
         
         if (!result.success) {
           throw new Error(result.error || 'Failed to send corrected message')

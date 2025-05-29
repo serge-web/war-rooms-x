@@ -261,6 +261,65 @@ export class MUCService {
    * @param body The message body
    * @returns Promise resolving to SendMessageResult
    */
+  /**
+   * Replace an existing message with new content using XEP-0308 message correction
+   * @param originalMessage The original message to be replaced
+   * @param newContent The new content for the message
+   * @returns Promise resolving to SendMessageResult
+   */
+  async replaceRoomMessage(originalMessage: GameMessage, newContent: object): Promise<SendMessageResult> {
+    if (!this.xmppService.client || !this.xmppService.connected) {
+      return { success: false, id: '', error: 'Not connected' }
+    }
+
+    const roomJid = originalMessage.details.channel
+    try {
+      // Check if we've joined this room
+      if (!this.joinedRooms.has(roomJid)) {
+        return { success: false, id: '', error: 'Not joined to this room: ' + roomJid }
+      }
+      
+      // Generate a new unique ID for the correction
+      const newId = `msg-correction-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+      
+      // Create the message body with content and metadata
+      const messageBody = JSON.stringify({
+        content: newContent,
+        details: {
+          ...originalMessage.details,
+          editedAt: new Date().toISOString()
+        }
+      })
+
+      // Send the corrected message with XEP-0308 replace element
+      const res = await this.xmppService.client.sendMessage({
+        to: roomJid,
+        type: 'groupchat',
+        id: newId,
+        body: messageBody,
+        replace: originalMessage.id
+      })
+
+      if (!res) {
+        return { success: false, id: newId, error: 'Failed to send message correction' }
+      }
+
+      return { success: true, id: newId }
+    } catch (error) {
+      console.error(`Error replacing message in room ${roomJid}:`, error)
+      return { 
+        success: false, 
+        id: '', 
+        error: error instanceof Error ? error.message : String(error) 
+      }
+    }
+  }
+
+  /**
+   * Send a message to a MUC room
+   * @param body The message body
+   * @returns Promise resolving to SendMessageResult
+   */
   async sendRoomMessage(body: GameMessage): Promise<SendMessageResult> {
     if (!this.xmppService.client || !this.xmppService.connected) {
       return { success: false, id: '', error: 'Not connected' }
@@ -306,7 +365,7 @@ export class MUCService {
       // Skip messages without a body
       if (!message.body) return
 
-      // console.log('groupchat', message)
+      console.log('groupchat', message)
       
       const roomId = message.from.split('/')[0]
       // Notify handlers registered for this specific room

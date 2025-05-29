@@ -127,6 +127,10 @@ export class XMPPService {
     return this.mucService.sendRoomMessage(body)
   }
 
+  async replaceRoomMessage(originalMessage: GameMessage, newContent: object): Promise<SendMessageResult> {
+    return this.mucService.replaceRoomMessage(originalMessage, newContent)
+  }
+
   setupRoomMessageHandler(): void {
     this.mucService.setupRoomMessageHandler()
   }
