@@ -370,7 +370,8 @@ describe('useRoom hook', () => {
     // Verify error was set
     expect(result.current.infoModal).toEqual({
       title: 'Message sending error',
-      message: 'Error sending message:Failed to send message'
+      message: 'Error sending message:Failed to send message',
+      type: 'error'
     })
     
     // Test clearInfoModal function
