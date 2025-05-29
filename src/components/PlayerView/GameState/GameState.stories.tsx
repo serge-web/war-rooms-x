@@ -3,9 +3,19 @@ import GameState from './index'
 import { WargameContext } from '../../../contexts/WargameContext'
 import { GamePropertiesType, GameStateType, ForceConfigType, UserConfigType } from '../../../types/wargame-d'
 import { advanceTurn } from '../../../helpers/turn-model'
+import { Tooltip } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import { LINEAR_TURNS, PLAN_ADJUDICATE_TURNS } from '../../../types/constants'
 import React, { useCallback, useMemo, useState } from 'react'
 import { Button, Space } from 'antd'
+
+// Simple regex to validate ISO 8601 duration format
+const isValidIsoDuration = (value: string): boolean => {
+  // Pattern for ISO 8601 duration (simplified)
+  // Matches formats like: P1D, PT1H, PT30M, PT1H30M, P1DT12H, etc.
+  const iso8601Pattern = /^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/
+  return iso8601Pattern.test(value)
+}
 
 // Types for our turn model implementations
 interface TurnModel {
@@ -171,14 +181,10 @@ const WargameProviderDecorator = (Story: React.ComponentType, { parameters }: { 
         </Space>
         <br/>
         <Space.Compact style={{ marginTop: '0.5rem' }}>
-          Next turn/phase:
-          <Button type="primary" onClick={nextTurn}>
-            Next Turn/Phase
-          </Button>
-        </Space.Compact>
-        <br/>
-        <Space.Compact style={{ marginTop: '0.5rem' }}>
-          Time interval:
+          Time interval (ISO 8601):
+          <Tooltip title="ISO 8601 duration format (e.g., PT1H30M for 1 hour 30 minutes, or P1D for 1 day )">
+            <InfoCircleOutlined style={{ marginLeft: '4px', color: '#8c8c8c' }} />
+          </Tooltip>
           <input
             type="text"
             value={gameProperties?.interval || 'PT1H'}
@@ -200,9 +206,21 @@ const WargameProviderDecorator = (Story: React.ComponentType, { parameters }: { 
             placeholder="PT1H"
           />
         </Space.Compact>
+        <br/>
+        <Space.Compact style={{ marginTop: '0.5rem' }}>
+          Next turn/phase:
+          <Button 
+            type="primary" 
+            onClick={nextTurn}
+            disabled={!gameProperties?.interval || !isValidIsoDuration(gameProperties.interval)}
+          >
+            Next Turn/Phase
+          </Button>
+        </Space.Compact>
         <div style={{ marginTop: '0.5rem' }}>
           <strong>Current State:</strong> Turn {gameState.turn}, Phase: {gameState.currentPhase}
         </div>
+        
       </div>
     )
   }, [gameState, gameProperties, nextTurn, changeTurnModel])
