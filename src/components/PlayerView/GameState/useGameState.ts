@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { GamePropertiesType, GameStateType } from '../../../types/wargame-d'
-import { incrementState } from './incrementState'
 import { usePubSub } from '../../../hooks/usePubSub'
 import { useIndexedDBData } from '../../../hooks/useIndexedDBData'
 import { RGameState } from '../../AdminView/raTypes-d'
@@ -8,6 +7,7 @@ import { splitGameState, mergeGameState } from '../../../helpers/split-game-stat
 import * as localforage from 'localforage'
 import { prefixKey } from '../../../types/constants'
 import { XMPPService } from '../../../services/XMPPService'
+import { advanceTurn } from '../../../helpers/turn-model'
 
 export const  useGameState = (xmppClient: XMPPService | null | undefined) => {
   const { document: gameStatePub, updateDocument } = usePubSub<GameStateType>('game-state', xmppClient)
@@ -33,7 +33,7 @@ export const  useGameState = (xmppClient: XMPPService | null | undefined) => {
 
   const nextTurn = useCallback(async (gameProperties: GamePropertiesType | null) => {
     if (gameState && gameProperties) {
-      const newState = incrementState(gameState, gameProperties)
+      const newState = advanceTurn(gameState, gameProperties.turnType, gameProperties.interval)
       if (xmppClient === undefined) {
         // do nothing
       } else if (xmppClient === null) {
