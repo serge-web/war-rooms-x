@@ -1,7 +1,8 @@
 import { Meta, StoryObj } from '@storybook/react'
 import { SimpleFormContentCore } from './index'
-import { RoomType, OnlineUser, Template } from '../../../../types/rooms-d'
+import { RoomType, OnlineUser, Template, GameMessage } from '../../../../types/rooms-d'
 import { ForceConfigType } from '../../../../types/wargame-d'
+import { useState } from 'react'
 
 // Mock data
 const mockForceColors: Record<string, string> = {
@@ -81,16 +82,47 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof SimpleFormContentCore>
 
+// Wrapper component to manage message state
+const MessageManager = (props: React.ComponentProps<typeof SimpleFormContentCore>) => {
+  const [messages, setMessages] = useState<GameMessage[]>(props.messages || [])
+  
+  const sendMessage = (messageType: 'chat' | 'map' | 'form', content: object) => {
+    const newMessage: GameMessage = {
+      id: `msg-${Date.now()}`,
+      details: {
+        messageType,
+        senderId: props.playerDetails?.id || 'unknown',
+        senderName: mockUsers.find(u => u.id === props.playerDetails?.id)?.name || 'Unknown',
+        senderForce: props.playerDetails?.forceId || 'unknown',
+        turn: '1',
+        phase: 'planning',
+        timestamp: new Date().toISOString(),
+        channel: props.room.roomName
+      },
+      content: content
+    }
+    
+    setMessages(prev => [...prev, newMessage])
+  }
+  
+  return (
+    <SimpleFormContentCore 
+      {...props} 
+      messages={messages} 
+      sendMessage={sendMessage} 
+    />
+  )
+}
+
 // Default story with empty form
 export const Default: Story = {
+  render: (args) => <MessageManager {...args} />,
   args: {
     room: mockRoom,
     messages: [],
     theme: {},
     canSubmit: true,
-    sendMessage: (messageType, content) => {
-      console.log('Message sent:', { messageType, content })
-    },
+    sendMessage: () => {}, // This will be overridden by MessageManager
     infoModal: null,
     setInfoModal: () => {},
     users: mockUsers,
@@ -107,6 +139,7 @@ export const Default: Story = {
 
 // Story with existing message
 export const WithMessage: Story = {
+  render: (args) => <MessageManager {...args} />,
   args: {
     ...Default.args,
     messages: [
@@ -137,6 +170,7 @@ export const WithMessage: Story = {
 
 // Umpire view with all users visible
 export const UmpireView: Story = {
+  render: (args) => <MessageManager {...args} />,
   args: {
     ...Default.args,
     playerDetails: {
@@ -149,6 +183,7 @@ export const UmpireView: Story = {
 
 // Room with no templates configured
 export const NoTemplates: Story = {
+  render: (args) => <MessageManager {...args} />,
   args: {
     ...Default.args,
     room: {

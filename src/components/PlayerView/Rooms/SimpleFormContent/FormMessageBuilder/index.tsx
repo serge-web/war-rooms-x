@@ -51,7 +51,6 @@ const FormMessageBuilder: React.FC<FormMessageBuilderProps> = ({
   }
 
   const handleSubmit = (data: object) => {
-    console.log('about to submit', data)
     if (selectedTemplate && data) {
       // Use 'chat' as the messageType since that's what the API expects
       const message: FormMessage = {
