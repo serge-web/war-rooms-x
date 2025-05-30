@@ -16,7 +16,7 @@ interface SimpleFormProps {
 
 const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
   const { messages, theme, canSubmit, sendMessage, infoModal, setInfoModal, users, presenceVisibility } = useRoom(room)
-  const { playerDetails } = useWargame()
+  const { playerDetails, getForce } = useWargame()
   const { templates } = useTemplates()
   // const { users, presenceVisibility, loading } = useRoomUsers(room)
   const myTemplates = useMemo(() => {
@@ -44,9 +44,10 @@ const SimpleFormContent: React.FC<SimpleFormProps> = ({ room }) => {
           visibilityConfig={presenceVisibility}
           currentUserForce={playerDetails?.forceId}
           isAdmin={playerDetails?.role === 'admin'}
+          getForce={getForce}
         />
       
-      <MessageList messages={messages} currentUser={playerDetails?.id || ''} templates={templates || []} />
+      <MessageList messages={messages} getForce={getForce} currentUser={playerDetails?.id || ''} templates={templates || []} />
       { canSubmit && myTemplates && <FormMessageBuilder 
         onSendMessage={sendMessage} 
         disabled={false} 
