@@ -1565,11 +1565,6 @@
   dependencies:
     "@storybook/global" "^5.0.0"
 
-"@storybook/addon-onboarding@^9.0.1":
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-onboarding/-/addon-onboarding-9.0.1.tgz#deb7a2b9033883e0ae0d94b87f9105b53f2070c9"
-  integrity sha512-1bmj6yzofl4VppDoXDda1pDbKPmFJMvTA2Y4p1IX3xbTQjKxJFVJygZYOcU2YjtpoCIJlXMbpePckE8qOqRdSQ==
-
 "@storybook/builder-vite@9.0.1":
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/@storybook/builder-vite/-/builder-vite-9.0.1.tgz#9d752f84a1551b540e5e2f0f01de4fa43c85eb47"
