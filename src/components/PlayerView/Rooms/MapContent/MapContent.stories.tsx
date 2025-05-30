@@ -1,8 +1,38 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import type { RoomType, GameMessage } from '../../../../types/rooms-d'
 import { mockBackend } from '../../../../mockData/mockAdmin'
-import MapContent from '.'
 import { WargameProvider } from '../../../../contexts/WargameProvider'
+import MapContent from '.'
+import type { FC } from 'react'
+
+// Create a wrapper component that provides the mock data
+const MockedMapContent = ({ room }: { room: RoomType }) => {
+  // Mock implementation of useRoom
+  const mockUseRoom = (room: RoomType) => ({
+    messages: room.roomName === 'main-map' 
+      ? (mockBackend.chatrooms.find(r => r.id === 'main-map')?.dummyMessages as GameMessage[] || [])
+      : [],
+    users: [],
+    theme: null,
+    canSubmit: true,
+    infoModal: null,
+    clearInfoModal: () => {},
+    sendMessage: async () => {},
+    presenceVisibility: 'all' as const,
+    setInfoModal: () => {}
+  })
+
+  // Use the mock implementation
+  const roomData = mockUseRoom(room)
+  
+  return (
+    <div style={{ width: '100%', height: '600px' }}>
+      <WargameProvider>
+        <MapContent room={room} {...roomData} />
+      </WargameProvider>
+    </div>
+  )
+}
 
 // Create a mock room with map configuration
 const createMapRoom = (name: string) => ({
@@ -18,66 +48,49 @@ const createMapRoom = (name: string) => ({
   }),
 })
 
-// Create a mock room instance
-const mapRoom = createMapRoom('main-map')
-
-// Mock implementation of useRoom
-const mockUseRoom = (room: RoomType) => {
-  // Get messages from the mock backend for the current room
-  const mockMessages = room.roomName === 'main-map' 
-    ? (mockBackend.chatrooms.find(r => r.id === 'main-map')?.dummyMessages as GameMessage[] || [])
-    : []
-
-  return {
-    messages: mockMessages,
-    users: [],
-    theme: null,
-    canSubmit: true,
-    infoModal: null,
-    clearInfoModal: () => {},
-    sendMessage: async () => {},
-    presenceVisibility: 'all' as const,
-    setInfoModal: () => {}
-  }
-}
-
-// Mock the useRoom hook
-jest.mock('../../useRoom', () => ({
-  useRoom: (room: RoomType) => mockUseRoom(room)
-}))
-
-// Create a wrapper component that provides the room context
-const MapContentWithMocks = ({ room }: { room: RoomType }) => (
-  <div style={{ width: '100%', height: '600px' }}>
-    <WargameProvider>
-      <MapContent room={room} />
-    </WargameProvider>
-  </div>
-)
-
-const meta = {
+const meta: Meta<typeof MockedMapContent> = {
   title: 'PlayerView/Rooms/MapContent',
-  component: MapContentWithMocks,
+  component: MockedMapContent as FC<{ room: RoomType }>,
+  args: {
+    room: createMapRoom('main-map')
+  },
   parameters: {
     layout: 'fullscreen' as const
   }
-} satisfies Meta<typeof MapContentWithMocks>
+}
+
+type Story = StoryObj<typeof MockedMapContent>
 
 export default meta
-type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
-    room: mapRoom
+    room: createMapRoom('main-map')
+  }
+}
+
+export const WithMessages: Story = {
+  args: {
+    room: createMapRoom('main-map')
+  }
+}
+
+export const WithCustomMap: Story = {
+  args: {
+    room: createMapRoom('custom-map')
   },
   parameters: {
-    layout: 'fullscreen',
+    docs: {
+      description: {
+        story: 'A map with custom configuration.'
+      }
+    }
   }
 }
 
 export const EmptyMap: Story = {
   args: {
-    room: mapRoom
+    room: createMapRoom('empty-map')
   },
   parameters: {
     docs: {
@@ -91,7 +104,7 @@ export const EmptyMap: Story = {
 
 export const WithFeatures: Story = {
   args: {
-    room: mapRoom
+    room: createMapRoom('main-map')
   },
   parameters: {
     docs: {
