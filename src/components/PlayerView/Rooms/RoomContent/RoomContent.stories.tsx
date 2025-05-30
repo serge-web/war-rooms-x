@@ -106,23 +106,42 @@ export const Default: Story = {
   }
 }
 
-// Custom theme configuration
+// Custom theme configuration with serif font
 const customTheme: ThemeConfig = {
   token: {
     colorPrimary: '#722ed1',
     colorBgContainer: '#f9f0ff',
     colorText: '#1f1f1f',
     colorBorder: '#d3adf7',
-    colorPrimaryBg: '#f9f0ff'
+    colorPrimaryBg: '#f9f0ff',
+    fontFamily: `'Georgia', 'Times New Roman', serif`,
+    fontSize: 16,
+    borderRadius: 8,
+    lineHeight: 1.6
   },
   components: {
     Button: {
-      primaryColor: '#fff'
+      primaryColor: '#fff',
+      borderRadius: 20,
+      fontSize: 14,
+      fontWeight: 'bold',
+      paddingBlock: 8,
+      paddingInline: 20
     },
     Input: {
       activeBorderColor: '#9254de',
       hoverBorderColor: '#b37feb',
-      activeShadow: '0 0 0 2px rgba(114, 46, 209, 0.2)'
+      activeShadow: '0 0 0 2px rgba(114, 46, 209, 0.2)',
+      borderRadius: 8,
+      paddingBlock: 10,
+      paddingInline: 14
+    },
+    Card: {
+      borderRadiusLG: 12,
+      boxShadowSecondary: '0 4px 12px rgba(0, 0, 0, 0.08)'
+    },
+    Typography: {
+      fontFamily: `'Georgia', 'Times New Roman', serif`
     }
   }
 }
