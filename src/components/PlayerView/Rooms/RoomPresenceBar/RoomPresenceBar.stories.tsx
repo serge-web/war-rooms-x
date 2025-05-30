@@ -47,7 +47,7 @@ const mockGetForce = async (forceId: string): Promise<ForceConfigType> => ({
   objectives: 'Complete mission objectives'
 })
 
-export const meta: Meta<typeof RoomPresenceBar> = {
+const meta: Meta<typeof RoomPresenceBar> = {
   title: 'PlayerView/Rooms/RoomPresenceBar',
   component: RoomPresenceBar,
   parameters: {
@@ -161,7 +161,7 @@ const DynamicPresenceSimulator = () => {
         }
         return updatedUsers
       })
-    }, 2000)
+    }, 500)
 
     return () => clearInterval(interval)
   }, [])
@@ -188,3 +188,5 @@ export const WithDynamicPresence: Story = {
     }
   }
 }
+
+export default meta
