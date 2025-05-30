@@ -10,7 +10,7 @@ import { useWargame } from '../../../../contexts/WargameContext'
 import RoomPresenceBar from '../RoomPresenceBar'
 import { ForceConfigType } from '../../../../types/wargame-d'
 
-interface RoomContentCoreProps {
+export interface RoomContentCoreProps {
   room: RoomType
   messages: GameMessage[]
   theme: ThemeConfig | undefined
@@ -63,7 +63,7 @@ const RoomContentCore: React.FC<RoomContentCoreProps> = ({
         
         {canSubmit && (
           <MessageInputForm 
-            onSendMessage={(content) => sendMessage('chat', { text: content })} 
+            onSendMessage={(messageType: MessageDetails['messageType'], content: object) => sendMessage(messageType, content)} 
             disabled={false} 
           />
         )}

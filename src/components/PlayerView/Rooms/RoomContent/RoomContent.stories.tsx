@@ -1,8 +1,9 @@
 import { Meta, StoryObj } from '@storybook/react'
-import { RoomContentCore } from './index'
-import { GameMessage, PresenceVisibility, RoomType } from '../../../../types/rooms-d'
+import { RoomContentCore, type RoomContentCoreProps } from './index'
+import { GameMessage, type RoomType } from '../../../../types/rooms-d'
 import { ThemeConfig } from 'antd'
 import { ForceConfigType } from '../../../../types/wargame-d'
+import { useState } from 'react'
 
 // Mock data
 const mockRoom: RoomType = {
@@ -21,11 +22,11 @@ const mockRoom: RoomType = {
   })
 }
 
-const mockMessages = [
+const mockMessages: GameMessage[] = [
   {
     id: 'msg-1',
     details: {
-      messageType: 'chat',
+      messageType: 'chat' as const,
       senderId: 'user1',
       senderName: 'Blue User',
       senderForce: 'blue',
@@ -39,7 +40,7 @@ const mockMessages = [
   {
     id: 'msg-2',
     details: {
-      messageType: 'chat',
+      messageType: 'chat' as const,
       senderId: 'user2',
       senderName: 'Red User',
       senderForce: 'red',
@@ -80,14 +81,67 @@ export default meta
 type Story = StoryObj<typeof RoomContentCore>
 
 // Common args for all stories
+type CommonRenderProps = Omit<RoomContentCoreProps, 'messages' | 'sendMessage'> 
+
+const CommonRender = (args: CommonRenderProps) => {
+  const [messages, setMessages] = useState<GameMessage[]>([...mockMessages])
+  
+  const sendMessage = (type: 'chat' | 'map' | 'form', content: { value: string } | object) => {
+    // For this story, we only handle chat messages
+    if (type !== 'chat') return
+    
+    const messageContent = 'value' in content ? content : { value: 'Empty message' }
+    const newMessage: GameMessage = {
+      id: `msg-${Date.now()}`,
+      details: {
+        messageType: 'chat',
+        senderId: 'user1', // current user
+        senderName: 'You',
+        senderForce: 'blue',
+        turn: '1',
+        phase: 'planning',
+        timestamp: new Date().toISOString(),
+        channel: 'blue-chat'
+      },
+      content: messageContent
+    }
+    
+    setMessages(prev => [...prev, newMessage])
+  }
+
+  return (
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <RoomContentCore 
+        {...args} 
+        room={mockRoom}
+        messages={messages} 
+        sendMessage={sendMessage}
+        theme={mockTheme}
+        canSubmit={true}
+        infoModal={null}
+        setInfoModal={() => {}}
+        users={mockUsers}
+        presenceVisibility={"all" as const}
+        currentUserForceId="blue"
+        currentUserId="user1"
+        isAdmin={false}
+        getForce={async (forceId: string): Promise<ForceConfigType> => ({
+          id: forceId,
+          name: forceId,
+          color: forceId,
+          type: 'force-config-type-v1'
+        })}
+      />
+    </div>
+  )
+}
+
 const commonArgs = {
-  messages: mockMessages as GameMessage[],
   canSubmit: true,
-  sendMessage: (type: string, content: object) => console.log('Message sent:', { type, content }),
   infoModal: null,
   setInfoModal: () => {},
   users: mockUsers,
-  presenceVisibility: { showOnlineOnly: true } as unknown as PresenceVisibility,
+  presenceVisibility: 'all' as const,
   currentUserForceId: 'blue',
   currentUserId: 'user1',
   isAdmin: false,
@@ -98,11 +152,20 @@ const commonArgs = {
   }) as Promise<ForceConfigType>
 }
 
-export const Default: Story = {
+type RoomContentStory = StoryObj<typeof RoomContentCore>
+
+const Template: RoomContentStory = {
+  render: (args) => <CommonRender {...args} />
+}
+
+export const Default: RoomContentStory = {
+  ...Template,
   args: {
     ...commonArgs,
     room: mockRoom,
-    theme: mockTheme
+    theme: mockTheme,
+    messages: mockMessages, // Initial messages, will be overridden by the state
+    sendMessage: (type, content) => console.log('Message sent:', type, content)
   }
 }
 
