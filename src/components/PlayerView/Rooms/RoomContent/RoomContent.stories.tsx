@@ -34,7 +34,7 @@ const mockMessages = [
       timestamp: new Date().toISOString(),
       channel: 'blue-chat'
     },
-    content: { text: 'Hello, this is a test message from Blue' }
+    content: { value: 'Hello, this is a test message from Blue' }
   },
   {
     id: 'msg-2',
@@ -48,7 +48,7 @@ const mockMessages = [
       timestamp: new Date().toISOString(),
       channel: 'blue-chat'
     },
-    content: { text: 'Hello from Red team' }
+    content: { value: 'Hello from Red team' }
   }
 ]
 
@@ -79,26 +79,71 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof RoomContentCore>
 
-// Stories
+// Common args for all stories
+const commonArgs = {
+  messages: mockMessages as GameMessage[],
+  canSubmit: true,
+  sendMessage: (type: string, content: object) => console.log('Message sent:', { type, content }),
+  infoModal: null,
+  setInfoModal: () => {},
+  users: mockUsers,
+  presenceVisibility: { showOnlineOnly: true } as unknown as PresenceVisibility,
+  currentUserForceId: 'blue',
+  currentUserId: 'user1',
+  isAdmin: false,
+  getForce: (forceId: string) => Promise.resolve({
+    id: forceId,
+    name: forceId,
+    color: forceId
+  }) as Promise<ForceConfigType>
+}
+
 export const Default: Story = {
   args: {
+    ...commonArgs,
     room: mockRoom,
-    messages: mockMessages as GameMessage[],
-    theme: mockTheme,
-    canSubmit: true,
-    sendMessage: (type, content) => console.log('Message sent:', { type, content }),
-    infoModal: null,
-    setInfoModal: () => {},
-    users: mockUsers,
-    presenceVisibility: { showOnlineOnly: true } as unknown as PresenceVisibility,
-    currentUserForceId: 'blue',
-    currentUserId: 'user1',
-    isAdmin: false,
-    getForce: (forceId: string) => Promise.resolve({
-      id: forceId,
-      name: forceId,
-      color: forceId
-    }) as Promise<ForceConfigType>
+    theme: mockTheme
+  }
+}
+
+// Custom theme configuration
+const customTheme: ThemeConfig = {
+  token: {
+    colorPrimary: '#722ed1',
+    colorBgContainer: '#f9f0ff',
+    colorText: '#1f1f1f',
+    colorBorder: '#d3adf7',
+    colorPrimaryBg: '#f9f0ff'
+  },
+  components: {
+    Button: {
+      primaryColor: '#fff'
+    },
+    Input: {
+      activeBorderColor: '#9254de',
+      hoverBorderColor: '#b37feb',
+      activeShadow: '0 0 0 2px rgba(114, 46, 209, 0.2)'
+    }
+  }
+}
+
+const customThemedRoom: RoomType = {
+  roomName: 'custom-theme-chat',
+  naturalName: 'Custom Theme Chat',
+  description: JSON.stringify({
+    theme: customTheme,
+    description: 'A chat room with a custom purple theme',
+    specifics: {
+      roomType: 'chat'
+    }
+  })
+}
+
+export const WithCustomTheme: Story = {
+  args: {
+    ...commonArgs,
+    room: customThemedRoom,
+    theme: customTheme
   }
 }
 
