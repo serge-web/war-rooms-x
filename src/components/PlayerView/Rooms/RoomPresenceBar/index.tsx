@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import './index.css'
 import { UserOutlined } from '@ant-design/icons'
 import { Tooltip } from 'antd'
-import { useWargame } from '../../../../contexts/WargameContext'
 import { ForceConfigType } from '../../../../types/wargame-d'
 import { OnlineUser, PresenceVisibility } from '../../../../types/rooms-d'
 
@@ -15,16 +14,18 @@ export interface RoomPresenceBarProps {
   currentUserForce?: ForceConfigType['id']
   /** Whether the current user has admin privileges (admins can see all users regardless of visibilityConfig) */
   isAdmin?: boolean
+  /** allows retrieval of force color */
+  getForce: (forceId: string) => Promise<ForceConfigType>
 }
 
 const RoomPresenceBar: React.FC<RoomPresenceBarProps> = ({
   users,
   visibilityConfig,
   currentUserForce,
-  isAdmin = false
+  isAdmin = false,
+  getForce
 }) => {
 
-  const { getForce } = useWargame()
   const [forceColors, setForceColors] = useState<Record<string, string>>({})  
 
   // Fetch force colors when users change
