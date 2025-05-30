@@ -1,18 +1,18 @@
-import { Meta, StoryObj } from '@storybook/react'
-import React, { useEffect, useState } from 'react'
+import type { Meta, StoryObj } from '@storybook/react'
+import { useState, useEffect } from 'react'
 import RoomPresenceBar from './index'
-import { WargameContext } from '../../../../contexts/WargameContext'
-import { ForceConfigType, UserConfigType } from '../../../../types/wargame-d'
+import type { ForceConfigType } from '../../../../types/wargame-d'
+import type { OnlineUser, PresenceVisibility } from '../../../../types/rooms-d'
 
 // Mock force colors for the Storybook
 const mockForceColors: Record<string, string> = {
-  'red': '#ff4d4f',
-  'blue': '#1890ff',
-  'umpire': '#722ed1',
-  'green': '#52c41a',
-  'yellow': '#faad14',
-  'purple': '#722ed1',
-  'admin': '#262626'
+  red: '#ff4d4f',
+  blue: '#1890ff',
+  green: '#52c41a',
+  yellow: '#faad14',
+  purple: '#722ed1',
+  umpire: '#8c8c8c',
+  admin: '#000000'
 }
 
 // Mock user data for stories
@@ -38,66 +38,36 @@ const mockUsers = {
   empty: []
 }
 
-// Mock WargameProvider wrapper for stories
-const WargameProviderDecorator = (Story: React.ComponentType) => {
-  // Create a mock implementation of the getForce method
-  const mockGetForce = async (forceId: string): Promise<ForceConfigType> => {
-    return {
-      type: 'force-config-type-v1',
-      id: forceId,
-      name: forceId.charAt(0).toUpperCase() + forceId.slice(1),
-      color: mockForceColors[forceId] || '#000000'
-    }
-  }
+// Mock getForce function for stories
+const mockGetForce = async (forceId: string): Promise<ForceConfigType> => ({
+  type: 'force-config-type-v1',
+  id: forceId,
+  name: forceId.charAt(0).toUpperCase() + forceId.slice(1),
+  color: mockForceColors[forceId] || '#000000',
+  objectives: 'Complete mission objectives'
+})
 
-  const mockGetPlayerDetails = async (userId: string): Promise<UserConfigType | undefined> => {
-    const details = mockUsers.online.find(u => u.id === userId)
-    if (!details) {
-      return undefined
-    }
-    return {
-      type: 'user-config-type-v1',
-      name: details.name,
-      forceId: details.force
-    }
-  }
-
-  // Mock WargameContext value
-  const wargameContextValue = {
-    loggedIn: true,
-    xmppClient: null,
-    setXmppClient: () => {},
-    raDataProvider: undefined,
-    setRaDataProvider: () => {},
-    mockPlayerId: null,
-    setMockPlayerId: () => {},
-    playerDetails: null,
-    getForce: mockGetForce,
-    getPlayerDetails: mockGetPlayerDetails,
-    gameProperties: null,
-    gameState: null,
-    nextTurn: async () => {},
-    rooms: []
-  }
-
-  return (
-    <WargameContext.Provider value={wargameContextValue}>
-      <Story />
-    </WargameContext.Provider>
-  )
-}
-
-const meta: Meta<typeof RoomPresenceBar> = {
+export const meta: Meta<typeof RoomPresenceBar> = {
   title: 'PlayerView/Rooms/RoomPresenceBar',
   component: RoomPresenceBar,
   parameters: {
-    layout: 'centered'
+    layout: 'centered',
+    docs: {
+      description: {
+        component: 'Displays a list of users in the room with their online status and force affiliation.'
+      }
+    }
   },
-  tags: ['autodocs'],
-  decorators: [WargameProviderDecorator],
+  args: {
+    getForce: mockGetForce,
+    visibilityConfig: 'all',
+    isAdmin: false,
+    users: mockUsers.online,
+    currentUserForce: 'red'
+  },
+  tags: ['autodocs']
 }
 
-export default meta
 type Story = StoryObj<typeof RoomPresenceBar>
 
 // Online players (3 example entries)
@@ -107,6 +77,13 @@ export const OnlinePlayers: Story = {
     visibilityConfig: 'all',
     currentUserForce: 'red',
     isAdmin: false
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Shows 3 online users from different forces.'
+      }
+    }
   }
 }
 
@@ -124,7 +101,7 @@ export const EmptyState: Story = {
 export const AllUsers: Story = {
   args: {
     users: mockUsers.online,
-    visibilityConfig: 'all',
+    visibilityConfig: 'all' as PresenceVisibility,
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -133,7 +110,7 @@ export const AllUsers: Story = {
 export const UmpiresOnly: Story = {
   args: {
     users: mockUsers.online,
-    visibilityConfig: 'umpires-only',
+    visibilityConfig: 'umpires-only' as PresenceVisibility,
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -143,7 +120,7 @@ export const UmpiresOnly: Story = {
 export const MixedOnlineStatus: Story = {
   args: {
     users: mockUsers.offline,
-    visibilityConfig: 'all',
+    visibilityConfig: 'all' as PresenceVisibility,
     currentUserForce: 'red',
     isAdmin: false
   }
@@ -153,7 +130,7 @@ export const MixedOnlineStatus: Story = {
 export const AdminView: Story = {
   args: {
     users: mockUsers.online,
-    visibilityConfig: 'umpires-only', // Even with this restriction, admin sees all
+    visibilityConfig: 'umpires-only' as PresenceVisibility,
     currentUserForce: 'admin',
     isAdmin: true
   }
@@ -163,106 +140,46 @@ export const AdminView: Story = {
 export const DiverseForces: Story = {
   args: {
     users: mockUsers.diverse,
-    visibilityConfig: 'all',
+    visibilityConfig: 'all' as PresenceVisibility,
     currentUserForce: 'red',
     isAdmin: false
   }
 }
 
-// Component that simulates changing presence status
+// Dynamic presence simulator
 const DynamicPresenceSimulator = () => {
-  const [users, setUsers] = useState([...mockUsers.diverse])
-  
+  const [users, setUsers] = useState<OnlineUser[]>([...mockUsers.diverse])
+
   useEffect(() => {
-    // Function to toggle a random user's online status
-    const toggleRandomUserStatus = () => {
+    const interval = setInterval(() => {
       setUsers(currentUsers => {
-        // Create a copy of the current users array
+        const randomIndex = Math.floor(Math.random() * currentUsers.length)
         const updatedUsers = [...currentUsers]
-        
-        // Select a random user
-        const randomIndex = Math.floor(Math.random() * updatedUsers.length)
-        
-        // Toggle their online status
         updatedUsers[randomIndex] = {
           ...updatedUsers[randomIndex],
           isOnline: !updatedUsers[randomIndex].isOnline
         }
-        
         return updatedUsers
       })
-    }
-    
-    // Set up an interval to toggle user presence every few seconds
-    const intervalId = setInterval(toggleRandomUserStatus, 3000)
-    
-    // Clean up the interval when the component unmounts
-    return () => clearInterval(intervalId)
+    }, 2000)
+
+    return () => clearInterval(interval)
   }, [])
-  
+
   return (
     <RoomPresenceBar
       users={users}
-      visibilityConfig='all'
-      currentUserForce='red'
+      visibilityConfig="all"
+      currentUserForce="red"
       isAdmin={false}
+      getForce={mockGetForce}
     />
-  )
-}
-
-// Decorator that wraps the dynamic presence simulator
-const DynamicPresenceDecorator = (Story: React.ComponentType) => {
-  // Create a mock implementation of the getForce method
-  const mockGetForce = async (forceId: string): Promise<ForceConfigType> => {
-    return {
-      type: 'force-config-type-v1',
-      id: forceId,
-      name: forceId.charAt(0).toUpperCase() + forceId.slice(1),
-      color: mockForceColors[forceId] || '#000000'
-    }
-  }
-
-  const mockGetPlayerDetails = async (userId: string): Promise<UserConfigType | undefined> => {
-    const details = mockUsers.online.find(u => u.id === userId)
-    if (!details) {
-      return undefined
-    }
-    return {
-      type: 'user-config-type-v1',
-      name: details.name,
-      forceId: details.force
-    }
-  }
-
-  // Mock WargameContext value
-  const dynamicWargameContextValue = {
-    loggedIn: true,
-    xmppClient: null,
-    setXmppClient: () => {},
-    raDataProvider: undefined,
-    setRaDataProvider: () => {},
-    mockPlayerId: null,
-    setMockPlayerId: () => {},
-    playerDetails: null,
-    getPlayerDetails: mockGetPlayerDetails,
-    getForce: mockGetForce,
-    gameProperties: null,
-    gameState: null,
-    nextTurn: async () => {},
-    rooms: []
-  }
-  
-  return (
-    <WargameContext.Provider value={dynamicWargameContextValue}>
-      <Story />
-    </WargameContext.Provider>
   )
 }
 
 // Story with dynamic presence changes
 export const WithDynamicPresence: Story = {
   render: () => <DynamicPresenceSimulator />,
-  decorators: [DynamicPresenceDecorator],
   parameters: {
     docs: {
       description: {
