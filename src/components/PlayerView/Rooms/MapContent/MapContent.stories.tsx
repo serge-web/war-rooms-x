@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from '@storybook/react'
-import React from 'react'
+import React, { useState } from 'react'
 import { RoomType, GameMessage } from '../../../../types/rooms-d'
 import { mockBackend } from '../../../../mockData/mockAdmin'
 
@@ -48,6 +48,38 @@ const MapContentWrapper: React.FC<{children: React.ReactNode}> = ({ children }) 
   </div>
 )
 
+// Wrapper component to manage message state
+const MessageManager: React.FC<React.ComponentProps<typeof MapContent>> = (props) => {
+  const [messages, setMessages] = useState<GameMessage[]>(props.messages || [])
+  
+  const sendMessage = (messageType: 'chat' | 'map' | 'form', content: object) => {
+    const newMessage: GameMessage = {
+      id: `msg-${Date.now()}`,
+      details: {
+        messageType,
+        senderId: 'user1',
+        senderName: 'Map User',
+        senderForce: 'blue',
+        turn: '1',
+        phase: 'planning',
+        timestamp: new Date().toISOString(),
+        channel: props.room.roomName
+      },
+      content
+    }
+    
+    setMessages(prev => [...prev, newMessage])
+  }
+  
+  return (
+    <MapContent 
+      {...props} 
+      messages={messages}
+      sendMessage={sendMessage}
+    />
+  )
+}
+
 // Main Map with data from main-map room
 export const MainMapWithData: Story = {
   parameters: {
@@ -61,17 +93,11 @@ export const MainMapWithData: Story = {
     // Get messages from the main-map room
     const mainMapMessages = (mockBackend.chatrooms.find(room => room.id === 'main-map')?.dummyMessages || []) as GameMessage[]
     
-    // Create a mock sendMessage function
-    const mockSendMessage = (messageType: GameMessage['details']['messageType'], content: object) => {
-      console.log('Mock sendMessage called with:', messageType, content)
-    }
-    
     return (
       <MapContentWrapper>
-        <MapContent 
+        <MessageManager 
           room={mainMapRoom} 
-          messages={mainMapMessages} 
-          sendMessage={mockSendMessage}
+          messages={mainMapMessages}
         />
       </MapContentWrapper>
     )
@@ -87,18 +113,89 @@ export const EmptyMap: Story = {
       }
     }
   },
-  render: () => {
-    // Create a mock sendMessage function
-    const mockSendMessage = (messageType: GameMessage['details']['messageType'], content: object) => {
-      console.log('Mock sendMessage called with:', messageType, content)
+  render: () => (
+    <MapContentWrapper>
+      <MessageManager 
+        room={mainMapRoom} 
+        messages={[]}
+      />
+    </MapContentWrapper>
+  )
+}
+
+// Example of a story with a feature collection
+export const WithFeatureCollection: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'Map with a sample feature collection already added'
+      }
     }
+  },
+  render: () => {
+    const initialMessages: GameMessage[] = [
+      {
+        id: 'fc-1',
+        details: {
+          messageType: 'map',
+          senderId: 'user1',
+          senderName: 'Map User',
+          senderForce: 'blue',
+          turn: '1',
+          phase: 'planning',
+          timestamp: new Date().toISOString(),
+          channel: 'main-map'
+        },
+        content: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              properties: { name: 'Sample Point' },
+              geometry: {
+                type: 'Point',
+                coordinates: [-0.09, 51.505]
+              }
+            },
+            {
+              type: 'Feature',
+              properties: { name: 'Sample Line' },
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [-0.1, 51.5],
+                  [-0.08, 51.5],
+                  [-0.08, 51.51],
+                  [-0.1, 51.51]
+                ]
+              }
+            },
+            {
+              type: 'Feature',
+              properties: { name: 'Sample Polygon' },
+              geometry: {
+                type: 'Polygon',
+                coordinates: [
+                  [
+                    [-0.12, 51.5],
+                    [-0.1, 51.5],
+                    [-0.1, 51.51],
+                    [-0.12, 51.51],
+                    [-0.12, 51.5]
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
     
     return (
       <MapContentWrapper>
-        <MapContent 
+        <MessageManager 
           room={mainMapRoom} 
-          messages={[]} 
-          sendMessage={mockSendMessage}
+          messages={initialMessages}
         />
       </MapContentWrapper>
     )
