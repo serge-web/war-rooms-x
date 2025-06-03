@@ -98,8 +98,11 @@ export class XMPPRestService {
    * @returns void
    */
   initialiseProxy(path: string): void {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const pathHost = isLocalhost ? 'http://localhost:3000' : window.location.origin
+    console.log('path', pathHost)
     this.client = axios.create({
-      baseURL: path,
+      baseURL: pathHost + path,
       headers: {
         'Content-Type': 'application/json'
       },
@@ -198,7 +201,7 @@ export class XMPPRestService {
       this.client.defaults.headers.common['Authorization'] = apiKey
       
       // Test authentication by making a simple request
-      const response = await this.client.get('/groups')
+      const response = await this.client.get('/groups/')
       
       if (response.status === 200) {
         this.authenticated = true
