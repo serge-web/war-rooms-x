@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { ConfigProvider, Layout } from 'antd'
 import { Header, Footer } from 'antd/es/layout/layout'
 import GameState from '../GameState'
@@ -10,7 +10,10 @@ import { useWargame } from '../../../contexts/WargameContext'
 const { Sider, Content } = Layout
 
 const PlayerView: React.FC = () => {
-  const { gameProperties } = useWargame()
+  const { gameProperties, gameState, nextTurn, playerDetails } = useWargame()
+  const canTurn = useMemo(() => {
+    return playerDetails?.id === 'admin'
+  }, [playerDetails])
   const gameStateStyle: React.CSSProperties = {
     height: '170px',
     backgroundColor: '#ccc',
@@ -58,7 +61,12 @@ const PlayerView: React.FC = () => {
         <ConfigProvider theme={gameProperties?.adminTheme}>
           <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Header style={gameStateStyle}>
-              <GameState/>
+              <GameState
+                gameState={gameState}
+                gameProperties={gameProperties}
+                onNextTurn={nextTurn}
+                canTurn={canTurn}
+              />
             </Header>
             <Content style={adminMessagesStyle}>
               <AdminRoom />

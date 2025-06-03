@@ -176,8 +176,8 @@ describe('XMPPService - MUC Operations', () => {
       // Let's just check that it was called with the room JID
       expect(mockClient.joinRoom).toHaveBeenCalledWith(
         roomJid,
-        expect.any(String)
-      )
+        "test-user@test-server",
+        {"history": {"maxStanzas": 20}})
       
       // Verify the room was added to joinedRooms
       expect((xmppService as unknown as { mucService: { joinedRooms: Set<string> }}).mucService.joinedRooms.has(roomJid)).toBe(true)

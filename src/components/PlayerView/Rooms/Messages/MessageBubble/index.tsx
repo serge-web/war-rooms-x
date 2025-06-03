@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import './index.css'
 import { ChatMessage, FormMessage, GameMessage, Template } from '../../../../../types/rooms-d'
 import { renderObjectContent } from './renderObjectContent'
-import { useWargame } from '../../../../../contexts/WargameContext'
+import { ForceConfigType } from '../../../../../types/wargame-d'
 
 const renderMessage = (mType: string, jsonObject: object, templates: Template[]): React.ReactNode => {
   // special case. Messages from other clients may be plain text.  If they are, just return them
@@ -32,9 +32,9 @@ const MessageBubble: React.FC<{
   message: GameMessage
   isSelf: boolean
   templates: Template[]
-}> = ({ message, isSelf, templates }) => {
+  getForce: (forceId: string) => Promise<ForceConfigType>
+}> = ({ message, isSelf, templates, getForce }) => {
   const [forceColor, setForceColor] = useState<string | undefined>(undefined)
-  const { getForce } = useWargame()
   const from = message.details.senderName
   const fromForce = message.details.senderForce
   if (fromForce) {

@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import './index.css'
 import { useRoom } from '../useRoom'
-import { MapRoomConfig, RoomDetails, RoomType } from '../../../../types/rooms-d'
-import { ConfigProvider, Button, Space, Tooltip } from 'antd'
+import { MapRoomConfig, RoomDetails, RoomType, GameMessage, MessageDetails } from '../../../../types/rooms-d'
+import { ConfigProvider, Button, Space, Tooltip, ThemeConfig } from 'antd'
 import { MapContainer, TileLayer, GeoJSON, useMap, Marker } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
@@ -27,6 +27,9 @@ interface GeoJSONLayer extends L.Layer {
 
 interface MapProps {
   room: RoomType
+  messages?: GameMessage[]
+  theme?: ThemeConfig
+  sendMessage?: (messageType: MessageDetails['messageType'], content: object) => void
 }
 
 // Define types for Geoman functionality
@@ -183,8 +186,13 @@ const TextMarker: React.FC<{
   )
 }
 
-const MapContent: React.FC<MapProps> = ({ room }) => {
-  const { theme, messages, sendMessage } = useRoom(room)
+// The core component that accepts props directly
+const MapContent: React.FC<MapProps> = ({ 
+  room, 
+  messages = [], 
+  theme, 
+  sendMessage = () => console.warn('sendMessage not provided to MapContent')
+}) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false)
   const geoJsonLayerRef = useRef<LeafletGeoJSON | null>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -379,4 +387,21 @@ const MapContent: React.FC<MapProps> = ({ room }) => {
   
 }
 
-export default MapContent
+// Create a backward-compatible wrapper that uses the useRoom hook
+const MapContentWrapper: React.FC<{room: RoomType}> = ({ room }) => {
+  const { theme, messages, sendMessage } = useRoom(room)
+  return (
+    <MapContent
+      room={room}
+      theme={theme}
+      messages={messages}
+      sendMessage={sendMessage}
+    />
+  )
+}
+
+// For compatibility with existing code, export the wrapper as default
+export default MapContentWrapper
+
+// Also export the core component for direct use in tests/stories
+export { MapContent }

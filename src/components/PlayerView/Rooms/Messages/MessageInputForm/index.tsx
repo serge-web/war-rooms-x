@@ -1,14 +1,17 @@
 import React from 'react'
 import './index.css'
 import { Button } from 'antd'
+
 import { MessageDetails } from '../../../../../types/rooms-d'
 
-const MessageInputForm: React.FC<{
+interface MessageInputFormProps {
   onSendMessage: (messageType: MessageDetails['messageType'], content: object) => void
   disabled: boolean
-}> = ({ onSendMessage, disabled }) => {
+}
+
+const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSendMessage, disabled }) => {
   const send = (value: string) => {
-    onSendMessage('chat', { value })
+    onSendMessage('chat', { text: value })
   }
   return (
   <form 

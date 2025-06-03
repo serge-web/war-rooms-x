@@ -1,13 +1,27 @@
 import React from 'react'
-import { Card, Typography, Space, Tag, Button, Tooltip } from 'antd'
+import { Card, Typography, Space, Tag, Button, Tooltip, Empty } from 'antd'
 import { AimOutlined, ClockCircleOutlined, NumberOutlined, ApartmentOutlined } from '@ant-design/icons'
-import { useWargame } from '../../../contexts/WargameContext'
+import { GamePropertiesType, GameStateType } from '../../../../src/types/wargame-d'
 
 const { Text } = Typography
 
-const GameState: React.FC = () => {
-  const { gameProperties, gameState, nextTurn } = useWargame()
+export interface GameStateProps {
+  /** Game state containing turn, phase, and time information */
+  gameState: GameStateType | null
+  /** Game properties including name, description, and turn model */
+  gameProperties: GamePropertiesType | null
+  /** Callback function to trigger the next turn */
+  onNextTurn: (gameProperties: GamePropertiesType | null) => void
+  /** Whether the current user can advance the turn */
+  canTurn?: boolean
+}
 
+const GameState: React.FC<GameStateProps> = ({ 
+  gameState, 
+  gameProperties, 
+  onNextTurn,
+  canTurn = false
+}) => {
   // Format the date for display
   const formattedDate = gameState ? new Date(gameState.currentTime).toLocaleString() : ''
 
@@ -55,17 +69,24 @@ const GameState: React.FC = () => {
             <ClockCircleOutlined style={{ marginRight: 8, color: '#1677ff' }} />
             <Text style={{ marginLeft: 8 }} data-testid='current-time'>{formattedDate}</Text>
           </div>
-          <Button
-            type="primary"
-            onClick={() => nextTurn(gameProperties)}
-            style={{ marginTop: 8 }}
+          { gameState && canTurn && <Button 
+            type="primary" 
+            onClick={() => onNextTurn(gameProperties)}
+            icon={<AimOutlined />}
+            disabled={!gameState || !canTurn}
           >
             Next Turn
-          </Button>
+          </Button> }
         </Space>
       ) : (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-          <Text type='secondary'>No game state available</Text>
+            <Empty
+              description={
+                <Typography.Text>
+                  Game state pending
+                </Typography.Text>
+              }
+            />
         </div>
       )}
     </Card>

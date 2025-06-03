@@ -1,42 +1,14 @@
 import { Meta, StoryObj } from '@storybook/react'
-import React, { useEffect } from 'react'
-import RoomContent from './index'
-import { WargameContext } from '../../../../contexts/WargameContext'
-import { RoomType, GameMessage } from '../../../../types/rooms-d'
-import { mockBackend } from '../../../../mockData/mockAdmin'
-import { ForceConfigType, GameStateType, UserConfigType } from '../../../../types/wargame-d'
-import localforage from 'localforage'
-import { prefixKey } from '../../../../types/constants'
-import { RUser } from '../../../AdminView/raTypes-d'
+import { RoomContentCore, type RoomContentCoreProps } from './index'
+import { GameMessage, type RoomType } from '../../../../types/rooms-d'
+import { ThemeConfig } from 'antd'
+import { ForceConfigType } from '../../../../types/wargame-d'
+import { useState } from 'react'
 
-// Define the meta export for the component
-const meta = {
-  title: 'PlayerView/Rooms/RoomContent',
-  component: RoomContent,
-  parameters: {
-    layout: 'fullscreen'
-  }
-} satisfies Meta<typeof RoomContent>
-
-export default meta
-type Story = StoryObj<typeof RoomContent>
-
-// Mock force colors for the Storybook
-const mockForceColors: Record<string, string> = {
-  'blue': '#1890ff',
-  'red': '#f5222d',
-  'umpire': '#722ed1',
-  'green': '#52c41a',
-  'yellow': '#faad14',
-  'purple': '#722ed1',
-  'admin': '#262626',
-  'logs': '#8c8c8c'
-}
-
-// Mock room data
+// Mock data
 const mockRoom: RoomType = {
-  roomName: 'test-room',
-  naturalName: 'Test Room',
+  roomName: 'blue-chat',
+  naturalName: 'Blue Force Chat',
   description: JSON.stringify({
     theme: {
       token: {
@@ -50,192 +22,234 @@ const mockRoom: RoomType = {
   })
 }
 
-// Initialize mock data for IndexedDB
-const initMockData = async (roomName: string, forceId: string) => {
-  // Create mock users for this force
-  const mockUsers = mockBackend.users
-    .filter(user => forceId === 'ALL' || user.name.toLowerCase().includes(forceId))
-    .map(user => ({
-      jid: user.id,
-      name: user.name,
-      force: forceId
-    }))
-
-  // Get mock messages for this force
-  let mockMessages: GameMessage[] = []
-  const chatroom = mockBackend.chatrooms.find(room => room.id === `${forceId}-chat`)
-  if (chatroom && chatroom.dummyMessages) {
-    mockMessages = chatroom.dummyMessages as GameMessage[]
+const mockMessages: GameMessage[] = [
+  {
+    id: 'msg-1',
+    details: {
+      messageType: 'chat' as const,
+      senderId: 'user1',
+      senderName: 'Blue User',
+      senderForce: 'blue',
+      turn: '1',
+      phase: 'planning',
+      timestamp: new Date().toISOString(),
+      channel: 'blue-chat'
+    },
+    content: { value: 'Hello, this is a test message from Blue' }
+  },
+  {
+    id: 'msg-2',
+    details: {
+      messageType: 'chat' as const,
+      senderId: 'user2',
+      senderName: 'Red User',
+      senderForce: 'red',
+      turn: '1',
+      phase: 'planning',
+      timestamp: new Date().toISOString(),
+      channel: 'blue-chat'
+    },
+    content: { value: 'Hello from Red team' }
   }
+]
 
-  // Create a mock room with users and messages
-  const mockChatrooms = [
-    {
-      id: roomName,
-      name: roomName,
-      presenceConfig: 'all',
-      dummyUsers: mockUsers,
-      dummyMessages: mockMessages
-    }
-  ]
+const mockUsers = [
+  { id: 'user1', name: 'Blue User', force: 'blue', isOnline: true },
+  { id: 'user2', name: 'Red User', force: 'red', isOnline: true },
+  { id: 'user3', name: 'Offline User', force: 'green', isOnline: false }
+]
 
-  // Store in IndexedDB
-  await localforage.setItem(`${prefixKey}chatrooms`, mockChatrooms)
-  console.log(`Mock data initialized for ${roomName} with ${mockUsers.length} users and ${mockMessages.length} messages`)
+const mockTheme: ThemeConfig = {
+  token: {
+    colorPrimary: '#1890ff',
+    colorBgContainer: '#f0f2f5',
+    colorText: 'rgba(0, 0, 0, 0.88)'
+  }
 }
 
-// Create a decorator for each force
-const createForceDecorator = (forceId: string | 'ALL') => {
-  return (Story: React.ComponentType, { args }: { args: { room: RoomType } }) => {
-    // Initialize mock data for IndexedDB when the component mounts
-    useEffect(() => {
-      // Using forceId from closure, not needed in deps array
-      initMockData(args.room.roomName, forceId)
-    }, [args.room.roomName])
+// Story metadata
+const meta = {
+  title: 'PlayerView/Rooms/RoomContent',
+  component: RoomContentCore,
+  parameters: {
+    layout: 'fullscreen'
+  },
+  tags: ['autodocs']
+} satisfies Meta<typeof RoomContentCore>
 
-    // Create a mock implementation of the getForce method
-    const mockGetForce = async (id: string): Promise<ForceConfigType> => {
-      return {
-        type: 'force-config-type-v1',
-        id,
-        name: id.charAt(0).toUpperCase() + id.slice(1),
-        color: mockForceColors[id] || '#000000'
-      }
-    }
+export default meta
+type Story = StoryObj<typeof RoomContentCore>
 
-    const mockGetPlayerDetails = async (userId: string): Promise<UserConfigType | undefined> => {
-      const details = mockBackend.users.find((u: RUser) => u.id === userId)
-      if (!details) {
-        return undefined
-      }
-      return {
-        type: 'user-config-type-v1',
-        name: details.name,
-        forceId: details.force
-      }
-    }
+// Common args for all stories
+type CommonRenderProps = Omit<RoomContentCoreProps, 'messages' | 'sendMessage'> 
 
-    // Create a typed game state
-    const gameState: GameStateType = {
-      turn: '1',
-      currentPhase: 'planning',
-      currentTime: new Date().toISOString()
+const CommonRender = (args: CommonRenderProps) => {
+  const [messages, setMessages] = useState<GameMessage[]>([...mockMessages])
+  
+  const sendMessage = (type: 'chat' | 'map' | 'form', content: { value: string } | object) => {
+    // For this story, we only handle chat messages
+    if (type !== 'chat') return
+    
+    const messageContent = 'value' in content ? content : { value: 'Empty message' }
+    const newMessage: GameMessage = {
+      id: `msg-${Date.now()}`,
+      details: {
+        messageType: 'chat',
+        senderId: 'user1', // current user
+        senderName: 'You',
+        senderForce: 'blue',
+        turn: '1',
+        phase: 'planning',
+        timestamp: new Date().toISOString(),
+        channel: 'blue-chat'
+      },
+      content: messageContent
     }
     
-    // Mock WargameContext value with the appropriate force player
-    const wargameContextValue = {
-      loggedIn: true,
-      xmppClient: null,
-      setXmppClient: () => {},
-      raDataProvider: undefined,
-      setRaDataProvider: () => {},
-      mockPlayerId: null,
-      setMockPlayerId: () => {},
-      playerDetails: {
-        id: `${forceId}-co`,
-        role: forceId === 'umpire' ? 'umpire' : 'player',
-        forceId,
-        forceName: `${forceId.charAt(0).toUpperCase() + forceId.slice(1)} Force`,
-        color: mockForceColors[forceId]
-      },
-      getForce: mockGetForce,
-      getPlayerDetails: mockGetPlayerDetails,
-      gameProperties: null,
-      gameState,
-      nextTurn: async () => {},
-      rooms: []
-    }
+    setMessages(prev => [...prev, newMessage])
+  }
 
-    console.log('context', wargameContextValue)
+  return (
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <RoomContentCore 
+        {...args} 
+        room={mockRoom}
+        messages={messages} 
+        sendMessage={sendMessage}
+        theme={mockTheme}
+        canSubmit={true}
+        infoModal={null}
+        setInfoModal={() => {}}
+        users={mockUsers}
+        presenceVisibility={"all" as const}
+        currentUserForceId="blue"
+        currentUserId="user1"
+        isAdmin={false}
+        getForce={async (forceId: string): Promise<ForceConfigType> => ({
+          id: forceId,
+          name: forceId,
+          color: forceId,
+          type: 'force-config-type-v1'
+        })}
+      />
+    </div>
+  )
+}
 
-    return (
-      <WargameContext.Provider value={wargameContextValue}>
-        <div style={{ 
-          width: '800px', 
-          height: '600px', 
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          right: 0,
-          bottom: 0,
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <Story />
-        </div>
-      </WargameContext.Provider>
-    )
+const commonArgs = {
+  canSubmit: true,
+  infoModal: null,
+  setInfoModal: () => {},
+  users: mockUsers,
+  presenceVisibility: 'all' as const,
+  currentUserForceId: 'blue',
+  currentUserId: 'user1',
+  isAdmin: false,
+  getForce: (forceId: string) => Promise.resolve({
+    id: forceId,
+    name: forceId,
+    color: forceId
+  }) as Promise<ForceConfigType>
+}
+
+type RoomContentStory = StoryObj<typeof RoomContentCore>
+
+const Template: RoomContentStory = {
+  render: (args) => <CommonRender {...args} />
+}
+
+export const Default: RoomContentStory = {
+  ...Template,
+  args: {
+    ...commonArgs,
+    room: mockRoom,
+    theme: mockTheme,
+    messages: mockMessages, // Initial messages, will be overridden by the state
+    sendMessage: (type, content) => console.log('Message sent:', type, content)
   }
 }
 
-// Blue Force Chat Room
-export const BlueForceChat: Story = {
-  args: {
-    room: {
-      ...mockRoom,
-      roomName: 'blue-chat',
-      naturalName: 'Blue Force Chat'
-    }
+// Custom theme configuration with serif font
+const customTheme: ThemeConfig = {
+  token: {
+    colorPrimary: '#722ed1',
+    colorBgContainer: '#f9f0ff',
+    colorText: '#1f1f1f',
+    colorBorder: '#d3adf7',
+    colorPrimaryBg: '#f9f0ff',
+    fontFamily: `'Georgia', 'Times New Roman', serif`,
+    fontSize: 16,
+    borderRadius: 8,
+    lineHeight: 1.6
   },
-  decorators: [createForceDecorator('blue')]
+  components: {
+    Button: {
+      primaryColor: '#fff',
+      borderRadius: 20,
+      fontSize: 14,
+      fontWeight: 'bold',
+      paddingBlock: 8,
+      paddingInline: 20
+    },
+    Input: {
+      activeBorderColor: '#9254de',
+      hoverBorderColor: '#b37feb',
+      activeShadow: '0 0 0 2px rgba(114, 46, 209, 0.2)',
+      borderRadius: 8,
+      paddingBlock: 10,
+      paddingInline: 14
+    },
+    Card: {
+      borderRadiusLG: 12,
+      boxShadowSecondary: '0 4px 12px rgba(0, 0, 0, 0.08)'
+    },
+    Typography: {
+      fontFamily: `'Georgia', 'Times New Roman', serif`
+    }
+  }
 }
 
-// Red Force Chat Room
-export const RedForceChat: Story = {
-  args: {
-    room: {
-      ...mockRoom,
-      roomName: 'red-chat',
-      naturalName: 'Red Force Chat'
+const customThemedRoom: RoomType = {
+  roomName: 'custom-theme-chat',
+  naturalName: 'Custom Theme Chat',
+  description: JSON.stringify({
+    theme: customTheme,
+    description: 'A chat room with a custom purple theme',
+    specifics: {
+      roomType: 'chat'
     }
-  },
-  decorators: [createForceDecorator('red')]
+  })
 }
 
-// Green Force Chat Room
-export const GreenForceChat: Story = {
+export const WithCustomTheme: Story = {
   args: {
-    room: {
-      ...mockRoom,
-      roomName: 'green-chat',
-      naturalName: 'Green Force Chat'
-    }
-  },
-  decorators: [createForceDecorator('green')]
+    ...commonArgs,
+    room: customThemedRoom,
+    theme: customTheme
+  }
 }
 
-// Umpire Chat Room
-export const UmpireChat: Story = {
+export const ReadOnly: Story = {
   args: {
-    room: {
-      ...mockRoom,
-      roomName: 'umpire-chat',
-      naturalName: 'Umpire Chat'
-    }
-  },
-  decorators: [createForceDecorator('umpire')]
+    ...Default.args,
+    canSubmit: false
+  }
 }
 
-// Logs Chat Room
-export const LogsChat: Story = {
+export const WithInfoModal: Story = {
   args: {
-    room: {
-      ...mockRoom,
-      roomName: 'logs-chat',
-      naturalName: 'Logs Chat'
+    ...Default.args,
+    infoModal: {
+      title: 'Modal title', 
+      message: 'Modal message',
+      type: 'info'
     }
-  },
-  decorators: [createForceDecorator('logs')]
+  }
 }
 
-// Chat Room with lots of users
-export const ManyUsers: Story = {
+export const AdminView: Story = {
   args: {
-    room: {
-      ...mockRoom,
-      roomName: 'many-users',
-      naturalName: 'Many Users'
-    }
-  },
-  decorators: [createForceDecorator('ALL')]
+    ...Default.args,
+    isAdmin: true
+  }
 }
